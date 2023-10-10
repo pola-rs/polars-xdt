@@ -12,3 +12,4 @@ polars-core = { version = "0.33.2", default-features = false }
 polars-ffi = { version = "0.33.2", default-features = false }
 polars-plan = { version = "0.33.2", default-feautres = false }
 polars-lazy = { version = "0.33.2", default-features = false }
+polars-time = { version = "0.33.2", default-features = false }
