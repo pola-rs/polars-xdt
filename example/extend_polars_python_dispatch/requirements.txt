@@ -1,2 +1,0 @@
-maturin
-polars[pyarrow]
