@@ -1,5 +1,5 @@
 /pyo3-polars/target
 Cargo.lock
 .idea/
-venv/
+.venv/
 target/
