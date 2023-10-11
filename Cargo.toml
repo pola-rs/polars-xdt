@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-  "src/polars_business_day_tools",
+  "src/polars_business",
   "pyo3-polars",
   "pyo3-polars-derive",
 ]
