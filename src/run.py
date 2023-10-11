@@ -8,7 +8,7 @@ df = pl.DataFrame({
 })
 df = df.filter(pl.col('dates').dt.weekday() <6)
 
-print(df.with_columns(dates_shifted=pl.col('dates').bdt.add_bday(n=15))[20:28])
+print(df.with_columns(dates_shifted=pl.col('dates').bdt.advance_by_days(n=15))[20:28])
 print(df.with_columns(dates_shifted=pl.Series(np.busday_offset(df['dates'], 15)))[20:28]) 
 
 import pandas as pd

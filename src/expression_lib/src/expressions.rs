@@ -2,7 +2,7 @@ use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 
 #[polars_expr(output_type=Date)]
-fn add_bday(inputs: &[Series]) -> PolarsResult<Series> {
+fn advance_by_days(inputs: &[Series]) -> PolarsResult<Series> {
     let ca = inputs[0].i32()?;
     let n = inputs[1].i32()?.get(0).unwrap();
 
