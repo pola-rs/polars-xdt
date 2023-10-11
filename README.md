@@ -1,10 +1,23 @@
 # Polars-business
 
-![DALL·E 2023-10-11 16 02 10 - polar bear in business suit](https://github.com/MarcoGorelli/polars-business/assets/33491632/46575111-4d14-452b-ac98-548acab3cf8f)
+<h1 align="center">
+	<img
+		width="400"
+		alt="polars-business"
+		src="https://github.com/MarcoGorelli/polars-business/assets/33491632/a743c3bd-3653-4362-a6bf-0984b8873e20">
+</h1>
 
 Business day utilities for [Polars](https://www.pola.rs/).
 
-Install with `pip install polars-business`.
+Installation
+------------
+
+First, you need to install Polars. See the link above for how to do that.
+
+Then, you'll need to install `polars-business`. Currently, you can do this via PyPI (note: the `$` is not part of the command):
+```console
+$ pip install polars-business
+```
 
 Example
 -------
@@ -12,7 +25,8 @@ Example
 Here's an example of how to shift a date range forwards by 5 business days (i.e. Monday to Friday, excluding weekends):
 ```python
 import polars as pl
-from polars_business import BusinessDayTools
+import polars_business
+
 from datetime import date
 
 df = pl.DataFrame({
