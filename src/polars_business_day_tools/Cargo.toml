@@ -1,11 +1,11 @@
 [package]
-name = "expression_lib"
+name = "polars_business_day_tools"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "expression_lib"
+name = "polars_business_day_tools"
 crate-type = ["cdylib"]
 
 [dependencies]

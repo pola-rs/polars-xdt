@@ -4,3 +4,4 @@ Cargo.lock
 .venv/
 target/
 .hypothesis
+*.pyc
