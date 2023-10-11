@@ -1,12 +1,16 @@
 import polars as pl
-from expression_lib import Language
+from expression_lib import BusinessDayTools
 from datetime import date, datetime
+import numpy as np
 
 df = pl.DataFrame({
-    "names": ["Richard", "Alice", "Bob"],
-    "dates": [1]*3,
-    "dates2": [date(2020, 1, 1)]*3,
+    "dates": pl.datetime_range(date(1, 1, 1), date(9999, 1, 1), eager=True),
 })
-print(df)
+df = df.filter(pl.col('dates').dt.weekday() <6)
 
-print(df.with_columns(dates_plus_1=pl.col('dates2').language.add_bday()))
+print(df.with_columns(dates_shifted=pl.col('dates').bdt.add_bday(n=15))[20:28])
+print(df.with_columns(dates_shifted=pl.Series(np.busday_offset(df['dates'], 15)))[20:28]) 
+
+import pandas as pd
+dfpd = df.to_pandas()
+print((dfpd + pd.tseries.offsets.BusinessDay(15)).iloc[20:28])
