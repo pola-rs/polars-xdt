@@ -19,6 +19,11 @@ Then, you'll need to install `polars-business`. Currently, you can do this via P
 $ pip install polars-business
 ```
 
+To use it, you'll need to `import polars_business`, and then you'll be a `.business` accessor
+on your expressions!
+
+Currently there's only a single function: `advance_n_days`.
+
 Example
 -------
 
@@ -35,3 +40,22 @@ df = pl.DataFrame({
 
 print(df.with_columns(dates_shifted=pl.col('dates').business.advance_n_days(n=5)))
 ```
+
+Note
+----
+Currently, only `pl.Date` datatype is supported.
+
+What to expected
+----------------
+The following will hopefully come relatively soon:
+- support for `Datetime`s
+- support for custom holiday calendars
+- support for rolling forwards/backwards to the next
+  valid business date (if not already on one)
+
+Ideas for future development:
+- business date range
+- support for custom mask
+
+
+Currently there's only a single function: `advance_n_days`.

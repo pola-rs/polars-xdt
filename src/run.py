@@ -8,8 +8,8 @@ df = pl.DataFrame({
 })
 df = df.filter(pl.col('dates').dt.weekday() <6)
 
-print(df.head().with_columns(dates_shifted=pl.col('dates').business.advance_n_days(n=3))[:5])
-print(df.head().with_columns(dates_shifted=pl.Series(np.busday_offset(df.head()['dates'], 3)))[:5]) 
+print(df.head().with_columns(dates_shifted=pl.col('dates').business.advance_n_days(n=-3))[:5])
+print(df.head().with_columns(dates_shifted=pl.Series(np.busday_offset(df.head()['dates'], -3)))[:5]) 
 
 import pandas as pd
 dfpd = df.to_pandas()

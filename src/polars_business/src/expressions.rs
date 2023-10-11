@@ -6,23 +6,23 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
     let ca = inputs[0].i32()?;
     let n = inputs[1].i32()?.get(0).unwrap();
 
-    let out = ca.apply_values(
-        |mut x|{
-        let mut weekday = (x - 4) % 7;
+    let out = ca.try_apply(
+        |x|{
+        let weekday = (x - 4) % 7;
 
-        // If on weekend, roll backwards to previous
-        // valid date (following pandas here).
         if weekday == 5 {
-            x -= 1;
-            weekday = 4;
+            polars_bail!(ComputeError: "Saturday is not a business date, cannot advance. `roll` argument coming soon.")
         } else if weekday == 6 {
-            x -= 2;
-            weekday = 4;
+            polars_bail!(ComputeError: "Sunday is not a business date, cannot advance. `roll` argument coming soon.")
         }
 
-        let n_days = n + (n + weekday) / 5 * 2;
-        x + n_days
+        let n_days = if n >= 0 {
+            n + (n + weekday) / 5 * 2
+        } else {
+            -(-n + (-n + 4-weekday) / 5 * 2)
+        };
+        Ok(x + n_days)
         }
-    );
+    )?;
     Ok(out.cast(&DataType::Date).unwrap().into_series())
 }
