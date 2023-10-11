@@ -1,5 +1,5 @@
 import polars as pl
-import polars_business
+from polars_business import *
 from datetime import date, datetime
 import numpy as np
 
