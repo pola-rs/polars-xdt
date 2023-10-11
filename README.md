@@ -37,6 +37,7 @@ from datetime import date
 df = pl.DataFrame({
     "dates": pl.date_range(date(2000, 1, 1), date(9999, 1, 1), eager=True),
 })
+df = df.filter(pl.col('dates').dt.weekday() <6)
 
 print(df.with_columns(dates_shifted=pl.col('dates').business.advance_n_days(n=5)))
 ```
