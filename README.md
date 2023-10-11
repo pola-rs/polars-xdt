@@ -8,5 +8,5 @@ Steps to reproduce:
 2. `.venv/bin/activate`
 3. `pip install maturin polars`
 4. `cd src`
-5. `maturin develop -m expression_lib/Cargo.toml `
+5. `maturin develop -m polars_business_day_tools/Cargo.toml `
 6. `python run.py`
