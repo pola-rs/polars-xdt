@@ -12,6 +12,9 @@ class BusinessDayTools:
 
 
     def add_bday(self, n) -> pl.Expr:
+        if not (isinstance(n, int) and n > 0):
+            raise ValueError("only positive integers are currently supported for `n`")
+            
         return self._expr._register_plugin(
             lib=lib,
             symbol="add_bday",
