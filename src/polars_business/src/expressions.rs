@@ -8,37 +8,9 @@ fn weekday(x: i32) -> i32 {
 
 fn calculate_n_days_without_holidays(x: i32, n: i32, x_weekday: i32) -> i32 {
     if n >= 0 {
-        // Let's pretend we were starting on a Monday. How many days would we
-        // need to advance?
-        let mut n_days = n + n / 5 * 2 - x_weekday;
-
-        // Right. But we didn't necessarily start on a Monday, we started on
-        // x_weekday. So now, let's advance by x_weekday days, each time
-        // rolling forwards if we need to. x_weekday <= 6 so this loop won't
-        // happen too many times anyway.
-        let mut i = x_weekday;
-        while i > 0 {
-            n_days += 1;
-            let res_weekday = weekday(x + n_days);
-            n_days = roll(n_days, res_weekday);
-            i -= 1;
-        }
-        n_days
+        n + (n + x_weekday) / 5 * 2
     } else {
-        // Reverse logic to the above.
-        // Let's pretend we were starting on a Friday.
-        // How many days to advance?
-        let mut n_days = n + n / 5 * 2 + (4 - x_weekday);
-
-        // Then, adjust
-        let mut i = 4 - x_weekday;
-        while i > 0 {
-            n_days -= 1;
-            let res_weekday = weekday(x + n_days);
-            n_days = roll(n_days, res_weekday);
-            i -= 1;
-        }
-        n_days
+        -(-n + (-n + 4 - x_weekday) / 5 * 2)
     }
 }
 
