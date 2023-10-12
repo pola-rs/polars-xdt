@@ -14,17 +14,15 @@ fn calculate_n_days_without_holidays(n: i32, x_weekday: i32) -> i32 {
     }
 }
 
-fn reduce_vec(vec: &Vec<Option<i32>>, x: i32, n_days: i32) -> Vec<Option<i32>> {
+fn reduce_vec(vec: &[Option<i32>], x: i32, n_days: i32) -> Vec<Option<i32>> {
     // Each day we skip may be a holiday, and so require skipping an additional day.
     // n_days*2 is an upper-bound.
     if n_days > 0 {
-        vec.clone()
-            .into_iter()
+        vec.iter().copied()
             .filter(|t| t.map(|t| t >= x && t <= x + n_days * 2).unwrap_or(false))
             .collect()
     } else {
-        vec.clone()
-            .into_iter()
+        vec.iter().copied()
             .filter(|t| t.map(|t| t <= x && t >= x + n_days * 2).unwrap_or(false))
             .collect()
     }
@@ -47,14 +45,12 @@ fn roll(n_days: i32, weekday_res: i32) -> i32 {
         } else {
             n_days
         }
+    } else if weekday_res == 5 {
+        n_days - 1
+    } else if weekday_res == 6 {
+        n_days - 2
     } else {
-        if weekday_res == 5 {
-            n_days - 1
-        } else if weekday_res == 6 {
-            n_days - 2
-        } else {
-            n_days
-        }
+        n_days
     }
 }
 
@@ -69,7 +65,7 @@ fn calculate_n_days(x: i32, n: i32, vec: &Vec<Option<i32>>) -> PolarsResult<i32>
 
     let mut n_days = calculate_n_days_without_holidays(n, x_weekday);
 
-    if vec.len() > 0 {
+    if !vec.is_empty() {
         let mut myvec: Vec<Option<i32>> = reduce_vec(vec, x, n_days);
         let mut count_hols = count_holidays(x, x + n_days, &mut myvec);
         while count_hols > 0 {
