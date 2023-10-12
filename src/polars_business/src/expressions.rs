@@ -6,6 +6,47 @@ fn weekday(x: i32) -> i32 {
     (x - 4) % 7
 }
 
+fn calculate_n_days_without_holidays(n: i32, x_weekday: i32) -> i32 {
+    if n >= 0 {
+        n + (n + x_weekday) / 5 * 2
+    } else {
+        -(-n + (-n + 4-x_weekday) / 5 * 2)
+    }
+}
+
+fn calculate_n_days(x: i32, n: i32, vec: &Vec<Option<i32>>) -> PolarsResult<i32> {
+    let x_weekday = weekday(x);
+
+    if x_weekday == 5 {
+        polars_bail!(ComputeError: "Saturday is not a business date, cannot advance. `roll` argument coming soon.")
+    } else if x_weekday == 6 {
+        polars_bail!(ComputeError: "Sunday is not a business date, cannot advance. `roll` argument coming soon.")
+    }
+
+    let mut n_days = calculate_n_days_without_holidays(n, x_weekday);
+
+    if vec.len() > 0 {
+        let mut myvec: Vec<Option<i32>> = vec.clone().into_iter().filter(|t| t.map(|t| t >= x && t <= x + n_days*2).unwrap_or(false)).collect();
+        let mut count_hols = count_holidays(x, x+n_days, &mut myvec);
+        while count_hols > 0 {
+            for _ in 0..count_hols {
+                n_days += 1;
+                let res = x + n_days;
+                let weekday_res = weekday(res);
+                if weekday_res == 5 {
+                    n_days += 2;
+                } else if weekday_res == 6 {
+                    n_days += 1;
+                };
+            }
+            count_hols = count_holidays(x, x+n_days, &mut myvec);
+        }
+    };
+
+
+    Ok(x + n_days)
+}
+
 fn count_holidays(start: i32, end: i32, holidays: &mut Vec<Option<i32>>) -> i32 {
     let mut counter = 0;  // Initialize the counter to 0
 
@@ -50,39 +91,7 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
             if let Some(n) = n.get(0) {
                 ca.try_apply(
                     |x|{
-                        let x_weekday = weekday(x);
-
-                        if x_weekday == 5 {
-                            polars_bail!(ComputeError: "Saturday is not a business date, cannot advance. `roll` argument coming soon.")
-                        } else if x_weekday == 6 {
-                            polars_bail!(ComputeError: "Sunday is not a business date, cannot advance. `roll` argument coming soon.")
-                        }
-
-                        let mut n_days = if n >= 0 {
-                            n + (n + x_weekday) / 5 * 2
-                        } else {
-                            -(-n + (-n + 4-x_weekday) / 5 * 2)
-                        };
-                        if vec.len() > 0 {
-                            let mut myvec = vec.clone();
-                            let mut count_hols = count_holidays(x, x+n_days, &mut myvec);
-                            while count_hols > 0 {
-                                for _ in 0..count_hols {
-                                    n_days += 1;
-                                    let res = x + n_days;
-                                    let weekday_res = weekday(res);
-                                    if weekday_res == 5 {
-                                        n_days += 2;
-                                    } else if weekday_res == 6 {
-                                        n_days += 1;
-                                    };
-                                }
-                                count_hols = count_holidays(x, x+n_days, &mut myvec);
-                            }
-                        };
-
-
-                        Ok(x + n_days)
+                    calculate_n_days(x, n, &vec)
                     }
                 )
             } else {
