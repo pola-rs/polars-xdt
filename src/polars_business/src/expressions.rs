@@ -100,20 +100,7 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
         }
         _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
             (Some(s), Some(n)) => {
-                let weekday_s = weekday(s);
-
-                if weekday_s == 5 {
-                    polars_bail!(ComputeError: "Saturday is not a business date, cannot advance. `roll` argument coming soon.")
-                } else if weekday_s == 6 {
-                    polars_bail!(ComputeError: "Sunday is not a business date, cannot advance. `roll` argument coming soon.")
-                }
-
-                let n_days = if n >= 0 {
-                    n + (n + weekday_s) / 5 * 2
-                } else {
-                    -(-n + (-n + 4 - weekday_s) / 5 * 2)
-                };
-                Ok(Some(s + n_days))
+                calculate_n_days(s, n, &vec).map(Some)
             }
             _ => Ok(None),
         }),
