@@ -13,13 +13,29 @@ class BusinessDayTools:
         self._expr = expr.cast(pl.Int32)
 
 
-    def advance_n_days(self, n) -> pl.Expr:
+    def advance_n_days(self,
+                       n,
+                       holidays = None
+                       ) -> pl.Expr:
         # if not (isinstance(n, int) and n > 0):
         #     raise ValueError("only positive integers are currently supported for `n`")
-            
-        return self._expr._register_plugin(
-            lib=lib,
-            symbol="advance_n_days",
-            is_elementwise=True,
-            args = [n],
-        )
+        if holidays is None:
+            return self._expr._register_plugin(
+                lib=lib,
+                symbol="advance_n_days",
+                is_elementwise=True,
+                args = [
+                    n,
+                    ],
+            )
+        else:
+            return self._expr._register_plugin(
+                lib=lib,
+                symbol="advance_n_days",
+                is_elementwise=True,
+                args = [
+                    n,
+                    pl.Series([list(set(holidays))]).cast(pl.List(pl.Int32))
+                    ],
+            )
+
