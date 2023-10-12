@@ -6,11 +6,39 @@ fn weekday(x: i32) -> i32 {
     (x - 4) % 7
 }
 
-fn calculate_n_days_without_holidays(n: i32, x_weekday: i32) -> i32 {
+fn calculate_n_days_without_holidays(x: i32, n: i32, x_weekday: i32) -> i32 {
     if n >= 0 {
-        n + (n + x_weekday) / 5 * 2
+        // Let's pretend we were starting on a Monday. How many days would we
+        // need to advance?
+        let mut n_days = n + n / 5 * 2 - x_weekday;
+
+        // Right. But we didn't necessarily start on a Monday, we started on
+        // x_weekday. So now, let's advance by x_weekday days, each time
+        // rolling forwards if we need to. x_weekday <= 6 so this loop won't
+        // happen too many times anyway.
+        let mut i = x_weekday;
+        while i > 0 {
+            n_days += 1;
+            let res_weekday = weekday(x + n_days);
+            n_days = roll(n_days, res_weekday);
+            i -= 1;
+        }
+        n_days
     } else {
-        -(-n + (-n + 4 - x_weekday) / 5 * 2)
+        // Reverse logic to the above.
+        // Let's pretend we were starting on a Friday.
+        // How many days to advance?
+        let mut n_days = n + n / 5 * 2 + (4 - x_weekday);
+
+        // Then, adjust
+        let mut i = 4 - x_weekday;
+        while i > 0 {
+            n_days -= 1;
+            let res_weekday = weekday(x + n_days);
+            n_days = roll(n_days, res_weekday);
+            i -= 1;
+        }
+        n_days
     }
 }
 
@@ -18,11 +46,13 @@ fn reduce_vec(vec: &[Option<i32>], x: i32, n_days: i32) -> Vec<Option<i32>> {
     // Each day we skip may be a holiday, and so require skipping an additional day.
     // n_days*2 is an upper-bound.
     if n_days > 0 {
-        vec.iter().copied()
+        vec.iter()
+            .copied()
             .filter(|t| t.map(|t| t >= x && t <= x + n_days * 2).unwrap_or(false))
             .collect()
     } else {
-        vec.iter().copied()
+        vec.iter()
+            .copied()
             .filter(|t| t.map(|t| t <= x && t >= x + n_days * 2).unwrap_or(false))
             .collect()
     }
@@ -63,7 +93,7 @@ fn calculate_n_days(x: i32, n: i32, vec: &Vec<Option<i32>>) -> PolarsResult<i32>
         polars_bail!(ComputeError: "Sunday is not a business date, cannot advance. `roll` argument coming soon.")
     }
 
-    let mut n_days = calculate_n_days_without_holidays(n, x_weekday);
+    let mut n_days = calculate_n_days_without_holidays(x, n, x_weekday);
 
     if !vec.is_empty() {
         let mut myvec: Vec<Option<i32>> = reduce_vec(vec, x, n_days);
