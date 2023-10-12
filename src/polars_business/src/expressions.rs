@@ -14,18 +14,18 @@ fn calculate_n_days_without_holidays(x: i32, n: i32, x_weekday: i32) -> i32 {
     }
 }
 
-fn reduce_vec(vec: &[Option<i32>], x: i32, n_days: i32) -> Vec<Option<i32>> {
+fn reduce_vec(vec: &[i32], x: i32, n_days: i32) -> Vec<i32> {
     // Each day we skip may be a holiday, and so require skipping an additional day.
     // n_days*2 is an upper-bound.
     if n_days > 0 {
         vec.iter()
             .copied()
-            .filter(|t| t.map(|t| t >= x && t <= x + n_days * 2).unwrap_or(false))
+            .filter(|&t| t >= x && t <= x + n_days * 2)
             .collect()
     } else {
         vec.iter()
             .copied()
-            .filter(|t| t.map(|t| t <= x && t >= x + n_days * 2).unwrap_or(false))
+            .filter(|&t| t <= x && t >= x + n_days * 2)
             .collect()
     }
 }
@@ -56,7 +56,7 @@ fn roll(n_days: i32, weekday_res: i32) -> i32 {
     }
 }
 
-fn calculate_n_days(x: i32, n: i32, vec: &Vec<Option<i32>>) -> PolarsResult<i32> {
+fn calculate_n_days(x: i32, n: i32, vec: &Vec<i32>) -> PolarsResult<i32> {
     let x_weekday = weekday(x);
 
     if x_weekday == 5 {
@@ -68,15 +68,18 @@ fn calculate_n_days(x: i32, n: i32, vec: &Vec<Option<i32>>) -> PolarsResult<i32>
     let mut n_days = calculate_n_days_without_holidays(x, n, x_weekday);
 
     if !vec.is_empty() {
-        let mut myvec: Vec<Option<i32>> = reduce_vec(vec, x, n_days);
-        let mut count_hols = count_holidays(x, x + n_days, &mut myvec);
-        while count_hols > 0 {
-            for _ in 0..count_hols {
-                n_days = increment_n_days(n_days);
-                let weekday_res = weekday(x + n_days);
-                n_days = roll(n_days, weekday_res);
+        let myvec: Vec<i32> = reduce_vec(vec, x, n_days);
+        if !myvec.is_empty() {
+            let mut count_hols = count_holidays(x, x + n_days, &myvec);
+            while count_hols > 0 {
+                let n_days_before = n_days;
+                for _ in 0..count_hols {
+                    n_days = increment_n_days(n_days);
+                    let weekday_res = weekday(x + n_days);
+                    n_days = roll(n_days, weekday_res);
+                }
+                count_hols = count_holidays(x+n_days_before+1, x + n_days, &myvec);
             }
-            count_hols = count_holidays(x, x + n_days, &mut myvec);
         }
     };
     Ok(x + n_days)
@@ -90,30 +93,13 @@ fn condition(x: i32, start: i32, end: i32) -> bool {
     }
 }
 
-fn count_holidays(start: i32, end: i32, holidays: &mut Vec<Option<i32>>) -> i32 {
-    // Count how many holidays are between 'start' and 'end', and remove
-    // them from 'holidays'.
-    let mut counter = 0; // Initialize the counter to 0
-
-    // Iterate over the indices of the holidays vector in reverse order
-    // so that we can remove elements without causing issues with indexing
-    let mut index = holidays.len() as i32 - 1;
-    while index >= 0 {
-        // Check if the holiday is within the specified range and is Some
-        if let Some(value) = holidays[index as usize] {
-            if condition(value, start, end) {
-                // If the holiday is within the range, increment the counter
-                counter += 1;
-                // Remove the holiday from the vector
-                holidays.remove(index as usize);
-            }
-        }
-        // Move to the previous index
-        index -= 1;
-    }
-
-    // Return the final counter
-    counter
+fn count_holidays(start: i32, end: i32, holidays: &[i32]) -> i32 {
+    holidays
+        .iter()
+        .filter(|&holiday| {
+            condition(*holiday, start, end)
+        })
+        .count() as i32
 }
 
 #[polars_expr(output_type=Date)]
@@ -125,13 +111,15 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
     let vec = if inputs.len() == 3 {
         let binding = inputs[2].list()?.get(0).unwrap();
         let holidays = binding.i32()?;
-        Vec::from(holidays)
+        let mut vec: Vec<_> = Vec::from(holidays).iter().filter_map(|&x| x).collect();
+        vec.sort();
+        vec
     } else {
         Vec::new()
     };
     let vec: Vec<_> = vec
         .into_iter()
-        .filter(|x| x.map(|x| weekday(x) < 5).unwrap_or(false))
+        .filter(|x| weekday(*x) < 5)
         .collect();
 
     let out = match n.len() {
