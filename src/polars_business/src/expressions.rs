@@ -62,14 +62,16 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
                             let mut myvec = vec.clone();
                             let mut count_hols = count_holidays(x, x+n_days, &mut myvec);
                             while count_hols > 0 {
-                                n_days += count_hols;
-                                let res = x + n_days;
-                                let weekday_res = (res - 4) % 7;
-                                if weekday_res == 5 {
-                                    n_days += 2;
-                                } else if weekday_res == 6 {
+                                for _ in 0..count_hols {
                                     n_days += 1;
-                                };
+                                    let res = x + n_days;
+                                    let weekday_res = (res - 4) % 7;
+                                    if weekday_res == 5 {
+                                        n_days += 2;
+                                    } else if weekday_res == 6 {
+                                        n_days += 1;
+                                    };
+                                }
                                 count_hols = count_holidays(x, x+n_days, &mut myvec);
                             }
                         };
