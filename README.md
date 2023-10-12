@@ -4,7 +4,7 @@
 	<img
 		width="400"
 		alt="polars-business"
-		src="https://github.com/MarcoGorelli/polars-business/assets/33491632/a743c3bd-3653-4362-a6bf-0984b8873e20">
+		src="./assets/polars-business.png">
 </h1>
 
 Business day utilities for [Polars](https://www.pola.rs/).
