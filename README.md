@@ -85,3 +85,5 @@ The following timings can be verified using the `perf.py` script.
 
 - Polars-business 0.406
 - NumPy 0.417
+- pandas: omitted as pandas doesn't (yet) vectorise `CustomBusinessDay`, so
+  we'd likely be talking about minutes
