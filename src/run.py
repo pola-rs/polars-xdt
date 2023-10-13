@@ -1,21 +1,24 @@
 import polars as pl
 from polars_business import *
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import numpy as np
 
+start = date(2000, 9, 11)
+n = -29
+holidays = [date(2000, 8, 1)]
 df = pl.DataFrame(
     {
-        "dates": pl.date_range(date(1745, 1, 2), date(1745, 1, 8), eager=True),
+        "dates": pl.date_range(start, start+timedelta(10), eager=True),
     }
 )
-df = df.filter(pl.col("dates").dt.weekday() < 6)
+df = df.filter((pl.col("dates").dt.weekday() < 6) & ~pl.col("dates").is_in(holidays))
 df = df.with_columns(start_wday=pl.col("dates").dt.strftime("%a"))
 
 print(
     df.with_columns(
         dates_shifted=pl.col("dates").business.advance_n_days(
-            n=1,
-            # holidays=[date(2000, 12, 25)]
+            n=n,
+            holidays=holidays
         )
     ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
 )
@@ -24,13 +27,9 @@ print(
         dates_shifted=pl.Series(
             np.busday_offset(
                 df["dates"],
-                1,
-                #   holidays=[date(2000, 12, 25)]
+                n,
+                 holidays=holidays
             )
         )
     )
 )
-
-# E           date=datetime.date(2000, 4, 24),
-# E           n=5,
-# E           holidays=[datetime.date(2000, 1, 1), datetime.date(2000, 5, 1)],

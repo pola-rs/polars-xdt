@@ -71,9 +71,9 @@ fn calculate_n_days(x: i32, n: i32, vec: &Vec<i32>) -> PolarsResult<i32> {
     let mut n_days = calculate_n_days_without_holidays(x, n, x_weekday);
 
     if !vec.is_empty() {
-        let mut myvec: Vec<i32> = reduce_vec(vec, x, n_days);
+        let myvec: Vec<i32> = reduce_vec(vec, x, n_days);
         if !myvec.is_empty() {
-            let mut count_hols = count_holidays(x, x + n_days, &mut myvec);
+            let mut count_hols = count_holidays(x, x + n_days, &myvec);
             while count_hols > 0 {
                 let n_days_before = n_days;
                 for _ in 0..count_hols {
@@ -81,7 +81,11 @@ fn calculate_n_days(x: i32, n: i32, vec: &Vec<i32>) -> PolarsResult<i32> {
                     let weekday_res = weekday(x_mod_7 + n_days);
                     n_days = roll(n_days, weekday_res);
                 }
-                count_hols = count_holidays(x+n_days_before+1, x + n_days, &mut myvec);
+                if n_days_before > 0 {
+                    count_hols = count_holidays(x+n_days_before+1, x + n_days, &myvec);
+                } else {
+                    count_hols = count_holidays(x+n_days_before-1, x + n_days, &myvec);
+                }
             }
         }
     };
@@ -96,29 +100,13 @@ fn condition(x: i32, start: i32, end: i32) -> bool {
     }
 }
 
-fn count_holidays(start: i32, end: i32, holidays: &mut Vec<i32>) -> i32 {
-    // Count how many holidays are between 'start' and 'end', and remove
-    // them from 'holidays'.
-    let mut counter = 0; // Initialize the counter to 0
-
-    // Iterate over the indices of the holidays vector in reverse order
-    // so that we can remove elements without causing issues with indexing
-    let mut index = holidays.len() as i32 - 1;
-    while index >= 0 {
-        // Check if the holiday is within the specified range and is Some
-        let value = holidays[index as usize]; 
-        if condition(value, start, end) {
-            // If the holiday is within the range, increment the counter
-            counter += 1;
-            // Remove the holiday from the vector
-            holidays.remove(index as usize);
-        }
-        // Move to the previous index
-        index -= 1;
-    }
-
-    // Return the final counter
-    counter
+fn count_holidays(start: i32, end: i32, holidays: &[i32]) -> i32 {
+    holidays
+        .iter()
+        .filter(|&holiday| {
+            condition(*holiday, start, end)
+        })
+        .count() as i32
 }
 
 #[polars_expr(output_type=Date)]
