@@ -27,32 +27,20 @@ df_pd = pd.DataFrame({
 })
 """
 
-results = (timeit.Timer(
-    stmt="result_pl = df.select(pl.col('ts').business.advance_n_days(n=17))",
-    setup=setup,
-    )
-    .repeat(7, 3)
-)
-print('Polars-business')
-print(f'min: {min(results)}')
+def time_it(statement):
+    results = np.array(timeit.Timer(
+        stmt=statement,
+        setup=setup,
+        )
+        .repeat(7, 3)
+    )/3
+    return round(min(results), 3)
 
-results = (timeit.Timer(
-    stmt="result_np = np.busday_offset(input_dates, 17)",
-    setup=setup,
-    )
-    .repeat(7, 3)
-)
-print('NumPy')
-print(f'min: {min(results)}')
+print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17))"))
 
-results = (timeit.Timer(
-    stmt="result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)",
-    setup=setup,
-    )
-    .repeat(7, 3)
-)
-print('pandas')
-print(f'min: {min(results)}')
+print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17)"))
+
+print('pandas: ', time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)"))
 
 # BENCHMARK 2: WITH HOLIDAYS
 
@@ -82,20 +70,6 @@ df_pd = pd.DataFrame({
 })
 """
 
-results = (timeit.Timer(
-    stmt="result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, holidays=uk_holidays))",
-    setup=setup,
-    )
-    .repeat(7, 3)
-)
-print('Polars-business')
-print(f'min: {min(results)}')
+print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, holidays=uk_holidays))"))
 
-results = (timeit.Timer(
-    stmt="result_np = np.busday_offset(input_dates, 17, holidays=uk_holidays)",
-    setup=setup,
-    )
-    .repeat(7, 3)
-)
-print('NumPy')
-print(f'min: {min(results)}')
+print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17, holidays=uk_holidays)"))
