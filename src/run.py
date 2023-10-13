@@ -5,7 +5,7 @@ import numpy as np
 
 df = pl.DataFrame(
     {
-        "dates": pl.date_range(date(2000, 12, 25), date(2000, 12, 30), eager=True),
+        "dates": pl.date_range(date(1745, 1, 2), date(1745, 1, 8), eager=True),
     }
 )
 df = df.filter(pl.col("dates").dt.weekday() < 6)
@@ -14,7 +14,7 @@ df = df.with_columns(start_wday=pl.col("dates").dt.strftime("%a"))
 print(
     df.with_columns(
         dates_shifted=pl.col("dates").business.advance_n_days(
-            n=-3,
+            n=1,
             # holidays=[date(2000, 12, 25)]
         )
     ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
@@ -24,7 +24,7 @@ print(
         dates_shifted=pl.Series(
             np.busday_offset(
                 df["dates"],
-                -3,
+                1,
                 #   holidays=[date(2000, 12, 25)]
             )
         )

@@ -9,9 +9,12 @@ import polars as pl
 import polars_business
 
 
+# ooh, it fails pre 1970!
+
+
 @given(
-    date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(9999, 12, 31)),
-    n=st.integers(min_value=-30, max_value=30),
+    date=st.dates(min_value=dt.date(1000, 1, 1), max_value=dt.date(9999, 12, 31)),
+    n=st.integers(min_value=1, max_value=30),
 )
 def test_against_np_busday_offset(date: dt.date, n: int) -> None:
     assume(date.weekday() < 5)
