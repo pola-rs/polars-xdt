@@ -11,14 +11,14 @@ df = pl.DataFrame(
         "dates": pl.date_range(start, start+timedelta(10), eager=True),
     }
 )
-df = df.filter((pl.col("dates").dt.weekday() < 6) & ~pl.col("dates").is_in(holidays))
+df = df.filter((~pl.col("dates").dt.weekday().is_in([5,6,7])) & ~pl.col("dates").is_in(holidays))
 df = df.with_columns(start_wday=pl.col("dates").dt.strftime("%a"))
 
 print(
     df.with_columns(
         dates_shifted=pl.col("dates").business.advance_n_days(
             n=n,
-            holidays=holidays
+            holidays=holidays,
         )
     ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
 )
@@ -28,7 +28,8 @@ print(
             np.busday_offset(
                 df["dates"],
                 n,
-                 holidays=holidays
+                holidays=holidays,
+                weekmask='1111001',
             )
         )
     )

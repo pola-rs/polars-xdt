@@ -27,7 +27,7 @@ Currently there's only a single function: `advance_n_days`. It takes arguments:
 - `holidays`: list of holidays in `datetime.date` format. The Python `holidays` package may
   be useful here. You can install it with `pip install holidays`, and then you can get a list
   of holidays for a given country with (for example, `'UK'`):
-  ```
+  ```python
   import holidays 
 
   list(holidays.country_holidays('UK', years=[2020, 2021, 2022, 2023]))
@@ -53,7 +53,7 @@ df = pl.DataFrame(
 )
 
 result = df.with_columns(
-    date_plus_5_business_days=pl.col("dates").business.advance_n_days(
+    date_plus_5_business_days=pl.col("date").business.advance_n_days(
         n=5, holidays=uk_holidays
     )
 )
