@@ -1,22 +1,35 @@
 import polars as pl
 from polars_business import *
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import numpy as np
 
-df = pl.DataFrame({
-    "dates": pl.date_range(date(2000, 1, 1), date(9999, 1, 1), eager=True),
-})
-df = df.filter(pl.col('dates').dt.weekday() <6)
+start = date(2000, 9, 11)
+n = -29
+holidays = [date(2000, 8, 1)]
+df = pl.DataFrame(
+    {
+        "dates": pl.date_range(start, start+timedelta(10), eager=True),
+    }
+)
+df = df.filter((pl.col("dates").dt.weekday() < 6) & ~pl.col("dates").is_in(holidays))
+df = df.with_columns(start_wday=pl.col("dates").dt.strftime("%a"))
 
-print(df.head().with_columns(dates_shifted=pl.col('dates').business.advance_n_days(n=-3))[:5])
-print(df.head().with_columns(dates_shifted=pl.Series(np.busday_offset(df.head()['dates'], -3)))[:5]) 
-
-import pandas as pd
-dfpd = df.to_pandas()
-print((dfpd + pd.tseries.offsets.BusinessDay(15)).iloc[20:28])
-
-# Let's try to "just publish"
-
-# only accept:
-# - date
-# - a single offset
+print(
+    df.with_columns(
+        dates_shifted=pl.col("dates").business.advance_n_days(
+            n=n,
+            holidays=holidays
+        )
+    ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
+)
+print(
+    df.with_columns(
+        dates_shifted=pl.Series(
+            np.busday_offset(
+                df["dates"],
+                n,
+                 holidays=holidays
+            )
+        )
+    )
+)
