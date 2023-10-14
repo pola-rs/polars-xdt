@@ -75,16 +75,14 @@ fn roll(n_days: i32, weekday_res: i32) -> i32 {
     }
 }
 
-fn calculate_n_days(x: i32, n: i32, holidays: &Vec<i32>, weekend: &[i32]) -> PolarsResult<i32> {
+fn calculate_n_days(x: i32, n: i32, holidays: &[i32], weekend: &[i32]) -> PolarsResult<i32> {
     let x_mod_7 = x % 7;
     let x_weekday = weekday(x_mod_7);
     let len_weekend = weekend.len() as i32;
 
-    if x_weekday == 5 {
-        polars_bail!(ComputeError: "Saturday is not a business date, cannot advance. `roll` argument coming soon.")
-    } else if x_weekday == 6 {
-        polars_bail!(ComputeError: "Sunday is not a business date, cannot advance. `roll` argument coming soon.")
-    }
+    if weekend.contains(&x_weekday) {
+        polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
+    };
 
     let mut n_days = calculate_n_days_without_holidays_fast(x, n, x_weekday, weekend, len_weekend);
 
@@ -140,6 +138,8 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
     let n_series = inputs[1].cast(&DataType::Int32)?;
     let n = n_series.i32()?;
 
+    let weekend = vec![5, 6];
+
     let holidays = if inputs.len() == 3 {
         let binding = inputs[2].list()?.get(0).unwrap();
         let holidays = binding.i32()?;
@@ -151,21 +151,20 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
     };
     let holidays: Vec<_> = holidays
         .into_iter()
-        .filter(|x| weekday(*x) < 5)
+        .filter(|x| !weekend.contains(&weekday(*x)))
         .collect();
 
-    let weekend = vec![5, 6];
 
     let out = match n.len() {
         1 => {
             if let Some(n) = n.get(0) {
-                ca.try_apply(|x| calculate_n_days(x, n, &holidays, weekend))
+                ca.try_apply(|x| calculate_n_days(x, n, &holidays, &weekend))
             } else {
                 Ok(Int32Chunked::full_null(ca.name(), ca.len()))
             }
         }
         _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
-            (Some(s), Some(n)) => calculate_n_days(s, n, &holidays, weekend).map(Some),
+            (Some(s), Some(n)) => calculate_n_days(s, n, &holidays, &weekend).map(Some),
             _ => Ok(None),
         }),
     };
