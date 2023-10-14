@@ -3,9 +3,12 @@ from polars_business import *
 from datetime import date, datetime, timedelta
 import numpy as np
 
-start = date(2000, 3, 20)
-n = -1
-holidays = [date(2000, 3, 17)]
+start = date(2000, 2, 2)
+n = 4
+holidays = []
+weekend = [0, 6]
+weekmask = [0 if i in weekend else 1 for i in range(7)]
+
 df = pl.DataFrame(
     {
         "dates": [start]
@@ -18,6 +21,7 @@ print(
         dates_shifted=pl.col("dates").business.advance_n_days(
             n=n,
             holidays=holidays,
+            weekend=weekend,
         )
     ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
 )
@@ -28,6 +32,7 @@ print(
                 df["dates"],
                 n,
                 holidays=holidays,
+                weekmask=weekmask,
             )
         )
     ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))

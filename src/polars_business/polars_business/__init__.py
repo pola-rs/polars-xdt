@@ -12,14 +12,16 @@ class BusinessDayTools:
     def __init__(self, expr: pl.Expr):
         self._expr = expr.cast(pl.Int32)  # hopefully temporary workaround for upstream issue
 
-    def advance_n_days(self, n, holidays=None) -> pl.Expr:
+    def advance_n_days(self, n, weekend=[5,6], holidays=None) -> pl.Expr:
+        weekend = pl.Series([list(set(weekend))]).cast(pl.List(pl.Int32))
+
         if holidays is None:
             return self._expr._register_plugin(
                 lib=lib,
                 symbol="advance_n_days",
                 is_elementwise=True,
                 args=[
-                    n,
+                    n, weekend
                 ],
             )
         else:
@@ -29,5 +31,5 @@ class BusinessDayTools:
                 lib=lib,
                 symbol="advance_n_days",
                 is_elementwise=True,
-                args=[n, pl.Series([list(set(holidays))]).cast(pl.List(pl.Int32))],
+                args=[n, weekend, pl.Series([list(set(holidays))]).cast(pl.List(pl.Int32))],
             )
