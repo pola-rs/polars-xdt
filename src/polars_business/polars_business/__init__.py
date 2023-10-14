@@ -10,11 +10,9 @@ __version__ = "0.1.10"
 @pl.api.register_expr_namespace("business")
 class BusinessDayTools:
     def __init__(self, expr: pl.Expr):
-        self._expr = expr.cast(pl.Int32)
+        self._expr = expr.cast(pl.Int32)  # hopefully temporary workaround for upstream issue
 
     def advance_n_days(self, n, holidays=None) -> pl.Expr:
-        # if not (isinstance(n, int) and n > 0):
-        #     raise ValueError("only positive integers are currently supported for `n`")
         if holidays is None:
             return self._expr._register_plugin(
                 lib=lib,
@@ -25,6 +23,8 @@ class BusinessDayTools:
                 ],
             )
         else:
+            if not isinstance(holidays, list):
+                raise ValueError("Expected `holidays` to be a list of datetime.date objects, got: {type(holidays)}")
             return self._expr._register_plugin(
                 lib=lib,
                 symbol="advance_n_days",

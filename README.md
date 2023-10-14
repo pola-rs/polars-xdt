@@ -19,7 +19,10 @@ Then, you'll need to install `polars-business`. Currently, you can do this via P
 $ pip install polars-business
 ```
 
-To use it, you'll need to `import polars_business`, and then you'll be a `.business` accessor
+Usage
+-----
+
+Just `import polars_business` and then you'll get a `.business` accessor
 on your expressions!
 
 Currently there's only a single function: `advance_n_days`. It takes arguments:
