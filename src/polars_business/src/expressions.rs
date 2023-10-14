@@ -72,15 +72,12 @@ fn calculate_n_days(x: i32, n: i32, holidays: &[i32], weekend: &HashSet<i32>) ->
     if weekend.contains(&x_weekday) {
         polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
     };
-    println!("weekend: {:?}", weekend);
 
     let calculate_n_days = if weekend == &HashSet::from_iter(vec![5, 6]) {
-        println!("fast");
         calculate_n_days_without_holidays_fast
     } else if weekend.is_empty() {
         calculate_n_days_without_holidays_blazingly_fast
     } else {
-        println!("slow");
         calculate_n_days_without_holidays_slow
     };
 

@@ -38,7 +38,7 @@ def time_it(statement):
 
 print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17))"))
 
-print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17, weekmask='1111110')"))
+print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17)"))
 
 # uncomment, too slow...
 # print('pandas: ', time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)"))
