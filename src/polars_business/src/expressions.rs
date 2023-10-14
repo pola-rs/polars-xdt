@@ -1,6 +1,7 @@
 use polars::prelude::arity::try_binary_elementwise;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
+use std::collections::HashSet;
 
 fn weekday(x: i32) -> i32 {
     // the first modulo might return a negative number, so we add 7 and take
@@ -17,7 +18,7 @@ fn increment(x: i32) -> i32 {
 }
 
 // wrong, but wip
-fn advance_few_days(x_mod_7: i32, x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
+fn advance_few_days(x_mod_7: i32, x_weekday: i32, n: i32, weekend: &HashSet<i32>) -> i32 {
     let mut n_days = 0;
     for _ in 0..n.abs() {
         if n > 0 {
@@ -30,7 +31,7 @@ fn advance_few_days(x_mod_7: i32, x_weekday: i32, n: i32, weekend: &[i32]) -> i3
     n_days
 }
 
-fn calculate_n_days_without_holidays_slow(x_mod_7: i32, n: i32, x_weekday: i32, weekend: &[i32], n_weekend: i32) -> i32 {
+fn calculate_n_days_without_holidays_slow(x_mod_7: i32, n: i32, x_weekday: i32, weekend: &HashSet<i32>, n_weekend: i32) -> i32 {
     let n_weeks = n / (7-n_weekend);
     let n_days = n % (7-n_weekend);
     println!("n_weeks: {}, n_days: {}", n_weeks, n_days);
@@ -39,11 +40,11 @@ fn calculate_n_days_without_holidays_slow(x_mod_7: i32, n: i32, x_weekday: i32, 
     n_days + n_weeks * 7
 }
 
-fn calculate_n_days_without_holidays_blazingly_fast(_x: i32, n: i32, _x_weekday: i32, _weekend: &[i32], _n_weekend: i32) -> i32 {
+fn calculate_n_days_without_holidays_blazingly_fast(_x: i32, n: i32, _x_weekday: i32, _weekend: &HashSet<i32>, _n_weekend: i32) -> i32 {
     n
 }
 
-fn calculate_n_days_without_holidays_fast(_x: i32, n: i32, x_weekday: i32, _weekend: &[i32], _n_weekend: i32) -> i32 {
+fn calculate_n_days_without_holidays_fast(_x: i32, n: i32, x_weekday: i32, _weekend: &HashSet<i32>, _n_weekend: i32) -> i32 {
     if n >= 0 {
         n + (n + x_weekday) / 5 * 2
     } else {
@@ -51,7 +52,7 @@ fn calculate_n_days_without_holidays_fast(_x: i32, n: i32, x_weekday: i32, _week
     }
 }
 
-fn roll(n_days: i32, x_weekday: i32, weekend: &[i32]) -> i32 {
+fn roll(n_days: i32, x_weekday: i32, weekend: &HashSet<i32>) -> i32 {
     let mut x_weekday = x_weekday;
     let mut n_days = n_days;
     while weekend.contains(&x_weekday) {
@@ -65,7 +66,7 @@ fn roll(n_days: i32, x_weekday: i32, weekend: &[i32]) -> i32 {
     n_days
 }
 
-fn calculate_n_days(x: i32, n: i32, holidays: &[i32], weekend: &[i32]) -> PolarsResult<i32> {
+fn calculate_n_days(x: i32, n: i32, holidays: &[i32], weekend: &HashSet<i32>) -> PolarsResult<i32> {
     let x_mod_7 = x % 7;
     let x_weekday = weekday(x_mod_7);
     let len_weekend = weekend.len() as i32;
@@ -74,7 +75,7 @@ fn calculate_n_days(x: i32, n: i32, holidays: &[i32], weekend: &[i32]) -> Polars
         polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
     };
 
-    let calculate_n_days = if weekend == vec![5, 6] {
+    let calculate_n_days = if weekend == &HashSet::from_iter(vec![5, 6]) {
         calculate_n_days_without_holidays_fast
     } else if weekend.is_empty() {
         calculate_n_days_without_holidays_blazingly_fast
@@ -137,7 +138,7 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
     let n = n_series.i32()?;
 
     let weekend = inputs[2].list()?.get(0).unwrap();
-    let weekend: Vec<_> = Vec::from(weekend.i32()?).iter().filter_map(|&x| x).collect();
+    let weekend = HashSet::<i32>::from_iter(weekend.i32()?.into_iter().filter_map(|x| x).collect::<Vec<_>>());
 
     let holidays = if inputs.len() == 4 {
         let binding = inputs[3].list()?.get(0).unwrap();
