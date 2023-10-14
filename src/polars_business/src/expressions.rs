@@ -8,35 +8,42 @@ fn weekday(x: i32) -> i32 {
     ((x - 4) % 7 + 7) % 7
 }
 
-fn is_business_day(weekday: i32, weekend: &[i32]) -> bool {
-    weekend.contains(&weekday)
-}
-
 // wrong, but wip
-fn advance_few_days(x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
+fn advance_few_days(x_mod_7: i32, x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
+    println!("in advace, x_weekday: {:?}", x_weekday);
     let mut n_days = 0;
     for _ in 0..n {
         n_days += 1;
-        n_days = roll(n_days, weekday(x_weekday+n_days), weekend);
+        n_days = roll(n_days, weekday(x_mod_7+n_days), weekend);
     }
+    println!("returning from advance, n_days: {:?}", n_days);
     n_days
 }
 
 fn calculate_n_days_without_holidays_slow(x_mod_7: i32, n: i32, x_weekday: i32, weekend: &[i32], n_weekend: i32) -> i32 {
     if n >= 0 {
-        // Let's pretend we were starting on a Monday. How many days would we
-        // need to advance?
-        let n_days = n + n / (7-n_weekend) * n_weekend - x_weekday;
+        // ok, really need to rethink this
+        // could do:
+        // 1. how many whole weeks are we going forwards?
+        //    ok, do that.
+        // 2. just, go forwards the remaining days.
+        //    forget this rolling forwards to monday thing
 
-        // Right. But we didn't necessarily start on a Monday, we started on
-        // x_weekday. So now, let's advance by x_weekday days, each time
-        // rolling forwards if we need to. x_weekday <= 6 so this loop won't
-        // happen too many times anyway.
-        let n_days = n_days + advance_few_days(weekday(x_mod_7+n_days), x_weekday, weekend);
-        n_days
+        let n_weeks = n / (7-n_weekend);
+        println!("n_weeks: {:?}", n_weeks);
+
+        let n_days = n % (7-n_weekend);
+        println!("n_days: {:?}", n_days);
+        let n_days = advance_few_days(x_mod_7, x_weekday, n_days, weekend);
+        println!("n_days: {:?}", n_days);
+        n_days + n_weeks * 7
     } else {
         -(-n + (-n + 4 - x_weekday) / 5 * 2)
     }
+}
+
+fn calculate_n_days_without_holidays_blazingly_fast(_x: i32, n: i32, _x_weekday: i32, _weekend: &[i32], _n_weekend: i32) -> i32 {
+    n
 }
 
 fn calculate_n_days_without_holidays_fast(_x: i32, n: i32, x_weekday: i32, _weekend: &[i32], _n_weekend: i32) -> i32 {
@@ -50,10 +57,17 @@ fn calculate_n_days_without_holidays_fast(_x: i32, n: i32, x_weekday: i32, _week
 fn roll(n_days: i32, x_weekday: i32, weekend: &[i32]) -> i32 {
     let mut x_weekday = x_weekday;
     let mut n_days = n_days;
-    while !weekend.contains(&x_weekday) {
-        x_weekday += 1; 
+    println!("in roll");
+    println!("n_days: {:?}", n_days);
+    println!("x_weekday: {:?}", x_weekday);
+    println!("weekend: {:?}", weekend);
+    while weekend.contains(&x_weekday) {
+        println!("weekend contains x_weekday: {:?}", x_weekday);
+        x_weekday = (x_weekday + 1) % 7;
         n_days += 1;
+        println!("now, weekday: {:?}", x_weekday);
     }
+    println!("n_days: {:?}", n_days);
     n_days
 }
 
@@ -84,7 +98,17 @@ fn calculate_n_days(x: i32, n: i32, holidays: &[i32], weekend: &[i32]) -> Polars
         polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
     };
 
-    let mut n_days = calculate_n_days_without_holidays_fast(x, n, x_weekday, weekend, len_weekend);
+    let calculate_n_days = if weekend == vec![5, 6] {
+        println!("fast");
+        calculate_n_days_without_holidays_fast
+    } else if weekend.is_empty() {
+        calculate_n_days_without_holidays_blazingly_fast
+    } else {
+        println!("slow");
+        calculate_n_days_without_holidays_slow
+    };
+
+    let mut n_days = calculate_n_days(x, n, x_weekday, weekend, len_weekend);
 
     if !holidays.is_empty() {
         if holidays.binary_search(&x).is_ok() {
@@ -94,10 +118,10 @@ fn calculate_n_days(x: i32, n: i32, holidays: &[i32], weekend: &[i32]) -> Polars
         while count_hols > 0 {
             let n_days_before = n_days;
             if n_days > 0 {
-                n_days = n_days + calculate_n_days_without_holidays_fast(x+n_days, count_hols, weekday(x_mod_7 + n_days), weekend, len_weekend);
+                n_days = n_days + calculate_n_days(x+n_days, count_hols, weekday(x_mod_7 + n_days), weekend, len_weekend);
                 count_hols = count_holidays(x+n_days_before+1, x + n_days, &holidays);
             } else {
-                n_days = n_days + calculate_n_days_without_holidays_fast(x+n_days, -count_hols, weekday(x_mod_7 + n_days), weekend, len_weekend);
+                n_days = n_days + calculate_n_days(x+n_days, -count_hols, weekday(x_mod_7 + n_days), weekend, len_weekend);
                 count_hols = count_holidays(x+n_days_before-1, x + n_days, &holidays);
             }
         }
@@ -138,10 +162,11 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
     let n_series = inputs[1].cast(&DataType::Int32)?;
     let n = n_series.i32()?;
 
-    let weekend = vec![5, 6];
+    let weekend = inputs[2].list()?.get(0).unwrap();
+    let weekend: Vec<_> = Vec::from(weekend.i32()?).iter().filter_map(|&x| x).collect();
 
-    let holidays = if inputs.len() == 3 {
-        let binding = inputs[2].list()?.get(0).unwrap();
+    let holidays = if inputs.len() == 4 {
+        let binding = inputs[3].list()?.get(0).unwrap();
         let holidays = binding.i32()?;
         let mut vec: Vec<_> = Vec::from(holidays).iter().filter_map(|&x| x).collect();
         vec.sort();
