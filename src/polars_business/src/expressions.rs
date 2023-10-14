@@ -10,13 +10,11 @@ fn weekday(x: i32) -> i32 {
 
 // wrong, but wip
 fn advance_few_days(x_mod_7: i32, x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
-    println!("in advace, x_weekday: {:?}", x_weekday);
     let mut n_days = 0;
     for _ in 0..n {
         n_days += 1;
         n_days = roll(n_days, weekday(x_mod_7+n_days), weekend);
     }
-    println!("returning from advance, n_days: {:?}", n_days);
     n_days
 }
 
@@ -30,12 +28,9 @@ fn calculate_n_days_without_holidays_slow(x_mod_7: i32, n: i32, x_weekday: i32, 
         //    forget this rolling forwards to monday thing
 
         let n_weeks = n / (7-n_weekend);
-        println!("n_weeks: {:?}", n_weeks);
 
         let n_days = n % (7-n_weekend);
-        println!("n_days: {:?}", n_days);
         let n_days = advance_few_days(x_mod_7, x_weekday, n_days, weekend);
-        println!("n_days: {:?}", n_days);
         n_days + n_weeks * 7
     } else {
         -(-n + (-n + 4 - x_weekday) / 5 * 2)
@@ -57,17 +52,10 @@ fn calculate_n_days_without_holidays_fast(_x: i32, n: i32, x_weekday: i32, _week
 fn roll(n_days: i32, x_weekday: i32, weekend: &[i32]) -> i32 {
     let mut x_weekday = x_weekday;
     let mut n_days = n_days;
-    println!("in roll");
-    println!("n_days: {:?}", n_days);
-    println!("x_weekday: {:?}", x_weekday);
-    println!("weekend: {:?}", weekend);
     while weekend.contains(&x_weekday) {
-        println!("weekend contains x_weekday: {:?}", x_weekday);
         x_weekday = (x_weekday + 1) % 7;
         n_days += 1;
-        println!("now, weekday: {:?}", x_weekday);
     }
-    println!("n_days: {:?}", n_days);
     n_days
 }
 
@@ -81,12 +69,10 @@ fn calculate_n_days(x: i32, n: i32, holidays: &[i32], weekend: &[i32]) -> Polars
     };
 
     let calculate_n_days = if weekend == vec![5, 6] {
-        println!("fast");
         calculate_n_days_without_holidays_fast
     } else if weekend.is_empty() {
         calculate_n_days_without_holidays_blazingly_fast
     } else {
-        println!("slow");
         calculate_n_days_without_holidays_slow
     };
 
