@@ -1,7 +1,7 @@
 use polars::prelude::arity::try_binary_elementwise;
+use ahash::AHashMap;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
-use std::collections::HashMap;
 
 fn weekday(x: i32) -> i32 {
     // the first modulo might return a negative number, so we add 7 and take
@@ -34,7 +34,7 @@ fn advance_few_days(x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
     n_days
 }
 
-fn calculate_n_days_without_holidays_slow(x_weekday: i32, n: i32, n_weekend: i32, cache: &HashMap<i32, i32>) -> i32 {
+fn calculate_n_days_without_holidays_slow(x_weekday: i32, n: i32, n_weekend: i32, cache: &AHashMap<i32, i32>) -> i32 {
     let n_weeks = n / (7-n_weekend);
     let n_days = n % (7-n_weekend);
     let n_days = cache.get(&(n_days*10 + x_weekday)).unwrap();
@@ -96,7 +96,7 @@ fn calculate_n_days_with_holidays(x: i32, n: i32, holidays: &[i32]) -> PolarsRes
     Ok(x + n_days)
 }
 
-fn calculate_n_days_with_weekend(x: i32, n: i32, weekend: &[i32], cache: &HashMap<i32, i32>) -> PolarsResult<i32> {
+fn calculate_n_days_with_weekend(x: i32, n: i32, weekend: &[i32], cache: &AHashMap<i32, i32>) -> PolarsResult<i32> {
     let x_mod_7 = x % 7;
     let x_weekday = weekday(x_mod_7);
     let n_weekend = weekend.len() as i32;
@@ -250,7 +250,7 @@ fn advance_n_days_with_weekend(inputs: &[Series]) -> PolarsResult<Series> {
     let n_weekend = weekend.len() as i32;
 
     let capacity = ((7-n_weekend)*2+1)*7;
-    let mut cache: HashMap<i32, i32> = HashMap::with_capacity(capacity as usize);
+    let mut cache: AHashMap<i32, i32> = AHashMap::with_capacity(capacity as usize);
     for x_weekday in 0..=6 {
         for n_days in (-(7-n_weekend))..=(7-n_weekend) {
             let value = advance_few_days(x_weekday, n_days, &weekend);

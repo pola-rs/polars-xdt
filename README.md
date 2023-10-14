@@ -111,7 +111,7 @@ The following timings can be verified using the `perf.py` script.
 
 ### Adding 17 business days to 10 million dates (with 'Friday' and 'Saturday' as weekend)
 
-- Polars-business 0.136  (todo - why does this take such a hit?)
-- NumPy 0.103
+- Polars-business 0.091
+- NumPy 0.105
 - pandas: omitted as pandas doesn't (yet) vectorise `CustomBusinessDay`, so
   we'd likely be talking about minutes
