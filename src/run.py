@@ -3,15 +3,14 @@ from polars_business import *
 from datetime import date, datetime, timedelta
 import numpy as np
 
-start = date(2000, 8, 1)
-n = -29
-holidays = [date(2000, 8, 1)]
+start = date(2000, 3, 20)
+n = -1
+holidays = [date(2000, 3, 17)]
 df = pl.DataFrame(
     {
-        "dates": pl.date_range(start, start+timedelta(10), eager=True),
+        "dates": [start]
     }
 )
-df = df.filter((~pl.col("dates").dt.weekday().is_in([5,6,7])))# & ~pl.col("dates").is_in(holidays))
 df = df.with_columns(start_wday=pl.col("dates").dt.strftime("%a"))
 
 print(
@@ -29,8 +28,7 @@ print(
                 df["dates"],
                 n,
                 holidays=holidays,
-                weekmask='1111001',
             )
         )
-    )
+    ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
 )

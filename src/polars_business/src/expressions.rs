@@ -111,22 +111,27 @@ fn calculate_n_days(x: i32, n: i32, vec: &Vec<i32>) -> PolarsResult<i32> {
 
 fn count_holidays(start: i32, end: i32, holidays: &[i32]) -> i32 {
     if end >= start {
+        // come on, let's do some thinking!!!
+        // if start is smaller, then OK to return 0.
         let start_pos = match holidays.binary_search(&start) {
             Ok(pos) => pos,
             Err(pos) => pos,
         };
         let end_pos = match holidays.binary_search(&end) {
-            Ok(pos) => pos,
+            Ok(pos) => pos+1,
             Err(pos) => pos,
         };
         end_pos as i32 - start_pos as i32
     } else {
+        if start < holidays[0]{
+            return 0
+        }
         let start_pos = match holidays.binary_search(&end) {
             Ok(pos) => pos,
             Err(pos) => pos,
         };
         let end_pos = match holidays.binary_search(&start) {
-            Ok(pos) => pos,
+            Ok(pos) => pos+1,
             Err(pos) => pos,
         };
         end_pos as i32 - start_pos as i32
