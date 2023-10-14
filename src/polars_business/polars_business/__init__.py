@@ -35,8 +35,6 @@ class BusinessDayTools:
                 ],
             )
         else:
-            if not isinstance(holidays, list):
-                raise ValueError("Expected `holidays` to be a list of datetime.date objects, got: {type(holidays)}")
             return self._expr._register_plugin(
                 lib=lib,
                 symbol="advance_n_days",

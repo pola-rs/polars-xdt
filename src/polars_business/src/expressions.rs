@@ -34,9 +34,7 @@ fn advance_few_days(x_mod_7: i32, x_weekday: i32, n: i32, weekend: &HashSet<i32>
 fn calculate_n_days_without_holidays_slow(x_mod_7: i32, n: i32, x_weekday: i32, weekend: &HashSet<i32>, n_weekend: i32) -> i32 {
     let n_weeks = n / (7-n_weekend);
     let n_days = n % (7-n_weekend);
-    println!("n_weeks: {}, n_days: {}", n_weeks, n_days);
     let n_days = advance_few_days(x_mod_7, x_weekday, n_days, weekend);
-    println!("n_weeks: {}, n_days: {}", n_weeks, n_days);
     n_days + n_weeks * 7
 }
 
@@ -74,12 +72,15 @@ fn calculate_n_days(x: i32, n: i32, holidays: &[i32], weekend: &HashSet<i32>) ->
     if weekend.contains(&x_weekday) {
         polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
     };
+    println!("weekend: {:?}", weekend);
 
     let calculate_n_days = if weekend == &HashSet::from_iter(vec![5, 6]) {
+        println!("fast");
         calculate_n_days_without_holidays_fast
     } else if weekend.is_empty() {
         calculate_n_days_without_holidays_blazingly_fast
     } else {
+        println!("slow");
         calculate_n_days_without_holidays_slow
     };
 

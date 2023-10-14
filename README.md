@@ -27,7 +27,8 @@ on your expressions!
 
 Currently there's only a single function: `advance_n_days`. It takes arguments:
 - `n`: number of days to advance. This can be an expression.
-- `holidays`: list of holidays in `datetime.date` format. The Python `holidays` package may
+- `weekend`: iterable of days considered weekend, such as `weekend=['Sat', 'Sun']` (default)
+- `holidays`: iterable of holidays in `datetime.date` format. The Python `holidays` package may
   be useful here. You can install it with `pip install holidays`, and then you can get a list
   of holidays for a given country with (for example, `'UK'`):
   ```python
@@ -57,7 +58,9 @@ df = pl.DataFrame(
 
 result = df.with_columns(
     date_plus_5_business_days=pl.col("date").business.advance_n_days(
-        n=5, holidays=uk_holidays
+        n=5,
+        weekend=['Sat', 'Sun'],  # note: this is the default
+        holidays=uk_holidays,
     )
 )
 print(result)
@@ -86,10 +89,12 @@ The following will hopefully come relatively soon:
 - support for `Datetime`s
 - support for rolling forwards/backwards to the next
   valid business date (if not already on one)
+- utility "is_business_day" functions
 
 Ideas for future development:
 - business date range
-- support for custom week mask
+- resampling using business dates
+- business hours
 
 Benchmarks
 ----------

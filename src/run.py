@@ -8,7 +8,7 @@ reverse_mapping = {value: key for key, value in mapping.items()}
 start = date(2000, 1, 4)
 n = 1
 holidays = []
-weekend = ['Mon']
+weekend = ['Sat', 'Sun']
 weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
 
 df = pl.DataFrame(
@@ -23,7 +23,7 @@ print(
         dates_shifted=pl.col("dates").business.advance_n_days(
             n=n,
             holidays=holidays,
-            weekend=weekend,
+            # weekend=weekend,
         )
     ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
 )
