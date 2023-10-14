@@ -42,7 +42,7 @@ fn roll(n_days: i32, weekday_res: i32) -> i32 {
     }
 }
 
-fn calculate_n_days(x: i32, n: i32, vec: &Vec<i32>) -> PolarsResult<i32> {
+fn calculate_n_days(x: i32, n: i32, vec: &[i32]) -> PolarsResult<i32> {
     let x_mod_7 = x % 7;
     let x_weekday = weekday(x_mod_7);
 
