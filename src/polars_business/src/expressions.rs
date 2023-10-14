@@ -65,24 +65,6 @@ fn roll(n_days: i32, x_weekday: i32, weekend: &[i32]) -> i32 {
     n_days
 }
 
-fn roll(n_days: i32, weekday_res: i32) -> i32 {
-    if n_days > 0 {
-        if weekday_res == 5 {
-            n_days + 2
-        } else if weekday_res == 6 {
-            n_days + 1
-        } else {
-            n_days
-        }
-    } else if weekday_res == 5 {
-        n_days - 1
-    } else if weekday_res == 6 {
-        n_days - 2
-    } else {
-        n_days
-    }
-}
-
 fn calculate_n_days(x: i32, n: i32, holidays: &[i32], weekend: &[i32]) -> PolarsResult<i32> {
     let x_mod_7 = x % 7;
     let x_weekday = weekday(x_mod_7);
