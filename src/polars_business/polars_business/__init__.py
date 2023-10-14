@@ -30,13 +30,13 @@ class BusinessDayTools:
                 is_elementwise=True,
                 args=[n],
             )
-        # elif holidays is not None and weekend == ('Sat', 'Sun'):
-        #     holidays = pl.Series([[] if holidays is None else list(set(holidays))]).cast(pl.List(pl.Int32))
-        #     return self._expr._register_plugin(
-        #         lib=lib,
-        #         symbol="advance_n_days_w_holidays",
-        #         is_elementwise=True,
-        #         args=[n, holidays],
-        #     )
+        elif holidays is not None and weekend == ('Sat', 'Sun'):
+            holidays = pl.Series([[] if holidays is None else list(set(holidays))]).cast(pl.List(pl.Int32))
+            return self._expr._register_plugin(
+                lib=lib,
+                symbol="advance_n_days_with_holidays",
+                is_elementwise=True,
+                args=[n, holidays],
+            )
         else:
             raise NotImplementedError()
