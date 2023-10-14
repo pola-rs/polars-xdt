@@ -19,7 +19,10 @@ Then, you'll need to install `polars-business`. Currently, you can do this via P
 $ pip install polars-business
 ```
 
-To use it, you'll need to `import polars_business`, and then you'll be a `.business` accessor
+Usage
+-----
+
+Just `import polars_business` and then you'll get a `.business` accessor
 on your expressions!
 
 Currently there's only a single function: `advance_n_days`. It takes arguments:
@@ -95,13 +98,20 @@ The following timings can be verified using the `perf.py` script.
 
 ### Adding 17 business days to 10 million dates (no holidays)
 
-- Polars-business 0.057
-- NumPy 0.092
+- Polars-business 0.037
+- NumPy 0.09
 - pandas 0.801
 
 ### Adding 17 business days to 10 million dates (UK holidays for 2020-2023)
 
-- Polars-business 0.331
-- NumPy 0.409
+- Polars-business 0.34
+- NumPy 0.403
+- pandas: omitted as pandas doesn't (yet) vectorise `CustomBusinessDay`, so
+  we'd likely be talking about minutes
+
+### Adding 17 business days to 10 million dates (with 'Friday' and 'Saturday' as weekend)
+
+- Polars-business 0.091
+- NumPy 0.105
 - pandas: omitted as pandas doesn't (yet) vectorise `CustomBusinessDay`, so
   we'd likely be talking about minutes
