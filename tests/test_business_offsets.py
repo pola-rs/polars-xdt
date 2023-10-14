@@ -3,7 +3,7 @@ import pandas as pd
 
 import hypothesis.strategies as st
 import numpy as np
-from hypothesis import given, assume
+from hypothesis import given, assume, reject
 
 import polars as pl
 import polars_business  # noqa: F401
@@ -45,14 +45,19 @@ def test_bday_n_expression(date: dt.date, n: int) -> None:
 @given(
     date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
     n=st.integers(min_value=-30, max_value=30),
-    holidays = st.lists(st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)), min_size=1, max_size=100)
+    holidays = st.lists(st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)), min_size=1, max_size=300)
 )
 def test_against_np_busday_offset_with_holidays(date: dt.date, n: int, holidays: list[dt.date]) -> None:
     assume(date.weekday() < 5)
-    assume(date not in holidays)
-    result = pl.DataFrame({'ts': [date]}).select(pl.col('ts').business.advance_n_days(
-        n=n,
-        holidays=holidays
-        ))['ts'].item()
+    assume(date not in holidays)  # TODO: remove once unwrap is removed
+    try:
+        result = pl.DataFrame({'ts': [date]}).select(pl.col('ts').business.advance_n_days(
+            n=n,
+            holidays=holidays
+            ))['ts'].item()
+    except pl.PolarsPanicError as exc:
+        assert date in holidays
+        assert 'cannot advance' in str(exc)
+        reject()
     expected = np.busday_offset(date, n, holidays=holidays)
     assert np.datetime64(result) == expected
