@@ -45,7 +45,7 @@ def test_bday_n_expression(date: dt.date, n: int) -> None:
 @given(
     date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
     n=st.integers(min_value=-30, max_value=30),
-    holidays = st.lists(st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)), min_size=1, max_size=100)
+    holidays = st.lists(st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)), min_size=1, max_size=300)
 )
 def test_against_np_busday_offset_with_holidays(date: dt.date, n: int, holidays: list[dt.date]) -> None:
     assume(date.weekday() < 5)

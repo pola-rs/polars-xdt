@@ -40,7 +40,8 @@ print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.
 
 print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17)"))
 
-print('pandas: ', time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)"))
+# uncomment, too slow...
+# print('pandas: ', time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)"))
 
 # BENCHMARK 2: WITH HOLIDAYS
 
