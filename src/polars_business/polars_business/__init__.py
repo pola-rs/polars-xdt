@@ -6,14 +6,24 @@ lib = _get_shared_lib_location(__file__)
 
 __version__ = "0.1.10"
 
+mapping = {
+    'Mon': 0,
+    'Tue': 1,
+    'Wed': 2,
+    'Thu': 3,
+    'Fri': 4,
+    'Sat': 5,
+    'Sun': 6
+}
+
 
 @pl.api.register_expr_namespace("business")
 class BusinessDayTools:
     def __init__(self, expr: pl.Expr):
         self._expr = expr.cast(pl.Int32)  # hopefully temporary workaround for upstream issue
 
-    def advance_n_days(self, n, weekend=[5,6], holidays=None) -> pl.Expr:
-        weekend = pl.Series([list(set(weekend))]).cast(pl.List(pl.Int32))
+    def advance_n_days(self, n, weekend=('Sat', 'Sun'), holidays=None) -> pl.Expr:
+        weekend = pl.Series([list({mapping[name] for name in weekend})]).cast(pl.List(pl.Int32))
 
         if holidays is None:
             return self._expr._register_plugin(

@@ -3,11 +3,13 @@ from polars_business import *
 from datetime import date, datetime, timedelta
 import numpy as np
 
+reverse_mapping = {value: key for key, value in mapping.items()}
+
 start = date(2000, 1, 4)
 n = 1
 holidays = []
-weekend = [0]
-weekmask = [0 if i in weekend else 1 for i in range(7)]
+weekend = ['Mon']
+weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
 
 df = pl.DataFrame(
     {
