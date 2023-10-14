@@ -2,6 +2,9 @@
 import timeit
 import numpy as np
 
+# BENCHMARKS = [1, 2, 3]
+BENCHMARKS = [3]
+
 # BENCHMARK 1: NO HOLIDAYS INVOLVED
 
 setup = """
@@ -36,9 +39,9 @@ def time_it(statement):
     )/3
     return round(min(results), 3)
 
-print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17))"))
-
-print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17)"))
+if 1 in BENCHMARKS:
+    print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17))"))
+    print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17)"))
 
 # uncomment, too slow...
 # print('pandas: ', time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)"))
@@ -71,9 +74,9 @@ df_pd = pd.DataFrame({
 })
 """
 
-print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, holidays=uk_holidays))"))
-
-print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17, holidays=uk_holidays)"))
+if 2 in BENCHMARKS:
+    print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, holidays=uk_holidays))"))
+    print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17, holidays=uk_holidays)"))
 
 # BENCHMARK 3: WITH weekends
 
@@ -88,7 +91,7 @@ import warnings
 
 
 dates = pl.date_range(date(2020, 1, 1), date(2024, 1, 1), closed='left', eager=True)
-weekend = ['Fri', 'Sat]
+weekend = ['Fri', 'Sat']
 dates = dates.filter(~dates.dt.weekday().is_in([5, 6]))
 size = 10_000_000
 input_dates = np.random.choice(dates, size)
@@ -102,6 +105,6 @@ df_pd = pd.DataFrame({
 })
 """
 
-print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, weekend=weekend))"))
-
-print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17, weekmask='1111001')"))
+if 3 in BENCHMARKS:
+    print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, weekend=weekend))"))
+    print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17, weekmask='1111001')"))

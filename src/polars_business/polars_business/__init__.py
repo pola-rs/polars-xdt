@@ -23,20 +23,37 @@ class BusinessDayTools:
         self._expr = expr.cast(pl.Int32)  # hopefully temporary workaround for upstream issue
 
     def advance_n_days(self, n, weekend=('Sat', 'Sun'), holidays=None) -> pl.Expr:
-        if holidays is None and weekend == ('Sat', 'Sun'):
+
+        if not holidays:
+            holidays =  None
+        if sorted(list(set(weekend))) == ['Sat', 'Sun']:
+            weekend = None
+
+        if holidays is None and weekend is None:
             return self._expr._register_plugin(
                 lib=lib,
                 symbol="advance_n_days",
                 is_elementwise=True,
                 args=[n],
             )
-        elif holidays is not None and weekend == ('Sat', 'Sun'):
-            holidays = pl.Series([[] if holidays is None else list(set(holidays))]).cast(pl.List(pl.Int32))
+        elif holidays is not None and weekend is None:
+            holidays = pl.Series([list(set(holidays))]).cast(pl.List(pl.Int32))
             return self._expr._register_plugin(
                 lib=lib,
                 symbol="advance_n_days_with_holidays",
                 is_elementwise=True,
                 args=[n, holidays],
             )
+        elif holidays is None and weekend is not None:
+            weekend = pl.Series([list({mapping[name] for name in weekend})]).cast(pl.List(pl.Int32))
+            return self._expr._register_plugin(
+                lib=lib,
+                symbol="advance_n_days_with_weekend",
+                is_elementwise=True,
+                args=[n,
+                      weekend
+                      ],
+            )
         else:
+            breakpoint()
             raise NotImplementedError()
