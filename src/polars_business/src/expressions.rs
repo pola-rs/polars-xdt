@@ -136,8 +136,12 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
     let n_series = inputs[1].cast(&DataType::Int32)?;
     let n = n_series.i32()?;
 
-    let weekend = inputs[2].list()?.get(0).unwrap();
-    let weekend: Vec<_> = Vec::from(weekend.i32()?).iter().filter_map(|&x| x).collect();
+    let weekend = if inputs.len() == 4 {
+        let binding = inputs[2].list()?.get(0).unwrap();
+        Vec::from(binding.i32()?).iter().filter_map(|&x| x).collect()
+    } else {
+        vec![5, 6]
+    };
 
     let holidays = if inputs.len() == 4 {
         let binding = inputs[3].list()?.get(0).unwrap();

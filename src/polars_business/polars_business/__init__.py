@@ -23,23 +23,21 @@ class BusinessDayTools:
         self._expr = expr.cast(pl.Int32)  # hopefully temporary workaround for upstream issue
 
     def advance_n_days(self, n, weekend=('Sat', 'Sun'), holidays=None) -> pl.Expr:
-        weekend = pl.Series([list({mapping[name] for name in weekend})]).cast(pl.List(pl.Int32))
-
-        if holidays is None:
+        if holidays is None and weekend == ('Sat', 'Sun'):
             return self._expr._register_plugin(
                 lib=lib,
                 symbol="advance_n_days",
                 is_elementwise=True,
-                args=[
-                    n, weekend
-                ],
+                args=[n],
             )
         else:
-            if not isinstance(holidays, list):
-                raise ValueError("Expected `holidays` to be a list of datetime.date objects, got: {type(holidays)}")
+            weekend = pl.Series([list({mapping[name] for name in weekend})]).cast(pl.List(pl.Int32))
+            holidays = pl.Series([[] if holidays is None else list(set(holidays))]).cast(pl.List(pl.Int32))
             return self._expr._register_plugin(
                 lib=lib,
                 symbol="advance_n_days",
                 is_elementwise=True,
-                args=[n, weekend, pl.Series([list(set(holidays))]).cast(pl.List(pl.Int32))],
+                args=[n,
+                       weekend, holidays
+                      ],
             )
