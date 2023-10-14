@@ -8,33 +8,35 @@ fn weekday(x: i32) -> i32 {
     ((x - 4) % 7 + 7) % 7
 }
 
+fn increment(x: i32) -> i32 {
+    if x > 0 {
+        x + 1
+    } else {
+        x - 1
+    }
+}
+
 // wrong, but wip
 fn advance_few_days(x_mod_7: i32, x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
     let mut n_days = 0;
-    for _ in 0..n {
-        n_days += 1;
+    for _ in 0..n.abs() {
+        if n > 0 {
+            n_days += 1;
+        } else {
+            n_days -= 1;
+        }
         n_days = roll(n_days, weekday(x_mod_7+n_days), weekend);
     }
     n_days
 }
 
 fn calculate_n_days_without_holidays_slow(x_mod_7: i32, n: i32, x_weekday: i32, weekend: &[i32], n_weekend: i32) -> i32 {
-    if n >= 0 {
-        // ok, really need to rethink this
-        // could do:
-        // 1. how many whole weeks are we going forwards?
-        //    ok, do that.
-        // 2. just, go forwards the remaining days.
-        //    forget this rolling forwards to monday thing
-
-        let n_weeks = n / (7-n_weekend);
-
-        let n_days = n % (7-n_weekend);
-        let n_days = advance_few_days(x_mod_7, x_weekday, n_days, weekend);
-        n_days + n_weeks * 7
-    } else {
-        -(-n + (-n + 4 - x_weekday) / 5 * 2)
-    }
+    let n_weeks = n / (7-n_weekend);
+    let n_days = n % (7-n_weekend);
+    println!("n_weeks: {}, n_days: {}", n_weeks, n_days);
+    let n_days = advance_few_days(x_mod_7, x_weekday, n_days, weekend);
+    println!("n_weeks: {}, n_days: {}", n_weeks, n_days);
+    n_days + n_weeks * 7
 }
 
 fn calculate_n_days_without_holidays_blazingly_fast(_x: i32, n: i32, _x_weekday: i32, _weekend: &[i32], _n_weekend: i32) -> i32 {
@@ -53,8 +55,12 @@ fn roll(n_days: i32, x_weekday: i32, weekend: &[i32]) -> i32 {
     let mut x_weekday = x_weekday;
     let mut n_days = n_days;
     while weekend.contains(&x_weekday) {
-        x_weekday = (x_weekday + 1) % 7;
-        n_days += 1;
+        if n_days > 0 {
+            x_weekday = (x_weekday + 1) % 7;
+        } else {
+            x_weekday = (x_weekday - 1 + 7) % 7;
+        }
+        n_days = increment(n_days);
     }
     n_days
 }

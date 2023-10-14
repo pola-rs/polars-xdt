@@ -64,7 +64,7 @@ def test_against_np_busday_offset_with_holidays(date: dt.date, n: int, holidays:
 
 @given(
     date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
-    n=st.integers(min_value=1, max_value=30),
+    n=st.integers(min_value=-30, max_value=30),
     weekend = st.lists(st.sampled_from([0,1,2,3,4,5,6]), min_size=0, max_size=7)
 )
 def test_against_np_busday_offset_with_weekends(date: dt.date, n: int, weekend: list[dt.date]) -> None:
