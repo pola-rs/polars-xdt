@@ -114,6 +114,9 @@ The following timings can be verified using the `perf.py` script.
 - NumPy 0.09
 - pandas 0.801
 
+NOTE: pandas doesn't have a "date" dtype, so there is extra overhead
+to deal with time and time zone components.
+
 ### Adding 17 business days to 10 million dates (UK holidays for 2020-2023)
 
 - Polars-business 0.34
