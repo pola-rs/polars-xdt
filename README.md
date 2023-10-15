@@ -33,8 +33,20 @@ Currently there's only a single function: `advance_n_days`. It takes arguments:
   ```python
   import holidays 
 
-  list(holidays.country_holidays('UK', years=[2020, 2021, 2022, 2023]))
+  pl.col('date').business.advance_n_days(
+    n=n,
+    holidays=list(holidays.country_holidays('UK', years=[2020, 2021, 2022, 2023])),
+  )
   ```
+- `weekend`. By default, Saturday and Sunday are considered "weekend". But you can customise
+  this by passing, for example:
+  ```python
+  pl.col('date').business.advance_n_days(
+    n=n,
+    weekend=['Fri', 'Sat'],
+  )
+  ```
+
 
 Example
 -------
