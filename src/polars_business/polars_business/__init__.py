@@ -55,5 +55,14 @@ class BusinessDayTools:
                       ],
             )
         else:
-            breakpoint()
-            raise NotImplementedError()
+            holidays = pl.Series([list(set(holidays))]).cast(pl.List(pl.Int32))
+            weekend = pl.Series([list({mapping[name] for name in weekend})]).cast(pl.List(pl.Int32))
+            return self._expr._register_plugin(
+                lib=lib,
+                symbol="advance_n_days_with_weekend_and_holidays",
+                is_elementwise=True,
+                args=[n,
+                      weekend,
+                      holidays,
+                      ],
+            )
