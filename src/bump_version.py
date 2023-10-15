@@ -1,5 +1,6 @@
 import sys
 import re
+import subprocess
 
 how = sys.argv[1]
 
@@ -22,3 +23,7 @@ with open("polars_business/polars_business/__init__.py", "r", encoding='utf-8') 
 content = content.replace(f'__version__ = "{old_version}"', f'__version__ = "{version}"')
 with open("polars_business/polars_business/__init__.py", "w", encoding='utf-8') as f:
     f.write(content)
+
+subprocess.run(['git', 'commit', '-a', '-m', f'Bump version to {version}'])
+subprocess.run(['git', 'tag', '-a', version, '-m', version])
+subprocess.run(['git', 'push', '--follow-tags'])
