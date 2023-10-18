@@ -41,7 +41,7 @@ jobs:
         working-directory: pyo3-polars
       - run: make install-release
         working-directory: example/derive_expression
-      - run: venv/bin/python run.py
+      - run: venv/bin/python -m pytest tests
         working-directory: example/derive_expression
 
       - name: Build wheels
