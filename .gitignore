@@ -4,3 +4,5 @@ Cargo.lock
 venv/
 target/
 rust-toolchain.toml
+*.pyc
+.hypothesis/
