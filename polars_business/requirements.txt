@@ -4,3 +4,4 @@ hypothesis
 numpy
 pandas
 pytest
+holidays

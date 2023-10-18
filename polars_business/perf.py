@@ -1,9 +1,8 @@
-
 import timeit
 import numpy as np
 
-BENCHMARKS = [1, 2, 3, 4]
-# BENCHMARKS = [1, 2]
+# BENCHMARKS = [1, 2, 3, 4]
+BENCHMARKS = [1]
 
 # BENCHMARK 1: NO HOLIDAYS INVOLVED
 
@@ -30,21 +29,31 @@ df_pd = pd.DataFrame({
 })
 """
 
+
 def time_it(statement):
-    results = np.array(timeit.Timer(
-        stmt=statement,
-        setup=setup,
+    results = (
+        np.array(
+            timeit.Timer(
+                stmt=statement,
+                setup=setup,
+            ).repeat(7, 3)
         )
-        .repeat(7, 3)
-    )/3
+        / 3
+    )
     return round(min(results), 3)
 
+
 if 1 in BENCHMARKS:
-    print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17))"))
-    print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17)"))
+    print(
+        "Polars-business: ",
+        time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17))"),
+    )
+    print("NumPy: ", time_it("result_np = np.busday_offset(input_dates, 17)"))
 
 # uncomment, too slow...
-# print('pandas: ', time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)"))
+print(
+    "pandas: ", time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)")
+)
 
 # BENCHMARK 2: WITH HOLIDAYS
 
@@ -75,8 +84,16 @@ df_pd = pd.DataFrame({
 """
 
 if 2 in BENCHMARKS:
-    print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, holidays=uk_holidays))"))
-    print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17, holidays=uk_holidays)"))
+    print(
+        "Polars-business: ",
+        time_it(
+            "result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, holidays=uk_holidays))"
+        ),
+    )
+    print(
+        "NumPy: ",
+        time_it("result_np = np.busday_offset(input_dates, 17, holidays=uk_holidays)"),
+    )
 
 # BENCHMARK 3: WITH weekends
 
@@ -106,8 +123,16 @@ df_pd = pd.DataFrame({
 """
 
 if 3 in BENCHMARKS:
-    print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, weekend=weekend))"))
-    print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17, weekmask='1111001')"))
+    print(
+        "Polars-business: ",
+        time_it(
+            "result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, weekend=weekend))"
+        ),
+    )
+    print(
+        "NumPy: ",
+        time_it("result_np = np.busday_offset(input_dates, 17, weekmask='1111001')"),
+    )
 
 
 # BENCHMARK 4: WITH weekends and holidays
@@ -139,5 +164,15 @@ df_pd = pd.DataFrame({
 """
 
 if 4 in BENCHMARKS:
-    print('Polars-business: ', time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, weekend=weekend, holidays=uk_holidays))"))
-    print('NumPy: ', time_it("result_np = np.busday_offset(input_dates, 17, weekmask='1111001', holidays=uk_holidays)"))
+    print(
+        "Polars-business: ",
+        time_it(
+            "result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, weekend=weekend, holidays=uk_holidays))"
+        ),
+    )
+    print(
+        "NumPy: ",
+        time_it(
+            "result_np = np.busday_offset(input_dates, 17, weekmask='1111001', holidays=uk_holidays)"
+        ),
+    )

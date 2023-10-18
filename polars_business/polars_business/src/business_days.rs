@@ -1,6 +1,6 @@
-use polars::prelude::*;
-use polars::prelude::arity::try_binary_elementwise;
 use ahash::AHashMap;
+use polars::prelude::arity::try_binary_elementwise;
+use polars::prelude::*;
 
 pub(crate) fn weekday(x: i32) -> i32 {
     // the first modulo might return a negative number, so we add 7 and take
@@ -67,7 +67,11 @@ fn roll(n_days: i32, x_weekday: i32, weekend: &[i32]) -> i32 {
     n_days
 }
 
-pub(crate) fn calculate_n_days_with_holidays(x: i32, n: i32, holidays: &[i32]) -> PolarsResult<i32> {
+pub(crate) fn calculate_n_days_with_holidays(
+    x: i32,
+    n: i32,
+    holidays: &[i32],
+) -> PolarsResult<i32> {
     let x_mod_7 = x % 7;
     let x_weekday = weekday(x_mod_7);
 
@@ -80,17 +84,17 @@ pub(crate) fn calculate_n_days_with_holidays(x: i32, n: i32, holidays: &[i32]) -
     if holidays.binary_search(&x).is_ok() {
         polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
     }
-    let mut count_hols = count_holidays(x, x + n_days, &holidays);
+    let mut count_hols = count_holidays(x, x + n_days, holidays);
     while count_hols > 0 {
         let n_days_before = n_days;
         if n_days > 0 {
             n_days = n_days
                 + calculate_n_days_without_holidays_fast(count_hols, weekday(x_mod_7 + n_days));
-            count_hols = count_holidays(x + n_days_before + 1, x + n_days, &holidays);
+            count_hols = count_holidays(x + n_days_before + 1, x + n_days, holidays);
         } else {
             n_days = n_days
                 + calculate_n_days_without_holidays_fast(-count_hols, weekday(x_mod_7 + n_days));
-            count_hols = count_holidays(x + n_days_before - 1, x + n_days, &holidays);
+            count_hols = count_holidays(x + n_days_before - 1, x + n_days, holidays);
         }
     }
     Ok(n_days)
@@ -116,7 +120,7 @@ pub(crate) fn calculate_n_days_with_weekend_and_holidays(
     if holidays.binary_search(&x).is_ok() {
         polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
     }
-    let mut count_hols = count_holidays(x, x + n_days, &holidays);
+    let mut count_hols = count_holidays(x, x + n_days, holidays);
     while count_hols > 0 {
         let n_days_before = n_days;
         if n_days > 0 {
@@ -127,7 +131,7 @@ pub(crate) fn calculate_n_days_with_weekend_and_holidays(
                     weekend.len() as i32,
                     cache,
                 );
-            count_hols = count_holidays(x + n_days_before + 1, x + n_days, &holidays);
+            count_hols = count_holidays(x + n_days_before + 1, x + n_days, holidays);
         } else {
             n_days = n_days
                 + calculate_n_days_without_holidays_slow(
@@ -136,7 +140,7 @@ pub(crate) fn calculate_n_days_with_weekend_and_holidays(
                     weekend.len() as i32,
                     cache,
                 );
-            count_hols = count_holidays(x + n_days_before - 1, x + n_days, &holidays);
+            count_hols = count_holidays(x + n_days_before - 1, x + n_days, holidays);
         }
     }
     Ok(n_days)
@@ -265,22 +269,26 @@ pub(crate) fn impl_advance_n_days(
                             if x_weekday >= 5 {
                                 polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x_date))
                             }
-                            Ok(x_date + (calculate_n_days_without_holidays_fast(n, x_weekday)))
-                                .map(Some)
+                            Ok(Some(
+                                x_date + (calculate_n_days_without_holidays_fast(n, x_weekday)),
+                            ))
                         } else if !holidays.is_empty() && weekend == [5, 6] {
-                            Ok(x_date + calculate_n_days_with_holidays(x_date, n, &holidays)?)
-                                .map(Some)
+                            Ok(Some(
+                                x_date + calculate_n_days_with_holidays(x_date, n, &holidays)?,
+                            ))
                         } else if holidays.is_empty() && weekend != [5, 6] {
                             let cache = cache.as_ref().unwrap();
-                            Ok(x_date + calculate_n_days_with_weekend(x_date, n, &weekend, cache)?)
-                                .map(Some)
+                            Ok(Some(
+                                x_date + calculate_n_days_with_weekend(x_date, n, &weekend, cache)?,
+                            ))
                         } else {
                             let cache = cache.as_ref().unwrap();
-                            Ok(x_date
-                                + calculate_n_days_with_weekend_and_holidays(
-                                    x_date, n, &weekend, &cache, &holidays,
-                                )?)
-                            .map(Some)
+                            Ok(Some(
+                                x_date
+                                    + calculate_n_days_with_weekend_and_holidays(
+                                        x_date, n, &weekend, cache, &holidays,
+                                    )?,
+                            ))
                         }
                     }
                     _ => Ok(None),
@@ -352,27 +360,31 @@ pub(crate) fn impl_advance_n_days(
                             if x_weekday >= 5 {
                                 polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x_date))
                             }
-                            Ok(x+(calculate_n_days_without_holidays_fast(n, x_weekday) as i64 *multiplier)).map(Some)
+                            Ok(Some(
+                                x + (calculate_n_days_without_holidays_fast(n, x_weekday) as i64
+                                    * multiplier),
+                            ))
                         } else if !holidays.is_empty() && weekend == [5, 6] {
-                            Ok(
-                                x + calculate_n_days_with_holidays(x_date, n, &holidays)?
-                                    as i64
+                            Ok(Some(
+                                x + calculate_n_days_with_holidays(x_date, n, &holidays)? as i64
                                     * multiplier,
-                            ).map(Some)
+                            ))
                         } else if holidays.is_empty() && weekend != [5, 6] {
                             let cache = cache.as_ref().unwrap();
                             let x_date = (x / multiplier) as i32;
-                            Ok(
-                                x + calculate_n_days_with_weekend(x_date, n, &weekend, &cache)?
+                            Ok(Some(
+                                x + calculate_n_days_with_weekend(x_date, n, &weekend, cache)?
                                     as i64
                                     * multiplier,
-                            ).map(Some)
+                            ))
                         } else {
                             let cache = cache.as_ref().unwrap();
-                            Ok(x + calculate_n_days_with_weekend_and_holidays(
-                                x_date, n, &weekend, &cache, &holidays,
-                            )? as i64
-                                * multiplier).map(Some)
+                            Ok(Some(
+                                x + calculate_n_days_with_weekend_and_holidays(
+                                    x_date, n, &weekend, cache, &holidays,
+                                )? as i64
+                                    * multiplier,
+                            ))
                         }
                     }
                     _ => Ok(None),
