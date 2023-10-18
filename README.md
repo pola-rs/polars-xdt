@@ -91,7 +91,6 @@ shape: (3, 2)
 What to expected
 ----------------
 The following will hopefully come relatively soon:
-- support for `Datetime`s
 - support for rolling forwards/backwards to the next
   valid business date (if not already on one)
 
