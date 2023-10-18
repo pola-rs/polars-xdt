@@ -1,6 +1,7 @@
 use ahash::AHashMap;
 use polars::prelude::arity::try_binary_elementwise;
 use polars::prelude::*;
+use chrono::NaiveDateTime;
 
 pub(crate) fn weekday(x: i32) -> i32 {
     // the first modulo might return a negative number, so we add 7 and take
@@ -67,6 +68,11 @@ fn roll(n_days: i32, x_weekday: i32, weekend: &[i32]) -> i32 {
     n_days
 }
 
+fn its_a_business_date_error_message(x: i32) -> PolarsResult<i32>{
+    let date = NaiveDateTime::from_timestamp_opt(x as i64 * 24 * 60 * 60, 0).unwrap().format("%Y-%m-%d");
+    polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", date))
+}
+
 pub(crate) fn calculate_n_days_with_holidays(
     x: i32,
     n: i32,
@@ -76,13 +82,13 @@ pub(crate) fn calculate_n_days_with_holidays(
     let x_weekday = weekday(x_mod_7);
 
     if x_weekday >= 5 {
-        polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
+        return its_a_business_date_error_message(x);
     };
 
     let mut n_days = calculate_n_days_without_holidays_fast(n, x_weekday);
 
     if holidays.binary_search(&x).is_ok() {
-        polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
+        return its_a_business_date_error_message(x);
     }
     let mut count_hols = count_holidays(x, x + n_days, holidays);
     while count_hols > 0 {
@@ -111,14 +117,14 @@ pub(crate) fn calculate_n_days_with_weekend_and_holidays(
     let x_weekday = weekday(x_mod_7);
 
     if weekend.contains(&x_weekday) {
-        polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
+        return its_a_business_date_error_message(x);
     };
 
     let mut n_days =
         calculate_n_days_without_holidays_slow(x_weekday, n, weekend.len() as i32, cache);
 
     if holidays.binary_search(&x).is_ok() {
-        polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
+        return its_a_business_date_error_message(x);
     }
     let mut count_hols = count_holidays(x, x + n_days, holidays);
     while count_hols > 0 {
@@ -157,7 +163,7 @@ pub(crate) fn calculate_n_days_with_weekend(
     let n_weekend = weekend.len() as i32;
 
     if weekend.contains(&x_weekday) {
-        polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
+        return its_a_business_date_error_message(x);
     };
 
     Ok(calculate_n_days_without_holidays_slow(
@@ -235,7 +241,7 @@ pub(crate) fn impl_advance_n_days(
                             ca.try_apply(|x_date| {
                                 let x_weekday = weekday(x_date);
                                 if x_weekday >= 5 {
-                                    polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x_date))
+                                    return its_a_business_date_error_message(x_date);
                                 }
                                 Ok(x_date+(calculate_n_days_without_holidays_fast(n, x_weekday)))
                             })
@@ -267,7 +273,7 @@ pub(crate) fn impl_advance_n_days(
                         if holidays.is_empty() && weekend == [5, 6] {
                             let x_weekday = weekday(x_date);
                             if x_weekday >= 5 {
-                                polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x_date))
+                                return its_a_business_date_error_message(x_date).map(|x| Some(x));
                             }
                             Ok(Some(
                                 x_date + (calculate_n_days_without_holidays_fast(n, x_weekday)),
@@ -315,7 +321,7 @@ pub(crate) fn impl_advance_n_days(
                                 let x_date = (x / multiplier) as i32;
                                 let x_weekday = weekday(x_date);
                                 if x_weekday >= 5 {
-                                    polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x_date))
+                                    return its_a_business_date_error_message(x_date).map(|x| x as i64);
                                 }
                                 Ok(x+(calculate_n_days_without_holidays_fast(n, x_weekday) as i64 *multiplier))
                             })
@@ -358,7 +364,7 @@ pub(crate) fn impl_advance_n_days(
                         if holidays.is_empty() && weekend == [5, 6] {
                             let x_weekday = weekday(x_date);
                             if x_weekday >= 5 {
-                                polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x_date))
+                                return its_a_business_date_error_message(x_date).map(|x| Some(x as i64));
                             }
                             Ok(Some(
                                 x + (calculate_n_days_without_holidays_fast(n, x_weekday) as i64

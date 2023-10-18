@@ -1,8 +1,8 @@
 import timeit
 import numpy as np
 
-# BENCHMARKS = [1, 2, 3, 4]
-BENCHMARKS = [1]
+BENCHMARKS = [1, 2, 3, 4]
+# BENCHMARKS = [1]
 
 # BENCHMARK 1: NO HOLIDAYS INVOLVED
 
@@ -50,10 +50,10 @@ if 1 in BENCHMARKS:
     )
     print("NumPy: ", time_it("result_np = np.busday_offset(input_dates, 17)"))
 
-# uncomment, too slow...
-print(
-    "pandas: ", time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)")
-)
+    # uncomment, too slow...
+    # print(
+    #     "pandas: ", time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)")
+    # )
 
 # BENCHMARK 2: WITH HOLIDAYS
 

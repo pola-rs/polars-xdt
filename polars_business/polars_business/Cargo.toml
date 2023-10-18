@@ -17,6 +17,7 @@ polars-ops = { workspace = true, default-features = false }
 pyo3 = { version = "0.20.0", features = ["extension-module"] }
 pyo3-polars = { git = "https://github.com/pola-rs/pyo3-polars", rev = "0a3df66ce626504e418491cb4b1d31bd3ee7ed6c", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
+chrono = "0.4.31"
 
 [target .'cfg(target_os = "linux")']
 jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }
