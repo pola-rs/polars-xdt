@@ -10,7 +10,7 @@ df = pl.DataFrame(
     {"date": [datetime(2023, 4, 3, 6), datetime(2023, 9, 1, 1), datetime(2024, 1, 4, 2)]}
 )
 result = df.with_columns(
-    date_plus_5_business_days=pl.col("date").dt.cast_time_unit('ns').business.advance_n_days(n=5),
+    date_plus_5_business_days=pl.col("date").dt.cast_time_unit('ns').dt.replace_time_zone('Asia/Kathmandu').business.advance_n_days(n=5),
 )
 print(result)
 

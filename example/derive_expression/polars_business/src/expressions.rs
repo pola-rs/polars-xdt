@@ -2,7 +2,6 @@ use polars::prelude::arity::try_binary_elementwise;
 use ahash::AHashMap;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
-use polars_plan::dsl::FieldsMapper;
 
 fn weekday(x: i32) -> i32 {
     // the first modulo might return a negative number, so we add 7 and take
@@ -207,13 +206,13 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
             };
             out?.cast(original_dtype)
         }
-        DataType::Datetime(time_unit, _) => {
+        DataType::Datetime(time_unit, time_zone) => {
             let multiplier = match time_unit {
                 TimeUnit::Milliseconds => 60*60*24*1_000,
                 TimeUnit::Microseconds => 60*60*24*1_000_000,
                 TimeUnit::Nanoseconds => 60*60*24*1_000_000_000,
             };
-            let ca = inputs[0].datetime()?;
+            let ca = &polars_ops::prelude::replace_time_zone(s.datetime()?, None, &Utf8Chunked::from_iter(std::iter::once("raise")))?;
             let out = match n.len() {
                 1 => {
                     if let Some(n) = n.get(0) {
@@ -241,7 +240,8 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
                     _ => Ok(None),
                 }),
             };
-            out?.cast(original_dtype)
+            let out = polars_ops::prelude::replace_time_zone(&out?.into_datetime(*time_unit, None), time_zone.as_deref(), &Utf8Chunked::from_iter(std::iter::once("raise")))?;
+            out.cast(original_dtype)
         },
         _ => unreachable!(),  // todo correct message
     }
