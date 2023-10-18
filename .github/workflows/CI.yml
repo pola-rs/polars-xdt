@@ -29,6 +29,17 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
+      - name: Set up Rust
+        run: rustup show
+      - uses: mozilla-actions/sccache-action@v0.0.3
+      - run: cargo test
+        working-directory: pyo3-polars
+      - run: make install-release
+        working-directory: example/derive_expression
+      - run: venv/bin/python run.py
+        working-directory: example/derive_expression
+
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -36,16 +47,6 @@ jobs:
           args: --release --out dist --find-interpreter --manifest-path example/derive_expression/polars_business/Cargo.toml
           sccache: 'true'
           manylinux: auto
-
-      - name: Set up Rust
-        run: rustup show
-      - uses: mozilla-actions/sccache-action@v0.0.3
-      - run: cargo test
-        working-directory: pyo3-polars
-      - run: make install
-        working-directory: example/derive_expression
-      - run: venv/bin/python run.py
-        working-directory: example/derive_expression
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
