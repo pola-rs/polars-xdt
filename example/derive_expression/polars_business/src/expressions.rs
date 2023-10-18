@@ -161,7 +161,6 @@ fn count_holidays(start: i32, end: i32, holidays: &[i32]) -> i32 {
 
 fn bday_output(input_fields: &[Field]) -> PolarsResult<Field> {
     let field = input_fields[0].clone();
-    println!("field: {:?}", field);
     Ok(field)
 }
 
@@ -173,44 +172,77 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
     // 1. calculate time delta by diving by something
     // 2. multiply back
     // 3. ignore time zone for now
-    let s = &inputs[0];
-    let ca = inputs[0].datetime()?;
     let n_series = inputs[1].cast(&DataType::Int32)?;
     let n = n_series.i32()?;
 
-    let out = match n.len() {
-        1 => {
-            if let Some(n) = n.get(0) {
-                ca.try_apply(|x| {
-                    println!("x: {:?}", x);
-                    let mul = (60*60*24*1_000_000);
-                    let x_date = (x / mul) as i32;
-                    println!("x_date: {:?}", x_date);
-                    let x_weekday = weekday(x_date);
-                    if x_weekday >= 5 {
-                        polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
+    let s= &inputs[0];
+    let original_dtype = s.dtype();
+    match s.dtype() {
+        DataType::Date => {
+            let ca = inputs[0].date()?;
+            let out = match n.len() {
+                1 => {
+                    if let Some(n) = n.get(0) {
+                        ca.try_apply(|x_date| {
+                            let x_weekday = weekday(x_date);
+                            if x_weekday >= 5 {
+                                polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x_date))
+                            }
+                            Ok(x_date+(calculate_n_days_without_holidays_fast(n, x_weekday)))
+                        })
+                    } else {
+                        Ok(Int32Chunked::full_null(ca.name(), ca.len()))
                     }
-                    let res = Ok(x+(calculate_n_days_without_holidays_fast(n, x_weekday) as i64)*mul as i64);
-                    println!("res: {:?}", res);
-                    res
-                })
-            } else {
-                Ok(Int64Chunked::full_null(ca.name(), ca.len()))
-            }
+                }
+                _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
+                    (Some(x), Some(n)) => {
+                        let x_weekday = weekday(x);
+                        if x_weekday >= 5 {
+                            polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
+                        }
+                        Ok(Some(x+calculate_n_days_without_holidays_fast(n, x_weekday)))
+                    }
+                    _ => Ok(None),
+                }),
+            };
+            out?.cast(original_dtype)
         }
-        _ => unreachable!(),
-        // _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
-        //     (Some(x), Some(n)) => {
-        //         let x_weekday = weekday(x);
-        //         if x_weekday >= 5 {
-        //             polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
-        //         }
-        //         Ok(Some(x+calculate_n_days_without_holidays_fast(n, x_weekday)))
-        //     }
-        //     _ => Ok(None),
-        // }),
-    };
-
-    out?.cast(&DataType::Datetime(TimeUnit::Microseconds, None))
+        DataType::Datetime(time_unit, _) => {
+            let multiplier = match time_unit {
+                TimeUnit::Milliseconds => 60*60*24*1_000,
+                TimeUnit::Microseconds => 60*60*24*1_000_000,
+                TimeUnit::Nanoseconds => 60*60*24*1_000_000_000,
+            };
+            let ca = inputs[0].datetime()?;
+            let out = match n.len() {
+                1 => {
+                    if let Some(n) = n.get(0) {
+                        ca.try_apply(|x| {
+                            let x_date = (x / multiplier) as i32;
+                            let x_weekday = weekday(x_date);
+                            if x_weekday >= 5 {
+                                polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x_date))
+                            }
+                            Ok(x+(calculate_n_days_without_holidays_fast(n, x_weekday) as i64 *multiplier))
+                        })
+                    } else {
+                        Ok(Int64Chunked::full_null(ca.name(), ca.len()))
+                    }
+                }
+                _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
+                    (Some(x), Some(n)) => {
+                        let x_date = (x / multiplier) as i32;
+                        let x_weekday = weekday(x_date);
+                        if x_weekday >= 5 {
+                            polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", x))
+                        }
+                        Ok(Some(x+(calculate_n_days_without_holidays_fast(n, x_weekday) as i64 *multiplier)))
+                    }
+                    _ => Ok(None),
+                }),
+            };
+            out?.cast(original_dtype)
+        },
+        _ => unreachable!(),  // todo correct message
+    }
 }
-
