@@ -243,6 +243,6 @@ fn advance_n_days(inputs: &[Series]) -> PolarsResult<Series> {
             let out = polars_ops::prelude::replace_time_zone(&out?.into_datetime(*time_unit, None), time_zone.as_deref(), &Utf8Chunked::from_iter(std::iter::once("raise")))?;
             out.cast(original_dtype)
         },
-        _ => unreachable!(),  // todo correct message
+        _ => polars_bail!(ComputeError: format!("expected Datetime or Date dtype, got: {}", original_dtype)),
     }
 }
