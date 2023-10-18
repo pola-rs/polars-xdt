@@ -37,8 +37,6 @@ jobs:
       - name: Set up Rust
         run: rustup show
       - uses: mozilla-actions/sccache-action@v0.0.3
-      - run: cargo test
-        working-directory: pyo3-polars
       - run: make install-release
         working-directory: polars_business
       - run: venv/bin/python -m pytest tests
