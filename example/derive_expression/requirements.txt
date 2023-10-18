@@ -1,2 +1,6 @@
 maturin
 polars
+hypothesis
+numpy
+pandas
+pytest
