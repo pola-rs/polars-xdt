@@ -37,6 +37,11 @@ jobs:
           sccache: 'true'
           manylinux: auto
 
+      - name: Set up Rust
+        run: rustup show
+      - uses: mozilla-actions/sccache-action@v0.0.3
+      - run: cargo test
+        working-directory: pyo3-polars
       - run: make install
         working-directory: example/derive_expression
       - run: venv/bin/python run.py
