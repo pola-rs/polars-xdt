@@ -28,9 +28,11 @@ class BusinessDayTools:
         if not holidays:
             holidays =  []
         else:
-            holidays = [(holiday - date(1970, 1, 1)).days for holiday in holidays]
-        if sorted(list(set(weekend))) == ['Sat', 'Sun']:
-            weekend = None
+            holidays = sorted({(holiday - date(1970, 1, 1)).days for holiday in holidays})
+        if weekend == ('Sat', 'Sun'):
+            weekend = [5,6]
+        else:
+            weekend = sorted({mapping[name] for name in weekend})
 
         return self._expr._register_plugin(
             lib=lib,
@@ -39,6 +41,7 @@ class BusinessDayTools:
             args=[n],
             kwargs = {
                 'holidays': holidays,
+                'weekend': weekend,
             }
         )
         # elif holidays is not None and weekend is None:

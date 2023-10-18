@@ -5,10 +5,10 @@ import numpy as np
 
 reverse_mapping = {value: key for key, value in mapping.items()}
 
-start = date(2000, 9, 29)
-n = 1
-weekend = ['Sat', 'Sun']
-holidays = [date(2000, 10, 2), date(2000, 2, 1)]
+start = date(2000, 1, 18)
+n = 11
+weekend = []
+holidays = [date(2000, 1, 29)]
 weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
 
 df = pl.DataFrame(
