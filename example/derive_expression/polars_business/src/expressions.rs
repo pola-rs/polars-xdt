@@ -92,7 +92,7 @@ fn calculate_n_days_with_holidays(x: i32, n: i32, holidays: &[i32]) -> PolarsRes
             count_hols = count_holidays(x+n_days_before-1, x + n_days, &holidays);
         }
     }
-    Ok(x + n_days)
+    Ok(n_days)
 }
 
 fn calculate_n_days_with_weekend_and_holidays(x: i32, n: i32, weekend: &[i32], cache: &AHashMap<i32, i32>, holidays: &[i32]) -> PolarsResult<i32> {
@@ -201,7 +201,7 @@ fn advance_n_days(
                                 Ok(x_date+(calculate_n_days_without_holidays_fast(n, x_weekday)))
                             })
                         } else {
-                            ca.try_apply(|x_date| calculate_n_days_with_holidays(x_date, n, &holidays))
+                            ca.try_apply(|x_date| Ok(x_date + calculate_n_days_with_holidays(x_date, n, &holidays)?))
                         }
                     } else {
                         Ok(Int32Chunked::full_null(ca.name(), ca.len()))
@@ -216,7 +216,7 @@ fn advance_n_days(
                         if holidays.is_empty() {
                             Ok(Some(x_date+calculate_n_days_without_holidays_fast(n, x_weekday)))
                         } else {
-                            calculate_n_days_with_holidays(x_date, n, &holidays).map(Some)
+                            Ok(x_date + calculate_n_days_with_holidays(x_date, n, &holidays)?).map(Some)
                         }
                     }
                     _ => Ok(None),
