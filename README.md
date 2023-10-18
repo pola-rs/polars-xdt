@@ -88,10 +88,6 @@ shape: (3, 2)
 └────────────┴───────────────────────────┘
 ```
 
-Note
-----
-Currently, only `pl.Date` datatype is supported.
-
 What to expected
 ----------------
 The following will hopefully come relatively soon:
