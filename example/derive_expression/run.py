@@ -7,7 +7,7 @@ import polars_business
 
 uk_holidays = holidays.country_holidays("UK", years=[2023, 2024])
 df = pl.DataFrame(
-    {"date": [datetime(2023, 4, 3), datetime(2023, 9, 1), datetime(2024, 1, 4)]}
+    {"date": [datetime(2023, 4, 3, 6), datetime(2023, 9, 1, 1), datetime(2024, 1, 4, 2)]}
 )
 
 result = df.with_columns(
