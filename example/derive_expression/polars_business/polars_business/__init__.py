@@ -1,6 +1,7 @@
 import polars as pl
 from polars.type_aliases import IntoExpr
 from polars.utils.udfs import _get_shared_lib_location
+from datetime import date
 
 lib = _get_shared_lib_location(__file__)
 
@@ -25,17 +26,21 @@ class BusinessDayTools:
     def advance_n_days(self, n, weekend=('Sat', 'Sun'), holidays=None) -> pl.Expr:
 
         if not holidays:
-            holidays =  None
+            holidays =  []
+        else:
+            holidays = [(holiday - date(1970, 1, 1)).days for holiday in holidays]
         if sorted(list(set(weekend))) == ['Sat', 'Sun']:
             weekend = None
 
-        if holidays is None and weekend is None:
-            return self._expr._register_plugin(
-                lib=lib,
-                symbol="advance_n_days",
-                is_elementwise=True,
-                args=[n],
-            )
+        return self._expr._register_plugin(
+            lib=lib,
+            symbol="advance_n_days",
+            is_elementwise=True,
+            args=[n],
+            kwargs = {
+                'holidays': holidays,
+            }
+        )
         # elif holidays is not None and weekend is None:
         #     holidays = pl.Series([list(set(holidays))]).cast(pl.List(pl.Int32))
         #     return self._expr._register_plugin(
@@ -66,5 +71,3 @@ class BusinessDayTools:
         #               holidays,
         #               ],
         #     )
-        else:
-            raise NotImplementedError()

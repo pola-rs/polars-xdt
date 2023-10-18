@@ -1,26 +1,41 @@
-from datetime import date, datetime
-
-import holidays
 import polars as pl
-import polars_business
+from polars_business import *
+from datetime import date, datetime, timedelta
+import numpy as np
 
+reverse_mapping = {value: key for key, value in mapping.items()}
 
-uk_holidays = holidays.country_holidays("UK", years=[2023, 2024])
+start = date(2000, 9, 29)
+n = 1
+weekend = ['Sat', 'Sun']
+holidays = [date(2000, 10, 2), date(2000, 2, 1)]
+weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
+
 df = pl.DataFrame(
-    {"date": [datetime(2023, 4, 3, 6), datetime(2023, 9, 1, 1), datetime(2024, 1, 4, 2)]}
+    {
+        "dates": [start]
+    }
 )
-result = df.with_columns(
-    date_plus_5_business_days=pl.col("date").dt.cast_time_unit('ns').dt.replace_time_zone('Asia/Kathmandu').business.advance_n_days(n=5),
-)
-print(result)
+df = df.with_columns(start_wday=pl.col("dates").dt.strftime("%a"))
 
-df = pl.DataFrame(
-    {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
+print(
+    df.with_columns(
+        dates_shifted=pl.col("dates").business.advance_n_days(
+            n=n,
+            holidays=holidays,
+            weekend=weekend,
+        )
+    ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
 )
-
-result = df.with_columns(
-    date_plus_5_business_days=pl.col("date").business.advance_n_days(
-        n=5, #holidays=uk_holidays
-    )
+print(
+    df.with_columns(
+        dates_shifted=pl.Series(
+            np.busday_offset(
+                df["dates"],
+                n,
+                holidays=holidays,
+                weekmask=weekmask,
+            )
+        )
+    ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
 )
-print(result)
