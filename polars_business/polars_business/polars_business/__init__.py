@@ -5,7 +5,7 @@ from datetime import date
 
 lib = _get_shared_lib_location(__file__)
 
-__version__ = "0.1.14"
+__version__ = "0.1.15"
 
 mapping = {
     'Mon': 0,
