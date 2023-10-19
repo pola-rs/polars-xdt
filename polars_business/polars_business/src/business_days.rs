@@ -195,7 +195,7 @@ fn count_holidays(start: i32, end: i32, holidays: &[i32]) -> i32 {
     }
 }
 
-fn function(x_date: i32, n: i32, holidays: &[i32], weekend: &[i32], cache: Option<&AHashMap<i32, i32>>) -> PolarsResult<i32>{
+fn calculate_advance(x_date: i32, n: i32, holidays: &[i32], weekend: &[i32], cache: Option<&AHashMap<i32, i32>>) -> PolarsResult<i32>{
     match (weekend == [5, 6], holidays.is_empty()) {
         (true, true) => {
             let x_weekday = weekday(x_date);
@@ -261,7 +261,7 @@ pub(crate) fn impl_advance_n_days(
                 1 => {
                     if let Some(n) = n.get(0) {
                         ca.try_apply(|x_date| {
-                            Ok(x_date+function(x_date, n, &holidays, &weekend, cache.as_ref())?)
+                            Ok(x_date+calculate_advance(x_date, n, &holidays, &weekend, cache.as_ref())?)
                         })
                     } else {
                         Ok(Int32Chunked::full_null(ca.name(), ca.len()))
@@ -269,7 +269,7 @@ pub(crate) fn impl_advance_n_days(
                 }
                 _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
                     (Some(x_date), Some(n)) => {
-                        Ok(x_date+function(x_date, n, &holidays, &weekend, cache.as_ref())?).map(Some)
+                        Ok(x_date+calculate_advance(x_date, n, &holidays, &weekend, cache.as_ref())?).map(Some)
                     }
                     _ => Ok(None),
                 }),
@@ -292,7 +292,7 @@ pub(crate) fn impl_advance_n_days(
                     if let Some(n) = n.get(0) {
                         ca.try_apply(|x| {
                             let x_date = (x / multiplier) as i32;
-                            Ok(x+(function(x_date, n, &holidays, &weekend, cache.as_ref())? as i64 *multiplier))
+                            Ok(x+(calculate_advance(x_date, n, &holidays, &weekend, cache.as_ref())? as i64 *multiplier))
                         })
                     } else {
                         Ok(Int64Chunked::full_null(ca.name(), ca.len()))
@@ -301,37 +301,7 @@ pub(crate) fn impl_advance_n_days(
                 _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
                     (Some(x), Some(n)) => {
                         let x_date = (x / multiplier) as i32;
-                        if holidays.is_empty() && weekend == [5, 6] {
-                            let x_weekday = weekday(x_date);
-                            if x_weekday >= 5 {
-                                return its_a_business_date_error_message(x_date).map(|x| Some(x as i64));
-                            }
-                            Ok(Some(
-                                x + (calculate_n_days_without_holidays_fast(n, x_weekday) as i64
-                                    * multiplier),
-                            ))
-                        } else if !holidays.is_empty() && weekend == [5, 6] {
-                            Ok(Some(
-                                x + calculate_n_days_with_holidays(x_date, n, &holidays)? as i64
-                                    * multiplier,
-                            ))
-                        } else if holidays.is_empty() && weekend != [5, 6] {
-                            let cache = cache.as_ref().unwrap();
-                            let x_date = (x / multiplier) as i32;
-                            Ok(Some(
-                                x + calculate_n_days_with_weekend(x_date, n, &weekend, cache)?
-                                    as i64
-                                    * multiplier,
-                            ))
-                        } else {
-                            let cache = cache.as_ref().unwrap();
-                            Ok(Some(
-                                x + calculate_n_days_with_weekend_and_holidays(
-                                    x_date, n, &weekend, cache, &holidays,
-                                )? as i64
-                                    * multiplier,
-                            ))
-                        }
+                        Ok(x+(calculate_advance(x_date, n, &holidays, &weekend, cache.as_ref())? as i64 *multiplier)).map(Some)
                     }
                     _ => Ok(None),
                 }),
