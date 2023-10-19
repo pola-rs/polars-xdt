@@ -202,18 +202,18 @@ fn function(x_date: i32, n: i32, holidays: &[i32], weekend: &[i32], cache: Optio
             if x_weekday >= 5 {
                 return its_a_business_date_error_message(x_date);
             }
-            Ok(x_date+(calculate_n_days_without_holidays_fast(n, x_weekday)))
+            Ok((calculate_n_days_without_holidays_fast(n, x_weekday)))
         },
         (true, false) => {
-            Ok(x_date + calculate_n_days_with_holidays(x_date, n, &holidays)?)
+            Ok(calculate_n_days_with_holidays(x_date, n, &holidays)?)
         },
         (false, true) => {
             let cache = cache.unwrap();
-            Ok(x_date + calculate_n_days_with_weekend(x_date, n, &weekend, &cache)?)
+            Ok(calculate_n_days_with_weekend(x_date, n, &weekend, &cache)?)
         },
         (false, false) => {
             let cache = cache.unwrap();
-            Ok(x_date + calculate_n_days_with_weekend_and_holidays(x_date, n, &weekend, &cache, holidays)?)
+            Ok(calculate_n_days_with_weekend_and_holidays(x_date, n, &weekend, &cache, holidays)?)
         }
     }
 }
@@ -261,7 +261,7 @@ pub(crate) fn impl_advance_n_days(
                 1 => {
                     if let Some(n) = n.get(0) {
                         ca.try_apply(|x_date| {
-                            function(x_date, n, &holidays, &weekend, cache.as_ref())
+                            Ok(x_date+function(x_date, n, &holidays, &weekend, cache.as_ref())?)
                         })
                     } else {
                         Ok(Int32Chunked::full_null(ca.name(), ca.len()))
@@ -269,7 +269,7 @@ pub(crate) fn impl_advance_n_days(
                 }
                 _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
                     (Some(x_date), Some(n)) => {
-                        function(x_date, n, &holidays, &weekend, cache.as_ref()).map(Some)
+                        Ok(x_date+function(x_date, n, &holidays, &weekend, cache.as_ref())?).map(Some)
                     }
                     _ => Ok(None),
                 }),
@@ -290,44 +290,10 @@ pub(crate) fn impl_advance_n_days(
             let out = match n.len() {
                 1 => {
                     if let Some(n) = n.get(0) {
-                        if holidays.is_empty() && weekend == [5, 6] {
-                            ca.try_apply(|x| {
-                                let x_date = (x / multiplier) as i32;
-                                let x_weekday = weekday(x_date);
-                                if x_weekday >= 5 {
-                                    return its_a_business_date_error_message(x_date).map(|x| x as i64);
-                                }
-                                Ok(x+(calculate_n_days_without_holidays_fast(n, x_weekday) as i64 *multiplier))
-                            })
-                        } else if !holidays.is_empty() && weekend == [5, 6] {
-                            ca.try_apply(|x| {
-                                let x_date = (x / multiplier) as i32;
-                                Ok(
-                                    x + calculate_n_days_with_holidays(x_date, n, &holidays)?
-                                        as i64
-                                        * multiplier,
-                                )
-                            })
-                        } else if holidays.is_empty() && weekend != [5, 6] {
-                            let cache = cache.unwrap();
-                            ca.try_apply(|x| {
-                                let x_date = (x / multiplier) as i32;
-                                Ok(
-                                    x + calculate_n_days_with_weekend(x_date, n, &weekend, &cache)?
-                                        as i64
-                                        * multiplier,
-                                )
-                            })
-                        } else {
-                            let cache = cache.unwrap();
-                            ca.try_apply(|x| {
-                                let x_date = (x / multiplier) as i32;
-                                Ok(x + calculate_n_days_with_weekend_and_holidays(
-                                    x_date, n, &weekend, &cache, &holidays,
-                                )? as i64
-                                    * multiplier)
-                            })
-                        }
+                        ca.try_apply(|x| {
+                            let x_date = (x / multiplier) as i32;
+                            Ok(x+(function(x_date, n, &holidays, &weekend, cache.as_ref())? as i64 *multiplier))
+                        })
                     } else {
                         Ok(Int64Chunked::full_null(ca.name(), ca.len()))
                     }
