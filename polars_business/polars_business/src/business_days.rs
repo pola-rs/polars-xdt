@@ -202,7 +202,7 @@ fn calculate_advance(x_date: i32, n: i32, holidays: &[i32], weekend: &[i32], cac
             if x_weekday >= 5 {
                 return its_a_business_date_error_message(x_date);
             }
-            Ok((calculate_n_days_without_holidays_fast(n, x_weekday)))
+            Ok(calculate_n_days_without_holidays_fast(n, x_weekday))
         },
         (true, false) => {
             Ok(calculate_n_days_with_holidays(x_date, n, &holidays)?)
