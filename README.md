@@ -35,29 +35,16 @@ See `Examples` below!
 Example
 -------
 Say we start with
-```ipython
-In [1]: from datetime import date
-   ...: 
-   ...: import polars as pl
-   ...: import polars_business
-   ...: 
-   ...: 
-   ...: df = pl.DataFrame(
-   ...:     {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
-   ...: )
+```python
+from datetime import date
 
-In [2]: df
-Out[2]: 
-shape: (3, 1)
-┌────────────┐
-│ date       │
-│ ---        │
-│ date       │
-╞════════════╡
-│ 2023-04-03 │
-│ 2023-09-01 │
-│ 2024-01-04 │
-└────────────┘
+import polars as pl
+import polars_business
+
+
+df = pl.DataFrame(
+    {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
+)
 ```
 
 Let's shift `Date` forwards by 5 days, excluding Saturday and Sunday:
@@ -67,6 +54,18 @@ result = df.with_columns(
     date_shifted=pl.col("date").business.advance_n_days(n=5)
 )
 print(result)
+```
+```
+shape: (3, 2)
+┌────────────┬──────────────┐
+│ date       ┆ date_shifted │
+│ ---        ┆ ---          │
+│ date       ┆ date         │
+╞════════════╪══════════════╡
+│ 2023-04-03 ┆ 2023-04-10   │
+│ 2023-09-01 ┆ 2023-09-08   │
+│ 2024-01-04 ┆ 2024-01-11   │
+└────────────┴──────────────┘
 ```
 
 Let's shift `Date` forwards by 5 days, excluding Saturday and Sunday and UK holidays
@@ -85,16 +84,40 @@ result = df.with_columns(
 )
 print(result)
 ```
+```
+shape: (3, 2)
+┌────────────┬──────────────┐
+│ date       ┆ date_shifted │
+│ ---        ┆ ---          │
+│ date       ┆ date         │
+╞════════════╪══════════════╡
+│ 2023-04-03 ┆ 2023-04-11   │
+│ 2023-09-01 ┆ 2023-09-08   │
+│ 2024-01-04 ┆ 2024-01-11   │
+└────────────┴──────────────┘
+```
 
-Let's shift `Date` forwards by 5 days, excluding Friday and Saturday:
+Let's shift `Date` forwards by 5 days, excluding only Sunday:
 ```python
 result = df.with_columns(
     date_shifted=pl.col("date").business.advance_n_days(
       n=5,
-      weekend=['Fri', 'Sat'],
+      weekend=['Sun'],
     )
 )
 print(result)
+```
+```
+shape: (3, 2)
+┌────────────┬──────────────┐
+│ date       ┆ date_shifted │
+│ ---        ┆ ---          │
+│ date       ┆ date         │
+╞════════════╪══════════════╡
+│ 2023-04-03 ┆ 2023-04-08   │
+│ 2023-09-01 ┆ 2023-09-07   │
+│ 2024-01-04 ┆ 2024-01-10   │
+└────────────┴──────────────┘
 ```
 
 What to expected
