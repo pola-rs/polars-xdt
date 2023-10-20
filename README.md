@@ -140,28 +140,28 @@ But I think they demonstrate:
 - that `polars-business` is on-par with numpy for performance,
 - that `polars-business` is at least an order of magnitude faster than pandas.
 
-The following timings can be verified using the `perf.py` script.
+The following timings can be verified using the `perf.py` script (note: lower is better):
 
 ### Adding 17 business days to 1 million random dates (no holidays)
 
 - Polars-business 0.00656s
-- NumPy 0.00914
-- pandas 0.08006
+- NumPy 0.00914s
+- pandas 0.08006s
 
 ### Adding 17 business days to 1 million random dates (UK holidays for 2020-2023)
 
-- Polars-business 0.03771
-- NumPy 0.04077
+- Polars-business 0.03771s
+- NumPy 0.04077s
 - pandas: omitted as it's not vectorised and throws a `PerformanceWarning`
 
 ### Adding 17 business days to 1 million random dates (with 'Friday' and 'Saturday' as weekend)
 
-- Polars-business 0.0108
-- NumPy 0.01057
+- Polars-business 0.0108s
+- NumPy 0.01057s
 - pandas: omitted as it's not vectorised and throws a `PerformanceWarning`
 
 ### Adding 17 business days to 1 million random dates (with 'Friday' and 'Saturday' as weekend, and UK holidays for 2020-2023)
 
-- Polars-business 0.0371
-- NumPy 0.03841
+- Polars-business 0.0371s
+- NumPy 0.03841s
 - pandas: omitted as it's not vectorised and throws a `PerformanceWarning`
