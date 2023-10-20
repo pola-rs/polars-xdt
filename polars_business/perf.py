@@ -2,7 +2,7 @@ import timeit
 import numpy as np
 
 # BENCHMARKS = [1, 2, 3, 4]
-BENCHMARKS = [1]
+BENCHMARKS = [3]
 
 # BENCHMARK 1: NO HOLIDAYS INVOLVED
 

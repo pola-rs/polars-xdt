@@ -17,6 +17,17 @@ fn increment(x: i32) -> i32 {
     }
 }
 
+fn fast_modulo(x_weekday: i32, n: i32) -> i32 {
+    let res = x_weekday + n;
+    if n > 0 && res >= 7 {
+        res - 7
+    } else if n < 0 && res < 0 {
+        res + 7
+    } else {
+        res
+    }
+}
+
 pub(crate) fn advance_few_days(x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
     // We know that n is between -7 and 7
     // and that x_weekday is between 0 and 6
@@ -25,10 +36,10 @@ pub(crate) fn advance_few_days(x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
     for _ in 0..n.abs() {
         if n > 0 {
             n_days += 1;
-            n_days = roll(n_days, (x_weekday + n_days) % 7, weekend);
+            n_days = roll(n_days, fast_modulo(x_weekday, n_days), weekend);
         } else {
             n_days -= 1;
-            n_days = roll(n_days, (x_weekday + n_days + 7) % 7, weekend);
+            n_days = roll(n_days, fast_modulo(x_weekday, n_days), weekend);
         }
     }
     n_days
@@ -224,16 +235,16 @@ pub(crate) fn impl_advance_n_days(
 
     // Set up weeekend cache.
     let n_weekend = weekend.len() as i32;
-    let capacity = ((7 - n_weekend) * 2 + 1) * (7-n_weekend);
+    let n_weekdays = 7 - n_weekend;
+    let capacity = (n_weekdays * 2 + 1) * n_weekdays;
     let cache: Option<AHashMap<i32, i32>> = if weekend == [5, 6] {
         None
     } else {
         let mut cache: AHashMap<i32, i32> = AHashMap::with_capacity(capacity as usize);
-        for x_weekday in 0..=6 {
-            if weekend.contains(&x_weekday) {
-                continue;
-            }
-            for n_days in (-(7 - n_weekend))..=(7 - n_weekend) {
+        let weekdays = (0..=6).filter(|x| !weekend.contains(x));
+        for x_weekday in weekdays {
+            for n_days in (-n_weekdays)..=n_weekdays {
+            // for n_days in 0..=n_weekdays {
                 if n_days == 0 {
                     cache.insert((10 * n_days + x_weekday), 0);
                 }
