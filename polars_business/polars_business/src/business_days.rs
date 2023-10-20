@@ -46,11 +46,22 @@ pub(crate) fn calculate_n_days_without_holidays_slow(
     n_days + n_weeks * 7
 }
 
-pub(crate) fn calculate_n_days_without_holidays_fast(n: i32, x_weekday: i32) -> i32 {
+pub(crate) fn calculate_n_days_without_holidays_fast(
+    x_date: i32,
+    _x_mod_7: i32,
+    n: i32,
+    x_weekday: i32,
+    _weekend: &[i32],
+    _cache: Option<&AHashMap<i32, i32>>,
+    _holidays: &[i32],
+) -> PolarsResult<i32> {
+    if x_weekday >= 5 {
+        return its_a_business_date_error_message(x_date);
+    }
     if n >= 0 {
-        n + (n + x_weekday) / 5 * 2
+        Ok(n + (n + x_weekday) / 5 * 2)
     } else {
-        -(-n + (-n + 4 - x_weekday) / 5 * 2)
+        Ok(-(-n + (-n + 4 - x_weekday) / 5 * 2))
     }
 }
 
@@ -74,33 +85,36 @@ fn its_a_business_date_error_message(x: i32) -> PolarsResult<i32>{
 }
 
 pub(crate) fn calculate_n_days_with_holidays(
-    x: i32,
+    x_date: i32,
+    x_mod_7: i32,
     n: i32,
+    x_weekday: i32,
+    _weekend: &[i32],
+    _cache: Option<&AHashMap<i32, i32>>,
     holidays: &[i32],
 ) -> PolarsResult<i32> {
-    let x_mod_7 = x % 7;
-    let x_weekday = weekday(x_mod_7);
-
     if x_weekday >= 5 {
-        return its_a_business_date_error_message(x);
+        return its_a_business_date_error_message(x_date);
     };
 
-    let mut n_days = calculate_n_days_without_holidays_fast(n, x_weekday);
+    let mut n_days = calculate_n_days_without_holidays_fast(
+        x_date,
+        x_mod_7, n, x_weekday, &[], None, holidays)?;
 
-    if holidays.binary_search(&x).is_ok() {
-        return its_a_business_date_error_message(x);
+    if holidays.binary_search(&x_date).is_ok() {
+        return its_a_business_date_error_message(x_date);
     }
-    let mut count_hols = count_holidays(x, x + n_days, holidays);
+    let mut count_hols = count_holidays(x_date, x_date + n_days, holidays);
     while count_hols > 0 {
         let n_days_before = n_days;
         if n_days > 0 {
             n_days = n_days
-                + calculate_n_days_without_holidays_fast(count_hols, weekday(x_mod_7 + n_days));
-            count_hols = count_holidays(x + n_days_before + 1, x + n_days, holidays);
+                + calculate_n_days_without_holidays_fast(x_date + n_days, x_mod_7, count_hols, weekday(x_mod_7 + n_days), &[], None, holidays)?;
+            count_hols = count_holidays(x_date + n_days_before + 1, x_date + n_days, holidays);
         } else {
             n_days = n_days
-                + calculate_n_days_without_holidays_fast(-count_hols, weekday(x_mod_7 + n_days));
-            count_hols = count_holidays(x + n_days_before - 1, x + n_days, holidays);
+                + calculate_n_days_without_holidays_fast(x_date + n_days, x_mod_7, -count_hols, weekday(x_mod_7 + n_days), &[], None, holidays)?;
+            count_hols = count_holidays(x_date + n_days_before - 1, x_date + n_days, holidays);
         }
     }
     Ok(n_days)
@@ -108,11 +122,14 @@ pub(crate) fn calculate_n_days_with_holidays(
 
 pub(crate) fn calculate_n_days_with_weekend_and_holidays(
     x: i32,
+    _x_mod_7: i32,
     n: i32,
+    _x_weekday: i32,
     weekend: &[i32],
-    cache: &AHashMap<i32, i32>,
+    cache: Option<&AHashMap<i32, i32>>,
     holidays: &[i32],
 ) -> PolarsResult<i32> {
+    let cache = cache.unwrap();
     let x_mod_7 = x % 7;
     let x_weekday = weekday(x_mod_7);
 
@@ -154,10 +171,14 @@ pub(crate) fn calculate_n_days_with_weekend_and_holidays(
 
 pub(crate) fn calculate_n_days_with_weekend(
     x: i32,
+    _x_mod_7: i32,
     n: i32,
+    _x_weekday: i32,
     weekend: &[i32],
-    cache: &AHashMap<i32, i32>,
+    cache: Option<&AHashMap<i32, i32>>,
+    _holidays: &[i32],
 ) -> PolarsResult<i32> {
+    let cache = cache.unwrap();
     let x_mod_7 = x % 7;
     let x_weekday = weekday(x_mod_7);
     let n_weekend = weekend.len() as i32;
@@ -192,29 +213,6 @@ fn count_holidays(start: i32, end: i32, holidays: &[i32]) -> i32 {
             Err(pos) => pos,
         };
         end_pos as i32 - start_pos as i32
-    }
-}
-
-fn calculate_advance(x_date: i32, n: i32, holidays: &[i32], weekend: &[i32], cache: Option<&AHashMap<i32, i32>>) -> PolarsResult<i32>{
-    match (weekend == [5, 6], holidays.is_empty()) {
-        (true, true) => {
-            let x_weekday = weekday(x_date);
-            if x_weekday >= 5 {
-                return its_a_business_date_error_message(x_date);
-            }
-            Ok(calculate_n_days_without_holidays_fast(n, x_weekday))
-        },
-        (true, false) => {
-            Ok(calculate_n_days_with_holidays(x_date, n, &holidays)?)
-        },
-        (false, true) => {
-            let cache = cache.unwrap();
-            Ok(calculate_n_days_with_weekend(x_date, n, &weekend, &cache)?)
-        },
-        (false, false) => {
-            let cache = cache.unwrap();
-            Ok(calculate_n_days_with_weekend_and_holidays(x_date, n, &weekend, &cache, holidays)?)
-        }
     }
 }
 
@@ -254,6 +252,23 @@ pub(crate) fn impl_advance_n_days(
 
     let n = n.i32()?;
 
+    let calculate_advance = match (weekend == [5, 6], holidays.is_empty()) {
+        (true, true) => {
+            calculate_n_days_without_holidays_fast
+        },
+        (true, false) => {
+            calculate_n_days_with_holidays
+        },
+        (false, true) => {
+            calculate_n_days_with_weekend
+        },
+        (false, false) => {
+            calculate_n_days_with_weekend_and_holidays
+        }
+    };
+
+
+
     match s.dtype() {
         DataType::Date => {
             let ca = s.date()?;
@@ -261,7 +276,9 @@ pub(crate) fn impl_advance_n_days(
                 1 => {
                     if let Some(n) = n.get(0) {
                         ca.try_apply(|x_date| {
-                            Ok(x_date+calculate_advance(x_date, n, &holidays, &weekend, cache.as_ref())?)
+                            let x_mod_7 = x_date % 7;
+                            let x_weekday = weekday(x_mod_7);
+                            Ok(x_date+calculate_advance(x_date, x_mod_7, n, x_weekday, &weekend, cache.as_ref(), &holidays )?)
                         })
                     } else {
                         Ok(Int32Chunked::full_null(ca.name(), ca.len()))
@@ -269,7 +286,9 @@ pub(crate) fn impl_advance_n_days(
                 }
                 _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
                     (Some(x_date), Some(n)) => {
-                        Ok(x_date+calculate_advance(x_date, n, &holidays, &weekend, cache.as_ref())?).map(Some)
+                        let x_mod_7 = x_date % 7;
+                        let x_weekday = weekday(x_mod_7);
+                        Ok(x_date+calculate_advance(x_date, x_mod_7, n, x_weekday, &weekend, cache.as_ref(), &holidays )?).map(Some)
                     }
                     _ => Ok(None),
                 }),
@@ -292,7 +311,9 @@ pub(crate) fn impl_advance_n_days(
                     if let Some(n) = n.get(0) {
                         ca.try_apply(|x| {
                             let x_date = (x / multiplier) as i32;
-                            Ok(x+(calculate_advance(x_date, n, &holidays, &weekend, cache.as_ref())? as i64 *multiplier))
+                            let x_mod_7 = x_date % 7;
+                            let x_weekday = weekday(x_mod_7);
+                            Ok(x+(calculate_advance(x_date, x_mod_7, n, x_weekday, &weekend, cache.as_ref(), &holidays )? as i64 *multiplier))
                         })
                     } else {
                         Ok(Int64Chunked::full_null(ca.name(), ca.len()))
@@ -301,7 +322,9 @@ pub(crate) fn impl_advance_n_days(
                 _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
                     (Some(x), Some(n)) => {
                         let x_date = (x / multiplier) as i32;
-                        Ok(x+(calculate_advance(x_date, n, &holidays, &weekend, cache.as_ref())? as i64 *multiplier)).map(Some)
+                        let x_mod_7 = x_date % 7;
+                        let x_weekday = weekday(x_mod_7);
+                        Ok(x+(calculate_advance(x_date, x_mod_7, n, x_weekday, &weekend, cache.as_ref(), &holidays )? as i64 *multiplier)).map(Some)
                     }
                     _ => Ok(None),
                 }),
