@@ -1,12 +1,14 @@
 import timeit
+import warnings
 import numpy as np
 
-# BENCHMARKS = [1, 2, 3, 4]
-BENCHMARKS = [3]
+BENCHMARKS = [1, 2, 3, 4]
+
+SIZE = 1_000_000
 
 # BENCHMARK 1: NO HOLIDAYS INVOLVED
 
-setup = """
+setup = f"""
 import polars as pl
 import polars_business
 from datetime import date
@@ -17,16 +19,16 @@ import warnings
 
 dates = pl.date_range(date(2020, 1, 1), date(2024, 1, 1), closed='left', eager=True)
 dates = dates.filter(dates.dt.weekday() < 6)
-size = 1_000_000
+size = {SIZE}
 input_dates = np.random.choice(dates, size)
 
-df = pl.DataFrame({
+df = pl.DataFrame({{
     'ts': input_dates,
-})
+}})
 
-df_pd = pd.DataFrame({
+df_pd = pd.DataFrame({{
     'ts': input_dates,
-})
+}})
 """
 
 
@@ -50,14 +52,13 @@ if 1 in BENCHMARKS:
     )
     print("NumPy: ", time_it("result_np = np.busday_offset(input_dates, 17)"))
 
-    # uncomment, too slow...
-    # print(
-    #     "pandas: ", time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)")
-    # )
+    print(
+        "pandas: ", time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.BusinessDay(17)")
+    )
 
 # BENCHMARK 2: WITH HOLIDAYS
 
-setup = """
+setup = f"""
 import polars as pl
 import polars_business
 from datetime import date
@@ -71,16 +72,16 @@ uk_holidays = list(holidays.country_holidays('UK', years=[2020, 2021, 2022, 2023
 dates = pl.date_range(date(2020, 1, 1), date(2024, 1, 1), closed='left', eager=True)
 dates = dates.filter(~dates.is_in(uk_holidays))
 dates = dates.filter(dates.dt.weekday() < 6)
-size = 1_000_000
+size = {SIZE}
 input_dates = np.random.choice(dates, size)
 
-df = pl.DataFrame({
+df = pl.DataFrame({{
     'ts': input_dates,
-})
+}})
 
-df_pd = pd.DataFrame({
+df_pd = pd.DataFrame({{
     'ts': input_dates,
-})
+}})
 """
 
 if 2 in BENCHMARKS:
@@ -94,10 +95,16 @@ if 2 in BENCHMARKS:
         "NumPy: ",
         time_it("result_np = np.busday_offset(input_dates, 17, holidays=uk_holidays)"),
     )
+    # with warnings.catch_warnings():
+    #     import pandas as pd
+    #     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
+    #     print(
+    #         "pandas: ", time_it("result_pd = df_pd['ts'] + pd.tseries.offsets.CustomBusinessDay(17, holidays=uk_holidays)")
+    #     )
 
 # BENCHMARK 3: WITH weekends
 
-setup = """
+setup = f"""
 import polars as pl
 import polars_business
 from datetime import date
@@ -110,16 +117,16 @@ import warnings
 dates = pl.date_range(date(2020, 1, 1), date(2024, 1, 1), closed='left', eager=True)
 weekend = ['Fri', 'Sat']
 dates = dates.filter(~dates.dt.weekday().is_in([5, 6]))
-size = 1_000_000
+size = {SIZE}
 input_dates = np.random.choice(dates, size)
 
-df = pl.DataFrame({
+df = pl.DataFrame({{
     'ts': input_dates,
-})
+}})
 
-df_pd = pd.DataFrame({
+df_pd = pd.DataFrame({{
     'ts': input_dates,
-})
+}})
 """
 
 if 3 in BENCHMARKS:
@@ -137,7 +144,7 @@ if 3 in BENCHMARKS:
 
 # BENCHMARK 4: WITH weekends and holidays
 
-setup = """
+setup = f"""
 import polars as pl
 import polars_business
 from datetime import date
@@ -151,16 +158,16 @@ uk_holidays = list(holidays.country_holidays('UK', years=[2020, 2021, 2022, 2023
 dates = pl.date_range(date(2020, 1, 1), date(2024, 1, 1), closed='left', eager=True)
 weekend = ['Fri', 'Sat']
 dates = dates.filter((~dates.dt.weekday().is_in([5, 6])) & (~dates.is_in(uk_holidays)))
-size = 10_000_000
+size = {SIZE}
 input_dates = np.random.choice(dates, size)
 
-df = pl.DataFrame({
+df = pl.DataFrame({{
     'ts': input_dates,
-})
+}})
 
-df_pd = pd.DataFrame({
+df_pd = pd.DataFrame({{
     'ts': input_dates,
-})
+}})
 """
 
 if 4 in BENCHMARKS:
