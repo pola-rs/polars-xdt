@@ -30,29 +30,7 @@ Usage
 1. `import polars_business`
 2. use `.business` accessor on expressions
 
-See `Examples` section below!
-
-Currently there's only a single function: `advance_n_days`. It takes arguments:
-- `n`: number of days to advance. This can be an expression.
-- `holidays`: list of holidays in `datetime.date` format. The Python `holidays` package may
-  be useful here. You can install it with `pip install holidays`, and then you can get a list
-  of holidays for a given country with (for example, `'UK'`):
-  ```python
-  import holidays 
-
-  pl.col('date').business.advance_n_days(
-    n=n,
-    holidays=list(holidays.country_holidays('UK', years=[2020, 2021, 2022, 2023])),
-  )
-  ```
-- `weekend`. By default, Saturday and Sunday are considered "weekend". But you can customise
-  this by passing, for example:
-  ```python
-  pl.col('date').business.advance_n_days(
-    n=n,
-    weekend=['Fri', 'Sat'],
-  )
-  ```
+See `Examples` below!
 
 Example
 -------
