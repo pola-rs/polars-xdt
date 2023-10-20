@@ -103,25 +103,29 @@ Benchmarks
 
 The following timings can be verified using the `perf.py` script.
 
-### Adding 17 business days to 10 million dates (no holidays)
+### Adding 17 business days to 1 million random dates (no holidays)
 
-- Polars-business 0.037
-- NumPy 0.09
-- pandas 0.801
+- Polars-business 0.00656s
+- NumPy 0.00914
+- pandas 0.08006
 
 NOTE: pandas doesn't have a "date" dtype, so there is extra overhead
 to deal with time and time zone components.
 
-### Adding 17 business days to 10 million dates (UK holidays for 2020-2023)
+### Adding 17 business days to 1 million random dates (UK holidays for 2020-2023)
 
-- Polars-business 0.34
-- NumPy 0.403
-- pandas: omitted as pandas doesn't (yet) vectorise `CustomBusinessDay`, so
-  we'd likely be talking about minutes
+- Polars-business 0.03771
+- NumPy 0.04077
+- pandas: omitted as it's not vectorised and throws a `PerformanceWarning`
 
-### Adding 17 business days to 10 million dates (with 'Friday' and 'Saturday' as weekend)
+### Adding 17 business days to 1 million random dates (with 'Friday' and 'Saturday' as weekend)
 
-- Polars-business 0.091
-- NumPy 0.105
-- pandas: omitted as pandas doesn't (yet) vectorise `CustomBusinessDay`, so
-  we'd likely be talking about minutes
+- Polars-business 0.0108
+- NumPy 0.01057
+- pandas: omitted as it's not vectorised and throws a `PerformanceWarning`
+
+### Adding 17 business days to 1 million random dates (with 'Friday' and 'Saturday' as weekend, and UK holidays for 2020-2023)
+
+- Polars-business 0.0371
+- NumPy 0.03841
+- pandas: omitted as it's not vectorised and throws a `PerformanceWarning`
