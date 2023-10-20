@@ -122,16 +122,14 @@ pub(crate) fn calculate_n_days_with_holidays(
 
 pub(crate) fn calculate_n_days_with_weekend_and_holidays(
     x: i32,
-    _x_mod_7: i32,
+    x_mod_7: i32,
     n: i32,
-    _x_weekday: i32,
+    x_weekday: i32,
     weekend: &[i32],
     cache: Option<&AHashMap<i32, i32>>,
     holidays: &[i32],
 ) -> PolarsResult<i32> {
     let cache = cache.unwrap();
-    let x_mod_7 = x % 7;
-    let x_weekday = weekday(x_mod_7);
 
     if weekend.contains(&x_weekday) {
         return its_a_business_date_error_message(x);
@@ -173,14 +171,12 @@ pub(crate) fn calculate_n_days_with_weekend(
     x: i32,
     _x_mod_7: i32,
     n: i32,
-    _x_weekday: i32,
+    x_weekday: i32,
     weekend: &[i32],
     cache: Option<&AHashMap<i32, i32>>,
     _holidays: &[i32],
 ) -> PolarsResult<i32> {
     let cache = cache.unwrap();
-    let x_mod_7 = x % 7;
-    let x_weekday = weekday(x_mod_7);
     let n_weekend = weekend.len() as i32;
 
     if weekend.contains(&x_weekday) {
