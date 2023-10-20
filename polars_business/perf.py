@@ -17,7 +17,7 @@ import warnings
 
 dates = pl.date_range(date(2020, 1, 1), date(2024, 1, 1), closed='left', eager=True)
 dates = dates.filter(dates.dt.weekday() < 6)
-size = 10_000_000
+size = 50_000_000
 input_dates = np.random.choice(dates, size)
 
 df = pl.DataFrame({
@@ -110,7 +110,7 @@ import warnings
 dates = pl.date_range(date(2020, 1, 1), date(2024, 1, 1), closed='left', eager=True)
 weekend = ['Fri', 'Sat']
 dates = dates.filter(~dates.dt.weekday().is_in([5, 6]))
-size = 10_000_000
+size = 50_000_000
 input_dates = np.random.choice(dates, size)
 
 df = pl.DataFrame({

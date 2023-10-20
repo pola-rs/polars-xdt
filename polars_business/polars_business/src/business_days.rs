@@ -33,11 +33,14 @@ pub(crate) fn advance_few_days(x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
     // and that x_weekday is between 0 and 6
     // could we pre-compute all the possible values?
     let mut n_days = 0;
-    for _ in 0..n.abs() {
-        if n > 0 {
-            n_days += 1;
-            n_days = roll(n_days, fast_modulo(x_weekday, n_days), weekend);
-        } else {
+    if n > 0 {
+        for _ in 0..n.abs() {
+                n_days += 1;
+                n_days = roll(n_days, fast_modulo(x_weekday, n_days), weekend);
+        }
+    }
+    else {
+        for _ in 0..n.abs() {
             n_days -= 1;
             n_days = roll(n_days, fast_modulo(x_weekday, n_days), weekend);
         }
@@ -52,6 +55,9 @@ pub(crate) fn calculate_n_days_without_holidays_slow(
     cache: &AHashMap<i32, i32>,
 ) -> i32 {
     let (n_weeks, n_days) = (n / n_weekdays, n % n_weekdays);
+    if n_days == 0 {
+        return n_weeks * 7;
+    }
     let n_days = cache.get(&(n_days * 10 + x_weekday)).unwrap();
     n_days + n_weeks * 7
 }
@@ -84,9 +90,9 @@ fn roll(n_days: i32, x_weekday: i32, weekend: &[i32]) -> i32 {
     let mut n_days = n_days;
     while weekend.contains(&x_weekday) {
         if n_days > 0 {
-            x_weekday = (x_weekday + 1) % 7;
+            x_weekday = fast_modulo(x_weekday, 1);
         } else {
-            x_weekday = (x_weekday - 1 + 7) % 7;
+            x_weekday = fast_modulo(x_weekday, -1);
         }
         n_days = increment(n_days);
     }
@@ -236,7 +242,7 @@ pub(crate) fn impl_advance_n_days(
     // Set up weeekend cache.
     let n_weekend = weekend.len() as i32;
     let n_weekdays = 7 - n_weekend;
-    let capacity = (n_weekdays * 2 + 1) * n_weekdays;
+    let capacity = (n_weekdays + 1) * n_weekdays;
     let cache: Option<AHashMap<i32, i32>> = if weekend == [5, 6] {
         None
     } else {
@@ -244,7 +250,6 @@ pub(crate) fn impl_advance_n_days(
         let weekdays = (0..=6).filter(|x| !weekend.contains(x));
         for x_weekday in weekdays {
             for n_days in (-n_weekdays)..=n_weekdays {
-            // for n_days in 0..=n_weekdays {
                 if n_days == 0 {
                     cache.insert((10 * n_days + x_weekday), 0);
                 }

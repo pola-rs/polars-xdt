@@ -21,3 +21,6 @@ chrono = "0.4.31"
 
 [target .'cfg(target_os = "linux")']
 jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }
+
+[profile.release]
+debug = 1
