@@ -32,8 +32,8 @@ Usage
 
 See `Examples` below!
 
-Example
--------
+Examples
+--------
 Say we start with
 ```python
 from datetime import date
