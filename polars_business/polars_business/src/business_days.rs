@@ -29,23 +29,25 @@ fn fast_modulo(x_weekday: i32, n: i32) -> i32 {
 }
 
 pub(crate) fn advance_few_days(x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
-    // We know that n is between -7 and 7
-    // and that x_weekday is between 0 and 6
-    // could we pre-compute all the possible values?
     let mut n_days = 0;
-    if n > 0 {
-        for _ in 0..n.abs() {
-                n_days += 1;
-                n_days = roll(n_days, fast_modulo(x_weekday, n_days), weekend);
+    let mut x_weekday = x_weekday;
+    let mut n = n;
+    while n > 0 {
+        n_days += 1;
+        x_weekday = fast_modulo(x_weekday, 1);
+        if !weekend.contains(&x_weekday) {
+            n -= 1;
         }
     }
-    else {
-        for _ in 0..n.abs() {
-            n_days -= 1;
-            n_days = roll(n_days, fast_modulo(x_weekday, n_days), weekend);
+    while n < 0 {
+        n_days -= 1;
+        x_weekday = fast_modulo(x_weekday, -1);
+        if !weekend.contains(&x_weekday) {
+            n += 1;
         }
     }
     n_days
+
 }
 
 pub(crate) fn calculate_n_days_without_holidays_slow(

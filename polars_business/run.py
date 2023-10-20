@@ -5,8 +5,8 @@ import numpy as np
 
 reverse_mapping = {value: key for key, value in mapping.items()}
 
-start = datetime(2000, 10, 1)
-n = 0
+start = datetime(2000, 1, 2)
+n = -1
 weekend = []
 holidays = [date(2000, 1, 1)]
 weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
