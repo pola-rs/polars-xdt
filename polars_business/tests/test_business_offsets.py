@@ -1,4 +1,5 @@
 import datetime as dt
+import pytest
 import pandas as pd
 
 import hypothesis.strategies as st
@@ -16,7 +17,7 @@ def get_result(date, dtype, **kwargs):
     if dtype == pl.Date:
         result = (
             pl.DataFrame({"ts": [date]})
-            .select(pl.col("ts").business.advance_n_days(**kwargs))["ts"]
+            .select(pl.col("ts").bdt.offset_by(**kwargs))["ts"]
             .item()
         )
     else:
@@ -26,7 +27,7 @@ def get_result(date, dtype, **kwargs):
                 pl.col("ts")
                 .dt.cast_time_unit(dtype.time_unit)
                 .dt.replace_time_zone(dtype.time_zone)
-                .business.advance_n_days(**kwargs)
+                .bdt.offset_by(**kwargs)
                 .dt.date()
             )["ts"]
             .item()
@@ -51,7 +52,7 @@ def test_against_np_busday_offset(date: dt.date, n: int, dtype, function) -> Non
     # how to do this...
     # convert time zone of date
     assume(date.weekday() < 5)
-    result = get_result(date, dtype, n=function(n))
+    result = get_result(date, dtype, by=function(f'{n}bd'))
     expected = np.busday_offset(date, n)
     assert np.datetime64(result) == expected
 
@@ -65,7 +66,7 @@ def test_against_pandas_bday_offset(date: dt.date, n: int) -> None:
     assume(date.weekday() < 5)
     result = (
         pl.DataFrame({"ts": [date]})
-        .select(pl.col("ts").business.advance_n_days(n=n))["ts"]
+        .select(pl.col("ts").bdt.offset_by(by=f'{n}bd'))["ts"]
         .item()
     )
     expected = pd.Timestamp(date) + pd.tseries.offsets.BusinessDay(n)
@@ -95,7 +96,7 @@ def test_against_np_busday_offset_with_holidays(
 ) -> None:
     assume(date.weekday() < 5)
     assume(date not in holidays)  # TODO: remove once unwrap is removed
-    result = get_result(date, dtype, n=function(n), holidays=holidays)
+    result = get_result(date, dtype, by=function(f'{n}bd'), holidays=holidays)
     expected = np.busday_offset(date, n, holidays=holidays)
     assert np.datetime64(result) == expected
 
@@ -122,7 +123,7 @@ def test_against_np_busday_offset_with_weekends(
     date: dt.date, n: int, weekend: list[dt.date], dtype, function
 ) -> None:
     assume(reverse_mapping[date.weekday()] not in weekend)
-    result = get_result(date, dtype, n=function(n), weekend=weekend)
+    result = get_result(date, dtype, by=function(f'{n}bd'), weekend=weekend)
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
     expected = np.busday_offset(date, n, weekmask=weekmask)
     assert np.datetime64(result) == expected
@@ -158,7 +159,44 @@ def test_against_np_busday_offset_with_weekends_and_holidays(
         reverse_mapping[date.weekday()] not in weekend
     )  # TODO: remove once unwrap is removed
     assume(date not in holidays)  # TODO: remove once unwrap is removed
-    result = get_result(date, dtype, n=function(n), weekend=weekend, holidays=holidays)
+    result = get_result(date, dtype, by=function(f'{n}bd'), weekend=weekend, holidays=holidays)
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
     expected = np.busday_offset(date, n, weekmask=weekmask, holidays=holidays)
     assert np.datetime64(result) == expected
+
+
+@pytest.mark.parametrize(
+    ('by', 'expected'),
+    [
+        ('1bd', dt.datetime(2000, 1, 4)),
+        ('2bd', dt.datetime(2000, 1, 5)),
+        ('1bd2h', dt.datetime(2000, 1, 4, 2)),
+        ('2h1bd', dt.datetime(2000, 1, 4, 2)),
+        ('2bd1h', dt.datetime(2000, 1, 5, 1)),
+        ('-1bd', dt.datetime(1999, 12, 31)),
+        ('-2bd', dt.datetime(1999, 12, 30)),
+        ('-1bd2h', dt.datetime(1999, 12, 30, 22)),
+        ('-2h1bd', dt.datetime(1999, 12, 30, 22)),
+        ('-2bd1h', dt.datetime(1999, 12, 29, 23)),
+    ]
+)
+def test_extra_args(by, expected) -> None:
+    start = dt.datetime(2000, 1, 3)
+    df = pl.DataFrame({"dates": [start]})
+    result = (
+        df.with_columns(
+            dates_shifted=pl.col("dates").bdt.offset_by(by=by)
+        ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
+    )['dates_shifted'].item()
+    assert result == expected
+
+def test_extra_args_w_series() -> None:
+    start = dt.datetime(2000, 1, 3)
+    df = pl.DataFrame({"dates": [start]*2, 'by': ['1bd2h', '-1bd1h']})
+    result = (
+        df.with_columns(
+            dates_shifted=pl.col("dates").bdt.offset_by(by=pl.col('by'))
+        ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
+    )['dates_shifted']
+    assert result[0] == dt.datetime(2000, 1, 4, 2)
+    assert result[1] == dt.datetime(1999, 12, 30, 23)

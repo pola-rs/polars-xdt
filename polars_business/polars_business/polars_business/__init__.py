@@ -16,6 +16,12 @@ class BusinessDayTools:
         self._expr = expr
 
     def advance_n_days(self, n, weekend=("Sat", "Sun"), holidays=None) -> pl.Expr:
+        import warnings
+        warnings.warn(
+            "`.business.advance_n_days` has been renamed to `.bdt.offset_by`, please use that instead.",
+            DeprecationWarning,
+            stacklevel=3,
+            )
         if not holidays:
             holidays = []
         else:
@@ -37,33 +43,37 @@ class BusinessDayTools:
                 "weekend": weekend,
             },
         )
-        # elif holidays is not None and weekend is None:
-        #     holidays = pl.Series([list(set(holidays))]).cast(pl.List(pl.Int32))
-        #     return self._expr._register_plugin(
-        #         lib=lib,
-        #         symbol="advance_n_days_with_holidays",
-        #         is_elementwise=True,
-        #         args=[n, holidays],
-        #     )
-        # elif holidays is None and weekend is not None:
-        #     weekend = pl.Series([list({mapping[name] for name in weekend})]).cast(pl.List(pl.Int32))
-        #     return self._expr._register_plugin(
-        #         lib=lib,
-        #         symbol="advance_n_days_with_weekend",
-        #         is_elementwise=True,
-        #         args=[n,
-        #               weekend
-        #               ],
-        #     )
-        # else:
-        #     holidays = pl.Series([list(set(holidays))]).cast(pl.List(pl.Int32))
-        #     weekend = pl.Series([list({mapping[name] for name in weekend})]).cast(pl.List(pl.Int32))
-        #     return self._expr._register_plugin(
-        #         lib=lib,
-        #         symbol="advance_n_days_with_weekend_and_holidays",
-        #         is_elementwise=True,
-        #         args=[n,
-        #               weekend,
-        #               holidays,
-        #               ],
-        #     )
+
+@pl.api.register_expr_namespace("bdt")
+class BusinessDayTools:
+    def __init__(self, expr: pl.Expr):
+        self._expr = expr
+
+    def offset_by(self, by, *, weekend=("Sat", "Sun"), holidays=None) -> pl.Expr:
+        if not isinstance(by, pl.Expr):
+            by = pl.lit(by)
+        negate = 2*by.str.starts_with('-').cast(pl.Int32) - 1
+        n = by.str.extract(r'(\d+)bd').cast(pl.Int32) * negate * -1
+        by = by.str.replace(r'(\d+bd)', '')
+
+        if not holidays:
+            holidays = []
+        else:
+            holidays = sorted(
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
+            )
+        if weekend == ("Sat", "Sun"):
+            weekend = [5, 6]
+        else:
+            weekend = sorted({mapping[name] for name in weekend})
+
+        return self._expr._register_plugin(
+            lib=lib,
+            symbol="advance_n_days",
+            is_elementwise=True,
+            args=[n],
+            kwargs={
+                "holidays": holidays,
+                "weekend": weekend,
+            },
+        ).dt.offset_by(by)

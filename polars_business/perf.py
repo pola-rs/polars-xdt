@@ -48,7 +48,7 @@ def time_it(statement):
 if 1 in BENCHMARKS:
     print(
         "Polars-business: ",
-        time_it("result_pl = df.select(pl.col('ts').business.advance_n_days(n=17))"),
+        time_it("result_pl = df.select(pl.col('ts').bdt.offset_by(by='17bd'))"),
     )
     print("NumPy: ", time_it("result_np = np.busday_offset(input_dates, 17)"))
 
@@ -88,7 +88,7 @@ if 2 in BENCHMARKS:
     print(
         "Polars-business: ",
         time_it(
-            "result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, holidays=uk_holidays))"
+            "result_pl = df.select(pl.col('ts').bdt.offset_by(by='17bd', holidays=uk_holidays))"
         ),
     )
     print(
@@ -133,7 +133,7 @@ if 3 in BENCHMARKS:
     print(
         "Polars-business: ",
         time_it(
-            "result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, weekend=weekend))"
+            "result_pl = df.select(pl.col('ts').bdt.offset_by(by='17bd', weekend=weekend))"
         ),
     )
     print(
@@ -174,7 +174,7 @@ if 4 in BENCHMARKS:
     print(
         "Polars-business: ",
         time_it(
-            "result_pl = df.select(pl.col('ts').business.advance_n_days(n=17, weekend=weekend, holidays=uk_holidays))"
+            "result_pl = df.select(pl.col('ts').bdt.offset_by(by='17bd', weekend=weekend, holidays=uk_holidays))"
         ),
     )
     print(

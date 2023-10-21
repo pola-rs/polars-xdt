@@ -51,7 +51,7 @@ Let's shift `Date` forwards by 5 days, excluding Saturday and Sunday:
 
 ```python
 result = df.with_columns(
-    date_shifted=pl.col("date").business.advance_n_days(n=5)
+    date_shifted=pl.col("date").bdt.offset_by('5bd')
 )
 print(result)
 ```
@@ -77,8 +77,8 @@ import holidays
 uk_holidays = holidays.country_holidays("UK", years=[2023, 2024])
 
 result = df.with_columns(
-    date_shifted=pl.col("date").business.advance_n_days(
-      n=5,
+    date_shifted=pl.col("date").bdt.advance_n_days(
+      by='5bd',
       holidays=uk_holidays,
     )
 )
@@ -100,8 +100,8 @@ shape: (3, 2)
 Let's shift `Date` forwards by 5 days, excluding only Sunday:
 ```python
 result = df.with_columns(
-    date_shifted=pl.col("date").business.advance_n_days(
-      n=5,
+    date_shifted=pl.col("date").bdt.offset_by(
+      by='5bd',
       weekend=['Sun'],
     )
 )
