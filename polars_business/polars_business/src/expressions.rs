@@ -6,7 +6,7 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 pub struct BusinessDayKwargs {
     holidays: Vec<i32>,
-    weekend: Vec<i32>,
+    weekend: [bool; 7],
 }
 
 fn bday_output(input_fields: &[Field]) -> PolarsResult<Field> {
@@ -21,5 +21,5 @@ fn advance_n_days(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<
     let weekend = kwargs.weekend;
     let holidays = kwargs.holidays;
 
-    impl_advance_n_days(s, n, holidays, weekend)
+    impl_advance_n_days(s, n, holidays, &weekend)
 }

@@ -20,21 +20,21 @@ fn fast_modulo(x_weekday: i32, n: i32) -> i32 {
     }
 }
 
-pub(crate) fn advance_few_days(x_weekday: i32, n: i32, weekend: &[i32]) -> i32 {
+pub(crate) fn advance_few_days(x_weekday: i32, n: i32, weekend: &[bool; 7]) -> i32 {
     let mut n_days = 0;
     let mut x_weekday = x_weekday;
     let mut n = n;
     while n > 0 {
         n_days += 1;
         x_weekday = fast_modulo(x_weekday, 1);
-        if !weekend.contains(&x_weekday) {
+        if weekend.get(x_weekday as usize) == Some(&true) {
             n -= 1;
         }
     }
     while n < 0 {
         n_days -= 1;
         x_weekday = fast_modulo(x_weekday, -1);
-        if !weekend.contains(&x_weekday) {
+        if weekend.get(x_weekday as usize) == Some(&true) {
             n += 1;
         }
     }
@@ -68,7 +68,7 @@ fn calculate_n_days_without_holidays_fast(
     _x_mod_7: i32,
     n: i32,
     x_weekday: i32,
-    _weekend: &[i32],
+    _weekend: &[bool; 7],
     _cache: Option<&AHashMap<i32, i32>>,
     _holidays: &[i32],
 ) -> PolarsResult<i32> {
@@ -92,7 +92,7 @@ pub(crate) fn calculate_n_days_with_holidays(
     x_mod_7: i32,
     n: i32,
     x_weekday: i32,
-    _weekend: &[i32],
+    _weekend: &[bool; 7],
     _cache: Option<&AHashMap<i32, i32>>,
     holidays: &[i32],
 ) -> PolarsResult<i32> {
@@ -132,14 +132,14 @@ pub(crate) fn calculate_n_days_with_weekend_and_holidays(
     x_mod_7: i32,
     n: i32,
     x_weekday: i32,
-    weekend: &[i32],
+    weekend: &[bool; 7],
     cache: Option<&AHashMap<i32, i32>>,
     holidays: &[i32],
 ) -> PolarsResult<i32> {
     let cache = cache.unwrap();
-    let n_weekdays = 7 - weekend.len() as i32;
+    let n_weekdays = weekend.iter().filter(|x| **x).count() as i32;
 
-    if weekend.contains(&x_weekday) {
+    if weekend.get(x_weekday as usize) == Some(&false) {
         return its_a_business_date_error_message(x);
     };
 
@@ -179,14 +179,14 @@ pub(crate) fn calculate_n_days_with_weekend(
     _x_mod_7: i32,
     n: i32,
     x_weekday: i32,
-    weekend: &[i32],
+    weekend: &[bool; 7],
     cache: Option<&AHashMap<i32, i32>>,
     _holidays: &[i32],
 ) -> PolarsResult<i32> {
     let cache = cache.unwrap();
-    let n_weekdays = 7 - weekend.len() as i32;
+    let n_weekdays = weekend.iter().filter(|x| **x).count() as i32;
 
-    if weekend.contains(&x_weekday) {
+    if weekend.get(x_weekday as usize) == Some(&false) {
         return its_a_business_date_error_message(x);
     };
 
@@ -232,19 +232,18 @@ pub(crate) fn impl_advance_n_days(
     s: &Series,
     n: &Series,
     holidays: Vec<i32>,
-    weekend: Vec<i32>,
+    weekend: &[bool; 7],
 ) -> PolarsResult<Series> {
     let original_dtype = s.dtype();
 
     // Set up weeekend cache.
-    let n_weekend = weekend.len() as i32;
-    let n_weekdays = 7 - n_weekend;
+    let n_weekdays = weekend.iter().filter(|x| **x).count() as i32;
     let capacity = (n_weekdays + 1) * n_weekdays;
-    let cache: Option<AHashMap<i32, i32>> = if weekend == [5, 6] {
+    let cache: Option<AHashMap<i32, i32>> = if weekend == &[true, true, true, true, true, false, false] {
         None
     } else {
         let mut cache: AHashMap<i32, i32> = AHashMap::with_capacity(capacity as usize);
-        let weekdays = (0..=6).filter(|x| !weekend.contains(x));
+        let weekdays = (0..=6).filter(|x| weekend.get(*x as usize) == Some(&true));
         for x_weekday in weekdays {
             for n_days in (-n_weekdays)..=n_weekdays {
                 let value = advance_few_days(x_weekday, n_days, &weekend);
@@ -255,18 +254,18 @@ pub(crate) fn impl_advance_n_days(
     };
 
     // Only keep holidays which aren't on weekends.
-    let holidays: Vec<i32> = if weekend == [5, 6] {
+    let holidays: Vec<i32> = if weekend == &[true, true, true, true, true, false, false] {
         holidays.into_iter().filter(|x| weekday(*x) < 5).collect()
     } else {
         holidays
             .into_iter()
-            .filter(|x| !weekend.contains(&weekday(*x)))
+            .filter(|x| weekend.get(weekday(*x) as usize) == Some(&true))
             .collect()
     };
 
     let n = n.i32()?;
 
-    let calculate_advance = match (weekend == [5, 6], holidays.is_empty()) {
+    let calculate_advance = match (weekend == &[true, true, true, true, true, false, false], holidays.is_empty()) {
         (true, true) => calculate_n_days_without_holidays_fast,
         (true, false) => calculate_n_days_with_holidays,
         (false, true) => calculate_n_days_with_weekend,
