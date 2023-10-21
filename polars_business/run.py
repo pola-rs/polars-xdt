@@ -16,8 +16,9 @@ df = df.with_columns(start_wday=pl.col("dates").dt.strftime("%a"))
 
 print(
     df.with_columns(
-        dates_shifted=pl.col("dates").bdt.offset_by(
-            by=f'{n}bd',
+        dates_shifted=pl.col("dates").business.advance_n_days(
+            # by=f'{n}bd',
+            n=n,
             holidays=holidays,
             weekend=weekend,
         )

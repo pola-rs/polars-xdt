@@ -28,7 +28,7 @@ Usage
 -----
 
 1. `import polars_business`
-2. use `.business` accessor on expressions
+2. use `.bdt` accessor on expressions
 
 See `Examples` below!
 

@@ -20,7 +20,7 @@ class BusinessDayTools:
         warnings.warn(
             "`.business.advance_n_days` has been renamed to `.bdt.offset_by`, please use that instead.",
             DeprecationWarning,
-            stacklevel=3,
+            stacklevel=2,
             )
         if not holidays:
             holidays = []
