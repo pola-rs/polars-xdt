@@ -140,6 +140,8 @@ But I think they demonstrate:
 - that `polars-business` is on-par with numpy for performance,
 - that `polars-business` is at least an order of magnitude faster than pandas.
 
+Note that this is single threaded performance. In common usage these will likely run in parallel.
+
 The following timings can be verified using the `perf.py` script (note: lower is better):
 
 ### Adding 17 business days to 1 million random dates (no holidays)
