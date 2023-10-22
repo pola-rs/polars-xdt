@@ -11,7 +11,7 @@ SIZE = 1_000_000
 
 setup = f"""
 import polars as pl
-import polars_business
+import polars_business as plb
 from datetime import date
 import numpy as np
 import pandas as pd
@@ -61,7 +61,7 @@ if 1 in BENCHMARKS:
 
 setup = f"""
 import polars as pl
-import polars_business
+import polars_business as plb
 from datetime import date
 import numpy as np
 import pandas as pd
@@ -107,7 +107,7 @@ if 2 in BENCHMARKS:
 
 setup = f"""
 import polars as pl
-import polars_business
+import polars_business as plb
 from datetime import date
 import numpy as np
 import pandas as pd
@@ -147,7 +147,7 @@ if 3 in BENCHMARKS:
 
 setup = f"""
 import polars as pl
-import polars_business
+import polars_business as plb
 from datetime import date
 import numpy as np
 import pandas as pd

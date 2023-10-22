@@ -172,10 +172,10 @@ def date_range(
 
 class BExpr(pl.Expr):
     @property
-    def bdt(self) -> ExprBusinessDateTimeNamespace:  # type: ignore[empty-body]
-        ...
+    def bdt(self) -> ExprBusinessDateTimeNamespace:
+        return ExprBusinessDateTimeNamespace(self)
 
-
+# check polars.functions.col.Column
 class BColumn(Protocol):
     def __call__(
         self,
@@ -191,33 +191,8 @@ class BColumn(Protocol):
     def bdt(self) -> ExprBusinessDateTimeNamespace:
         ...
 
-class ColumnFactoryMeta(type):
-    def __getattr__(self, name: str) -> BExpr:
-        return cast(BExpr, _create_col(name))
 
-
-# factory that creates columns using `col("name")` or `col.name` syntax
-class ColumnFactory(metaclass=ColumnFactoryMeta):
-    def __new__(  # type: ignore[misc]
-        cls,
-        name: str | PolarsDataType | Iterable[str] | Iterable[PolarsDataType],
-        *more_names: str | PolarsDataType,
-    ) -> BExpr:
-        return cast(BExpr, _create_col(name, *more_names))
-
-    # appease sphinx; we actually use '__new__'
-    def __call__(
-        self,
-        name: str | PolarsDataType | Iterable[str] | Iterable[PolarsDataType],
-        *more_names: str | PolarsDataType,
-    ) -> BExpr:
-        return cast(BExpr, _create_col(name, *more_names))
-
-    def __getattr__(self, name: str) -> BExpr:
-        return cast(BExpr, getattr(type(self), name))
-
-
-col = cast(BColumn, ColumnFactory)
+col = cast(BColumn, pl.col)
 
 
 __all__ = [
