@@ -93,7 +93,7 @@ def date_range(
         time_zone=time_zone,
         eager=False,
     )
-    expr = expr.filter(~expr.is_in(holidays))
+    expr = expr.filter(~expr.dt.date().is_in(holidays))
     expr = expr.filter(~expr.dt.weekday().is_in(weekend_int))
     if eager:
         df = pl.select(expr)
