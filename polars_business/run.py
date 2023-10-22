@@ -8,7 +8,7 @@ reverse_mapping = {value: key for key, value in plb.mapping.items()}
 
 start = datetime(2000, 1, 3)
 n = 10
-weekend = ['Sat', 'Sun']
+weekend = ["Sat", "Sun"]
 holidays = []  # type: ignore
 weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
 
@@ -18,7 +18,7 @@ df = df.with_columns(start_wday=pl.col("dates").dt.strftime("%a"))
 print(
     df.with_columns(
         dates_shifted=plb.col("dates").bdt.offset_by(
-            by=f'{n}bd',
+            by=f"{n}bd",
             holidays=holidays,
             weekend=weekend,
         )
@@ -37,7 +37,7 @@ print(
     ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
 )
 
-print('here')
+print("here")
 print(pl.select(plb.date_range(date(2020, 1, 1), date(2020, 2, 1))))
-print('there')
+print("there")
 print(plb.date_range(date(2020, 1, 1), date(2020, 2, 1), eager=True))
