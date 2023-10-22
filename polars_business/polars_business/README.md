@@ -4,15 +4,16 @@
 	<img
 		width="400"
 		alt="polars-business"
-		src="./assets/polars-business.png">
+		src="https://github.com/MarcoGorelli/polars-business/blob/d38b5a68ae7aa8d5bacacb16359dc851f2c1e637/assets/polars-business.png">
 </h1>
+
+[![PyPI version](https://badge.fury.io/py/polars-business.svg)](https://badge.fury.io/py/polars-business)
 
 Business day utilities for [Polars](https://www.pola.rs/).
 
 - ✅ blazingly fast, written in Rust!
-- ✅ define your own custom holidays!
-- ✅ define your own custom weekend days!
-- ✅ works with Polars lazy execution!
+- ✅ seamless Polars integration!
+- ✅ define your own custom holidays and weekends!
 
 Installation
 ------------
@@ -24,11 +25,33 @@ Then, you'll need to install `polars-business`:
 pip install polars-business
 ```
 
+Then, if you can run
+```python
+from datetime import date
+import polars_business as plb
+
+print(plb.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))
+```
+it means installation all worked correctly!
+
 Usage
 -----
 
-1. `import polars_business`
-2. use `.bdt` accessor on expressions
+1. `import polars_business as plb`
+2. use `.bdt` accessor on expressions created via `plb.col`
+
+Supported functions are:
+- `Expr.bdt.offset_by`: just like [polars.Expr.dt.offset_by](https://pola-rs.github.io/polars/py-polars/html/reference/expressions/api/polars.Expr.dt.offset_by.html),
+  but also accepts:
+  - `'1bd'` in the string language (i.e. "1 business day")
+  - `holidays` argument, for passing custom holidays
+  - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
+- `plb.date_range`: just like [polars.date_range](https://pola-rs.github.io/polars/py-polars/html/reference/expressions/api/polars.date_range.html#polars-date-range),
+  but also accepts:
+  - `holidays` argument, for passing custom holidays
+  - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
+  
+  Final result will have holidays and weekend filtered out.
 
 See `Examples` below!
 
@@ -39,7 +62,7 @@ Say we start with
 from datetime import date
 
 import polars as pl
-import polars_business
+import polars_business as plb
 
 
 df = pl.DataFrame(
@@ -120,50 +143,11 @@ shape: (3, 2)
 └────────────┴──────────────┘
 ```
 
-What to expected
-----------------
-The following will hopefully come relatively soon:
-- support for rolling forwards/backwards to the next
-  valid business date (if not already on one)
-- calculate the number of business days between two
-  dates (like `np.busday_count`)
-
-Ideas for future development:
-- business date range
-
 Benchmarks
 ----------
 
-Note: take these with a grain of salt.
+Single-threaded performance is:
+- about on par with NumPy (but more flexible)
+- at least an order of magnitude faster than pandas.
 
-But I think they demonstrate:
-- that `polars-business` is on-par with numpy for performance,
-- that `polars-business` is at least an order of magnitude faster than pandas.
-
-Note that this is single threaded performance. In common usage these will likely run in parallel.
-
-The following timings can be verified using the `perf.py` script (note: lower is better):
-
-### Adding 17 business days to 1 million random dates (no holidays)
-
-- Polars-business 0.00656s
-- NumPy 0.00914s
-- pandas 0.08006s
-
-### Adding 17 business days to 1 million random dates (UK holidays for 2020-2023)
-
-- Polars-business 0.03771s
-- NumPy 0.04077s
-- pandas: omitted as it's not vectorised and throws a `PerformanceWarning`
-
-### Adding 17 business days to 1 million random dates (with 'Friday' and 'Saturday' as weekend)
-
-- Polars-business 0.0108s
-- NumPy 0.01057s
-- pandas: omitted as it's not vectorised and throws a `PerformanceWarning`
-
-### Adding 17 business days to 1 million random dates (with 'Friday' and 'Saturday' as weekend, and UK holidays for 2020-2023)
-
-- Polars-business 0.0371s
-- NumPy 0.03841s
-- pandas: omitted as it's not vectorised and throws a `PerformanceWarning`
+Check the https://www.kaggle.com/code/marcogorelli/polars-business for some comparisons.
