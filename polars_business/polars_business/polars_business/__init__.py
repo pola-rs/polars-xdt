@@ -87,3 +87,31 @@ class BusinessDayTools:
         if fastpath:
             return result
         return result.dt.offset_by(by)
+
+
+def date_range(
+    start,
+    end,
+    interval='1d',
+    *,
+    closed='both',
+    time_unit=None,
+    time_zone=None,
+    eager=False,
+    weekend=("Sat", "Sun"),
+    holidays=None,
+):
+    """
+    Utility function for filtering out weekends and holidays from a date range.
+    """
+    if weekend == ("Sat", "Sun"):
+        weekend = [6, 7]
+    else:
+        weekend = sorted({mapping[name] for name in weekend})
+    if holidays is None:
+        holidays = []
+
+    expr = pl.date_range(start, end, interval, closed=closed, time_unit=time_unit, time_zone=time_zone, eager=eager)
+    expr = expr.filter(~expr.is_in(holidays))
+    expr = expr.filter(~expr.dt.weekday().is_in(weekend))
+    return expr

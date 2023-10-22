@@ -4,8 +4,10 @@
 	<img
 		width="400"
 		alt="polars-business"
-		src="./assets/polars-business.png">
+		src="https://github.com/MarcoGorelli/polars-business/blob/d38b5a68ae7aa8d5bacacb16359dc851f2c1e637/assets/polars-business.png">
 </h1>
+
+[![PyPI version](https://badge.fury.io/py/polars-business.svg)](https://badge.fury.io/py/polars-business)
 
 Business day utilities for [Polars](https://www.pola.rs/).
 
