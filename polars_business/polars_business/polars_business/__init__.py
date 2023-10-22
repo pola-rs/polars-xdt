@@ -156,7 +156,7 @@ def date_range(
 def date_range(
     start: date | datetime | IntoExprColumn,
     end: date | datetime | IntoExprColumn,
-    interval: str | timedelta = "1d",
+    interval: str | timedelta = "1bd",
     *,
     closed: ClosedInterval = "both",
     time_unit: TimeUnit | None = None,
@@ -175,10 +175,11 @@ def date_range(
     if holidays is None:
         holidays = []
 
-    if "bd" in interval:
+    if not re.match(r'^-?\d+bd$', interval):
         raise ValueError(
-            "`polars_business.date_range` does not accept 'bd' as `interval`. Instead, use `'d'` - weekends and holidays will be filtered out at the end."
+            "Only intervals of the form 'nbd' (where n is an integer) are supported."
         )
+    interval = interval.replace('bd', 'd')
 
     expr = pl.date_range(
         start,

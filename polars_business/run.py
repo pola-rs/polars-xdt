@@ -40,4 +40,4 @@ print(
 print("here")
 print(pl.select(plb.date_range(date(2020, 1, 1), date(2020, 2, 1))))
 print("there")
-print(plb.date_range(date(2020, 1, 1), date(2020, 2, 1), eager=True))
+print(plb.date_range(date(2020, 1, 1), date(2020, 2, 1), '2bd1h', eager=True))
