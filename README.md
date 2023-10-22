@@ -147,7 +147,9 @@ Benchmarks
 ----------
 
 Single-threaded performance is:
-- about on par with NumPy (but more flexible)
+- about on par with NumPy
 - at least an order of magnitude faster than pandas.
 
-Check the https://www.kaggle.com/code/marcogorelli/polars-business for some comparisons.
+but note that Polars will take care of parallelisation for you.
+
+Check out https://www.kaggle.com/code/marcogorelli/polars-business for some comparisons.
