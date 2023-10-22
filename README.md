@@ -48,10 +48,10 @@ Supported functions are:
   - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
 - `plb.date_range`: just like [polars.date_range](https://pola-rs.github.io/polars/py-polars/html/reference/expressions/api/polars.date_range.html#polars-date-range),
   but also accepts:
+  - `'1bd'` in the string language (i.e. "1 business day")
   - `holidays` argument, for passing custom holidays
   - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
-  
-  Final result will have holidays and weekend filtered out.
+- `plb.datetime_range`: same as above, but the output will be `Datetime` dtype.
 
 See `Examples` below!
 
