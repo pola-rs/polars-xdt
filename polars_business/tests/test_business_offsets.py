@@ -56,7 +56,7 @@ def get_result(
 def test_against_np_busday_offset(date: dt.date, n: int, dtype, function) -> None:
     # how to do this...
     # convert time zone of date
-    assume(date.weekday() < 5)
+    assume(date.strftime('%a') not in ('Sat', 'Sun'))
     result = get_result(date, dtype, by=function(f"{n}bd"))
     expected = np.busday_offset(date, n)
     assert np.datetime64(result) == expected
@@ -68,7 +68,7 @@ def test_against_np_busday_offset(date: dt.date, n: int, dtype, function) -> Non
 )
 def test_against_pandas_bday_offset(date: dt.date, n: int) -> None:
     # maybe just remove this one?
-    assume(date.weekday() < 5)
+    assume(date.strftime('%a') not in ('Sat', 'Sun'))
     result = (
         pl.DataFrame({"ts": [date]})
         .select(plb.col("ts").bdt.offset_by(by=f"{n}bd"))["ts"]
@@ -99,7 +99,7 @@ def test_against_pandas_bday_offset(date: dt.date, n: int) -> None:
 def test_against_np_busday_offset_with_holidays(
     date: dt.date, n: int, holidays: list[dt.date], dtype, function
 ) -> None:
-    assume(date.weekday() < 5)
+    assume(date.strftime('%a') not in ('Sat', 'Sun'))
     assume(date not in holidays)  # TODO: remove once unwrap is removed
     result = get_result(date, dtype, by=function(f"{n}bd"), holidays=holidays)
     expected = np.busday_offset(date, n, holidays=holidays)
@@ -127,7 +127,7 @@ def test_against_np_busday_offset_with_holidays(
 def test_against_np_busday_offset_with_weekends(
     date: dt.date, n: int, weekend: list[dt.date], dtype, function
 ) -> None:
-    assume(reverse_mapping[date.weekday()+1] not in weekend)
+    assume(date.strftime('%a') not in weekend)
     result = get_result(date, dtype, by=function(f"{n}bd"), weekend=weekend)
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
     expected = np.busday_offset(date, n, weekmask=weekmask)
@@ -160,10 +160,8 @@ def test_against_np_busday_offset_with_weekends(
 def test_against_np_busday_offset_with_weekends_and_holidays(
     date: dt.date, n: int, weekend: list[int], holidays: list[dt.date], dtype, function
 ) -> None:
-    assume(
-        reverse_mapping[date.weekday()+1] not in weekend
-    )  # TODO: remove once unwrap is removed
-    assume(date not in holidays)  # TODO: remove once unwrap is removed
+    assume(date.strftime('%a') not in weekend)
+    assume(date not in holidays)
     result = get_result(
         date, dtype, by=function(f"{n}bd"), weekend=weekend, holidays=holidays
     )
