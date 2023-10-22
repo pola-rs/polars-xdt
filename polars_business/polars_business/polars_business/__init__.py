@@ -2,6 +2,7 @@ import polars as pl
 from polars.type_aliases import IntoExpr
 from polars.utils.udfs import _get_shared_lib_location
 from datetime import date
+import re
 
 lib = _get_shared_lib_location(__file__)
 
@@ -50,11 +51,17 @@ class BusinessDayTools:
         self._expr = expr
 
     def offset_by(self, by, *, weekend=("Sat", "Sun"), holidays=None) -> pl.Expr:
-        if not isinstance(by, pl.Expr):
-            by = pl.lit(by)
-        negate = 2*by.str.starts_with('-').cast(pl.Int32) - 1
-        n = by.str.extract(r'(\d+)bd').cast(pl.Int32) * negate * -1
-        by = by.str.replace(r'(\d+bd)', '')
+        # Fast path - do we have a business day offset, and nothing else?
+        if isinstance(by, str) and (len(re.search(r'(\d+bd)', by).group(1)) == len(by)):
+            n = int(by[:-2])
+            fastpath = True
+        else:
+            if not isinstance(by, pl.Expr):
+                by = pl.lit(by)
+            negate = 2*by.str.starts_with('-').cast(pl.Int32) - 1
+            n = by.str.extract(r'(\d+)bd').cast(pl.Int32) * negate * -1
+            by = by.str.replace(r'(\d+bd)', '')
+            fastpath = False
 
         if not holidays:
             holidays = []
@@ -67,7 +74,7 @@ class BusinessDayTools:
         else:
             weekend = sorted({mapping[name] for name in weekend})
 
-        return self._expr._register_plugin(
+        result = self._expr._register_plugin(
             lib=lib,
             symbol="advance_n_days",
             is_elementwise=True,
@@ -76,4 +83,7 @@ class BusinessDayTools:
                 "holidays": holidays,
                 "weekend": weekend,
             },
-        ).dt.offset_by(by)
+        )
+        if fastpath:
+            return result
+        return result.dt.offset_by(by)
