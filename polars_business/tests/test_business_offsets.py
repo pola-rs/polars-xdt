@@ -1,23 +1,26 @@
 import datetime as dt
 import pytest
-import pandas as pd
+import pandas as pd  # type: ignore
+from typing import Mapping, Any
 
 import hypothesis.strategies as st
 import numpy as np
 from hypothesis import given, assume, reject
 
 import polars as pl
-import polars_business  # noqa: F401
+import polars_business as plb
+from polars.type_aliases import PolarsDataType
 
 
-reverse_mapping = {value: key for key, value in polars_business.mapping.items()}
+mapping = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
+reverse_mapping = {value: key for key, value in mapping.items()}
 
 
-def get_result(date, dtype, **kwargs):
+def get_result(date: dt.date, dtype: PolarsDataType, **kwargs: Mapping[str, Any]) -> dt.date:
     if dtype == pl.Date:
         result = (
             pl.DataFrame({"ts": [date]})
-            .select(pl.col("ts").bdt.offset_by(**kwargs))["ts"]
+            .select(plb.col("ts").bdt.offset_by(**kwargs))["ts"]
             .item()
         )
     else:
@@ -66,7 +69,7 @@ def test_against_pandas_bday_offset(date: dt.date, n: int) -> None:
     assume(date.weekday() < 5)
     result = (
         pl.DataFrame({"ts": [date]})
-        .select(pl.col("ts").bdt.offset_by(by=f'{n}bd'))["ts"]
+        .select(plb.col("ts").bdt.offset_by(by=f'{n}bd'))["ts"]
         .item()
     )
     expected = pd.Timestamp(date) + pd.tseries.offsets.BusinessDay(n)
@@ -185,7 +188,7 @@ def test_extra_args(by, expected) -> None:
     df = pl.DataFrame({"dates": [start]})
     result = (
         df.with_columns(
-            dates_shifted=pl.col("dates").bdt.offset_by(by=by)
+            dates_shifted=plb.col("dates").bdt.offset_by(by=by)
         ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
     )['dates_shifted'].item()
     assert result == expected
@@ -195,7 +198,7 @@ def test_extra_args_w_series() -> None:
     df = pl.DataFrame({"dates": [start]*2, 'by': ['1bd2h', '-1bd1h']})
     result = (
         df.with_columns(
-            dates_shifted=pl.col("dates").bdt.offset_by(by=pl.col('by'))
+            dates_shifted=plb.col("dates").bdt.offset_by(by=pl.col('by'))
         ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
     )['dates_shifted']
     assert result[0] == dt.datetime(2000, 1, 4, 2)

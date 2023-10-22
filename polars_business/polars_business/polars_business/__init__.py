@@ -1,8 +1,12 @@
 import polars as pl
 from polars.type_aliases import IntoExpr
 from polars.utils.udfs import _get_shared_lib_location
-from datetime import date
+from datetime import date, datetime, timedelta
 import re
+from polars.functions.col import _create_col
+
+from polars.type_aliases import IntoExprColumn, ClosedInterval, TimeUnit, PolarsDataType
+from typing import Sequence, Literal, overload, cast, Iterable, Protocol
 
 lib = _get_shared_lib_location(__file__)
 
@@ -10,13 +14,12 @@ __version__ = "0.1.25"
 
 mapping = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
 
-
 @pl.api.register_expr_namespace("business")
 class BusinessDayTools:
     def __init__(self, expr: pl.Expr):
         self._expr = expr
 
-    def advance_n_days(self, n, weekend=("Sat", "Sun"), holidays=None) -> pl.Expr:
+    def advance_n_days(self, n, weekend=("Sat", "Sun"), holidays=None) -> pl.Expr:  # type: ignore
         import warnings
         warnings.warn(
             "`.business.advance_n_days` has been renamed to `.bdt.offset_by`, please use that instead.",
@@ -46,14 +49,18 @@ class BusinessDayTools:
         )
 
 @pl.api.register_expr_namespace("bdt")
-class BusinessDayTools:
+class ExprBusinessDateTimeNamespace:
     def __init__(self, expr: pl.Expr):
         self._expr = expr
 
-    def offset_by(self, by, *, weekend=("Sat", "Sun"), holidays=None) -> pl.Expr:
-        # Fast path - do we have a business day offset, and nothing else?
-        if isinstance(by, str) and (len(re.search(r'(\d+bd)', by).group(1)) == len(by)):
-            n = int(by[:-2])
+    def offset_by(self, by: str | pl.Expr, *, weekend: Sequence[str]=("Sat", "Sun"), holidays: Sequence[date]|None=None) -> pl.Expr:
+        if (
+            isinstance(by, str)
+            and (match := re.search(r'(\d+bd)', by)) is not None
+            and (len(match.group(1)) == len(by))
+        ):
+            # Fast path - do we have a business day offset, and nothing else?
+            n: int | pl.Expr = int(by[:-2])
             fastpath = True
         else:
             if not isinstance(by, pl.Expr):
@@ -64,15 +71,15 @@ class BusinessDayTools:
             fastpath = False
 
         if not holidays:
-            holidays = []
+            holidays_int = []
         else:
-            holidays = sorted(
+            holidays_int = sorted(
                 {(holiday - date(1970, 1, 1)).days for holiday in holidays}
             )
         if weekend == ("Sat", "Sun"):
-            weekend = [5, 6]
+            weekend_int = [5, 6]
         else:
-            weekend = sorted({mapping[name] for name in weekend})
+            weekend_int = sorted({mapping[name] for name in weekend})
 
         result = self._expr._register_plugin(
             lib=lib,
@@ -80,38 +87,140 @@ class BusinessDayTools:
             is_elementwise=True,
             args=[n],
             kwargs={
-                "holidays": holidays,
-                "weekend": weekend,
+                "holidays": holidays_int,
+                "weekend": weekend_int,
             },
         )
         if fastpath:
             return result
         return result.dt.offset_by(by)
 
+@overload
+def date_range(
+    start: date | datetime | IntoExprColumn,
+    end: date | datetime | IntoExprColumn,
+    interval: str | timedelta = "1d",
+    *,
+    closed: ClosedInterval = ...,
+    time_unit: TimeUnit | None = ...,
+    time_zone: str | None = ...,
+    eager: Literal[False] = ...,
+    weekend: Sequence[str]=...,
+    holidays: Sequence[date]|None=...,
+) -> pl.Expr:
+    ...
+
+@overload
+def date_range(
+    start: date | datetime | IntoExprColumn,
+    end: date | datetime | IntoExprColumn,
+    interval: str | timedelta = "1d",
+    *,
+    closed: ClosedInterval = ...,
+    time_unit: TimeUnit | None = ...,
+    time_zone: str | None = ...,
+    eager: Literal[True],
+    weekend: Sequence[str]=...,
+    holidays: Sequence[date]|None=...,
+) -> pl.Series:
+    ...
+@overload
+def date_range(
+    start: date | datetime | IntoExprColumn,
+    end: date | datetime | IntoExprColumn,
+    interval: str | timedelta = "1d",
+    *,
+    closed: ClosedInterval = ...,
+    time_unit: TimeUnit | None = ...,
+    time_zone: str | None = ...,
+    eager: bool = ...,
+    weekend: Sequence[str]=...,
+    holidays: Sequence[date]|None=...,
+) -> pl.Series | pl.Expr:
+    ...
+
 
 def date_range(
-    start,
-    end,
-    interval='1d',
+    start: date | datetime | IntoExprColumn,
+    end: date | datetime | IntoExprColumn,
+    interval: str | timedelta = "1d",
     *,
-    closed='both',
-    time_unit=None,
-    time_zone=None,
-    eager=False,
-    weekend=("Sat", "Sun"),
-    holidays=None,
-):
+    closed: ClosedInterval = "both",
+    time_unit: TimeUnit | None = None,
+    time_zone: str | None = None,
+    eager: bool = False,
+    weekend: Sequence[str]=("Sat", "Sun"),
+    holidays: Sequence[date]|None=None,
+) -> pl.Series | pl.Expr:
     """
     Utility function for filtering out weekends and holidays from a date range.
     """
     if weekend == ("Sat", "Sun"):
-        weekend = [6, 7]
+        weekend_int = [6, 7]
     else:
-        weekend = sorted({mapping[name] for name in weekend})
+        weekend_int = sorted({mapping[name] for name in weekend})
     if holidays is None:
         holidays = []
 
-    expr = pl.date_range(start, end, interval, closed=closed, time_unit=time_unit, time_zone=time_zone, eager=eager)
+    expr = pl.date_range(start, end, interval, closed=closed, time_unit=time_unit, time_zone=time_zone, eager=False)
     expr = expr.filter(~expr.is_in(holidays))
-    expr = expr.filter(~expr.dt.weekday().is_in(weekend))
+    expr = expr.filter(~expr.dt.weekday().is_in(weekend_int))
+    if eager:
+        df = pl.select(expr)
+        return df[df.columns[0]]
     return expr
+
+class BExpr(pl.Expr):
+    @property
+    def bdt(self) -> ExprBusinessDateTimeNamespace:  # type: ignore[empty-body]
+        ...
+
+
+class BColumn(Protocol):
+    def __call__(
+        self,
+        name: str | PolarsDataType | Iterable[str] | Iterable[PolarsDataType],
+        *more_names: str | PolarsDataType,
+    ) -> BExpr:
+        ...
+
+    def __getattr__(self, name: str) -> pl.Expr:
+        ...
+    
+    @property
+    def bdt(self) -> ExprBusinessDateTimeNamespace:
+        ...
+
+class ColumnFactoryMeta(type):
+    def __getattr__(self, name: str) -> BExpr:
+        return cast(BExpr, _create_col(name))
+
+
+# factory that creates columns using `col("name")` or `col.name` syntax
+class ColumnFactory(metaclass=ColumnFactoryMeta):
+    def __new__(  # type: ignore[misc]
+        cls,
+        name: str | PolarsDataType | Iterable[str] | Iterable[PolarsDataType],
+        *more_names: str | PolarsDataType,
+    ) -> BExpr:
+        return cast(BExpr, _create_col(name, *more_names))
+
+    # appease sphinx; we actually use '__new__'
+    def __call__(
+        self,
+        name: str | PolarsDataType | Iterable[str] | Iterable[PolarsDataType],
+        *more_names: str | PolarsDataType,
+    ) -> BExpr:
+        return cast(BExpr, _create_col(name, *more_names))
+
+    def __getattr__(self, name: str) -> BExpr:
+        return cast(BExpr, getattr(type(self), name))
+
+
+col = cast(BColumn, ColumnFactory)
+
+
+__all__ = [
+    'col',
+    'date_range',
+]

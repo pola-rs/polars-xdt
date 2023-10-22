@@ -5,3 +5,4 @@ numpy
 pandas
 pytest
 holidays
+mypy
