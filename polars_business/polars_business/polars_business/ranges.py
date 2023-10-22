@@ -6,7 +6,7 @@ from typing import Literal, Sequence
 import polars as pl
 from polars.type_aliases import IntoExprColumn, ClosedInterval, TimeUnit
 
-mapping = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
+mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 
 @overload
 def date_range(

@@ -12,7 +12,7 @@ import polars_business as plb
 from polars.type_aliases import PolarsDataType
 
 
-mapping = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
+mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 reverse_mapping = {value: key for key, value in mapping.items()}
 
 
@@ -127,9 +127,9 @@ def test_against_np_busday_offset_with_holidays(
 def test_against_np_busday_offset_with_weekends(
     date: dt.date, n: int, weekend: list[dt.date], dtype, function
 ) -> None:
-    assume(reverse_mapping[date.weekday()] not in weekend)
+    assume(reverse_mapping[date.weekday()+1] not in weekend)
     result = get_result(date, dtype, by=function(f"{n}bd"), weekend=weekend)
-    weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
+    weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
     expected = np.busday_offset(date, n, weekmask=weekmask)
     assert np.datetime64(result) == expected
 
@@ -161,13 +161,13 @@ def test_against_np_busday_offset_with_weekends_and_holidays(
     date: dt.date, n: int, weekend: list[int], holidays: list[dt.date], dtype, function
 ) -> None:
     assume(
-        reverse_mapping[date.weekday()] not in weekend
+        reverse_mapping[date.weekday()+1] not in weekend
     )  # TODO: remove once unwrap is removed
     assume(date not in holidays)  # TODO: remove once unwrap is removed
     result = get_result(
         date, dtype, by=function(f"{n}bd"), weekend=weekend, holidays=holidays
     )
-    weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
+    weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
     expected = np.busday_offset(date, n, weekmask=weekmask, holidays=holidays)
     assert np.datetime64(result) == expected
 

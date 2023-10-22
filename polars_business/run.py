@@ -6,11 +6,11 @@ from typing import Sequence, Iterable
 
 reverse_mapping = {value: key for key, value in plb.mapping.items()}
 
-start = datetime(2000, 1, 3)
-n = 10
+start = date(2998, 1, 10)
+n = 0
 weekend = ["Sat", "Sun"]
 holidays = []  # type: ignore
-weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(7)]
+weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
 
 df = pl.DataFrame({"dates": [start]})
 df = df.with_columns(start_wday=pl.col("dates").dt.strftime("%a"))

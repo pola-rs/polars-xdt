@@ -12,7 +12,7 @@ lib = _get_shared_lib_location(__file__)
 
 __version__ = "0.1.27"
 
-mapping = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
+mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 
 
 @pl.api.register_expr_namespace("business")
@@ -35,7 +35,7 @@ class BusinessDayTools:
                 {(holiday - date(1970, 1, 1)).days for holiday in holidays}
             )
         if weekend == ("Sat", "Sun"):
-            weekend = [5, 6]
+            weekend = [6, 7]
         else:
             weekend = sorted({mapping[name] for name in weekend})
 
@@ -86,7 +86,7 @@ class ExprBusinessDateTimeNamespace:
                 {(holiday - date(1970, 1, 1)).days for holiday in holidays}
             )
         if weekend == ("Sat", "Sun"):
-            weekend_int = [5, 6]
+            weekend_int = [6, 7]
         else:
             weekend_int = sorted({mapping[name] for name in weekend})
 

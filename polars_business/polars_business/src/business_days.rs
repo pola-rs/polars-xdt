@@ -6,14 +6,14 @@ use polars::prelude::*;
 pub(crate) fn weekday(x: i32) -> i32 {
     // the first modulo might return a negative number, so we add 7 and take
     // the modulo again so we're sure we have something between 0 and 6
-    ((x - 4) % 7 + 7) % 7
+    ((x - 4) % 7 + 7) % 7 + 1
 }
 
 fn fast_modulo(x_weekday: i32, n: i32) -> i32 {
     let res = x_weekday + n;
-    if n > 0 && res >= 7 {
+    if n > 0 && res > 7 {
         res - 7
-    } else if n < 0 && res < 0 {
+    } else if n < 0 && res <= 0 {
         res + 7
     } else {
         res
@@ -57,9 +57,9 @@ pub(crate) fn calculate_n_days_without_holidays_slow(
 
 fn calculate_n_days_without_holidays_blazingly_fast(n: i32, x_weekday: i32) -> i32 {
     if n >= 0 {
-        n + (n + x_weekday) / 5 * 2
+        n + (n + x_weekday - 1) / 5 * 2
     } else {
-        -(-n + (-n + 4 - x_weekday) / 5 * 2)
+        -(-n + (-n + 5 - x_weekday) / 5 * 2)
     }
 }
 
@@ -72,7 +72,7 @@ fn calculate_n_days_without_holidays_fast(
     _cache: Option<&AHashMap<i32, i32>>,
     _holidays: &[i32],
 ) -> PolarsResult<i32> {
-    if x_weekday >= 5 {
+    if x_weekday >= 6 {
         return its_a_business_date_error_message(x_date);
     }
     Ok(calculate_n_days_without_holidays_blazingly_fast(
@@ -96,7 +96,7 @@ pub(crate) fn calculate_n_days_with_holidays(
     _cache: Option<&AHashMap<i32, i32>>,
     holidays: &[i32],
 ) -> PolarsResult<i32> {
-    if x_weekday >= 5 {
+    if x_weekday >= 6 {
         return its_a_business_date_error_message(x_date);
     };
 
@@ -221,8 +221,8 @@ fn count_holidays(start: i32, end: i32, holidays: &[i32]) -> i32 {
 
 fn calculate_x_mod_7_and_x_weekday(x_date: i32) -> (i32, i32) {
     let x_mod_7 = x_date % 7;
-    let mut x_weekday = x_mod_7 - 4;
-    while x_weekday < 0 {
+    let mut x_weekday = x_mod_7 - 3;
+    while x_weekday <= 0 {
         x_weekday += 7;
     } 
     (x_mod_7, x_weekday)
@@ -240,11 +240,11 @@ pub(crate) fn impl_advance_n_days(
     let n_weekend = weekend.len() as i32;
     let n_weekdays = 7 - n_weekend;
     let capacity = (n_weekdays + 1) * n_weekdays;
-    let cache: Option<AHashMap<i32, i32>> = if weekend == [5, 6] {
+    let cache: Option<AHashMap<i32, i32>> = if weekend == [6, 7] {
         None
     } else {
         let mut cache: AHashMap<i32, i32> = AHashMap::with_capacity(capacity as usize);
-        let weekdays = (0..=6).filter(|x| !weekend.contains(x));
+        let weekdays = (1..=7).filter(|x| !weekend.contains(x));
         for x_weekday in weekdays {
             for n_days in (-n_weekdays)..=n_weekdays {
                 let value = advance_few_days(x_weekday, n_days, &weekend);
@@ -255,8 +255,8 @@ pub(crate) fn impl_advance_n_days(
     };
 
     // Only keep holidays which aren't on weekends.
-    let holidays: Vec<i32> = if weekend == [5, 6] {
-        holidays.into_iter().filter(|x| weekday(*x) < 5).collect()
+    let holidays: Vec<i32> = if weekend == [6, 7] {
+        holidays.into_iter().filter(|x| weekday(*x) < 6).collect()
     } else {
         holidays
             .into_iter()
@@ -266,7 +266,7 @@ pub(crate) fn impl_advance_n_days(
 
     let n = n.i32()?;
 
-    let calculate_advance = match (weekend == [5, 6], holidays.is_empty()) {
+    let calculate_advance = match (weekend == [6, 7], holidays.is_empty()) {
         (true, true) => calculate_n_days_without_holidays_fast,
         (true, false) => calculate_n_days_with_holidays,
         (false, true) => calculate_n_days_with_weekend,
