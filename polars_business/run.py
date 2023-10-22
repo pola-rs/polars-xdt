@@ -1,9 +1,9 @@
 import polars as pl
-from polars_business import *
+import polars_business as plb
 from datetime import date, datetime, timedelta
 import numpy as np
 
-reverse_mapping = {value: key for key, value in mapping.items()}
+reverse_mapping = {value: key for key, value in plb.mapping.items()}
 
 start = datetime(2000, 1, 3)
 n = 10
@@ -36,3 +36,5 @@ print(
         )
     ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
 )
+
+print(pl.select(plb.date_range(date(2020, 1, 1), date(2020, 2, 1))))
