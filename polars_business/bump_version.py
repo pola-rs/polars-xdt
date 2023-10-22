@@ -4,6 +4,8 @@ import subprocess
 
 how = sys.argv[1]
 
+subprocess.run(['cp', '../README.md', 'polars_business/README.md'])
+
 with open("polars_business/pyproject.toml", "r", encoding="utf-8") as f:
     content = f.read()
 old_version = re.search(r'version = "(.*)"', content).group(1)
