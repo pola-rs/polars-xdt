@@ -8,6 +8,7 @@ from polars.type_aliases import IntoExprColumn, ClosedInterval, TimeUnit
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 
+
 @overload
 def date_range(
     start: date | datetime | IntoExprColumn,
@@ -78,11 +79,11 @@ def date_range(
     if holidays is None:
         holidays = []
 
-    if not re.match(r'^-?\d+bd$', interval):
+    if not re.match(r"^-?\d+bd$", interval):
         raise ValueError(
             "Only intervals of the form 'nbd' (where n is an integer) are supported."
         )
-    interval = interval.replace('bd', 'd')
+    interval = interval.replace("bd", "d")
 
     expr = pl.date_range(
         start,
@@ -100,6 +101,7 @@ def date_range(
         return df[df.columns[0]]
     return expr
 
+
 @overload
 def datetime_range(
     start: date | datetime | IntoExprColumn,
@@ -170,11 +172,11 @@ def datetime_range(
     if holidays is None:
         holidays = []
 
-    if not re.match(r'^-?\d+bd$', interval):
+    if not re.match(r"^-?\d+bd$", interval):
         raise ValueError(
             "Only intervals of the form 'nbd' (where n is an integer) are supported."
         )
-    interval = interval.replace('bd', 'd')
+    interval = interval.replace("bd", "d")
 
     expr = pl.datetime_range(
         start,
