@@ -3,7 +3,7 @@ from polars.utils.udfs import _get_shared_lib_location
 import re
 from datetime import date
 
-from polars_business.ranges import date_range
+from polars_business.ranges import date_range, datetime_range
 
 from polars.type_aliases import PolarsDataType
 from typing import Sequence, cast, Iterable, Protocol
@@ -133,4 +133,5 @@ col = cast(BColumn, pl.col)
 __all__ = [
     "col",
     "date_range",
+    "datetime_range",
 ]
