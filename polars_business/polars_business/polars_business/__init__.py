@@ -10,7 +10,7 @@ from typing import Sequence, Literal, overload, cast, Iterable, Protocol
 
 lib = _get_shared_lib_location(__file__)
 
-__version__ = "0.1.26"
+__version__ = "0.1.27"
 
 mapping = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
 
