@@ -9,11 +9,14 @@ name = "polars_business"
 crate-type = ["cdylib"]
 
 [dependencies]
-ahash = "0.8.3"
+ahash = ">=0.8.5"
 pyo3 = { version = "0.20.0", features = ["extension-module"] }
-pyo3-polars = { git = "https://github.com/pola-rs/pyo3-polars", rev = "0a3df66ce626504e418491cb4b1d31bd3ee7ed6c", features = ["derive"] }
+pyo3-polars = { version = "0.8", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 chrono = "0.4.31"
-polars = { git = "https://github.com/pola-rs/polars", rev = "d00a43203b3ade009a5f858f4c698b6a50f5b1e6", version = "0.33.2", features = ["dtype-date"], default-features = false }
-polars-time = { git = "https://github.com/pola-rs/polars", rev = "d00a43203b3ade009a5f858f4c698b6a50f5b1e6", version = "0.33.2", features = ["timezones"], default-features = false }
-polars-ops = { git = "https://github.com/pola-rs/polars", rev = "d00a43203b3ade009a5f858f4c698b6a50f5b1e6", version = "0.33.2", default-features = false }
+polars = { version = "0.34", features = ["dtype-date"], default-features = false }
+polars-time = { version = "0.34", features = ["timezones"], default-features = false }
+polars-ops = { version = "0.34", default-features = false }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }

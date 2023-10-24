@@ -224,7 +224,7 @@ fn calculate_x_mod_7_and_x_weekday(x_date: i32) -> (i32, i32) {
     let mut x_weekday = x_mod_7 - 3;
     while x_weekday <= 0 {
         x_weekday += 7;
-    } 
+    }
     (x_mod_7, x_weekday)
 }
 
@@ -299,16 +299,18 @@ pub(crate) fn impl_advance_n_days(
                 _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
                     (Some(x_date), Some(n)) => {
                         let (x_mod_7, x_weekday) = calculate_x_mod_7_and_x_weekday(x_date);
-                        Ok(Some(x_date
-                            + calculate_advance(
-                                x_date,
-                                x_mod_7,
-                                n,
-                                x_weekday,
-                                &weekend,
-                                cache.as_ref(),
-                                &holidays,
-                            )?))
+                        Ok(Some(
+                            x_date
+                                + calculate_advance(
+                                    x_date,
+                                    x_mod_7,
+                                    n,
+                                    x_weekday,
+                                    &weekend,
+                                    cache.as_ref(),
+                                    &holidays,
+                                )?,
+                        ))
                     }
                     _ => Ok(None),
                 }),
@@ -351,17 +353,18 @@ pub(crate) fn impl_advance_n_days(
                     (Some(x), Some(n)) => {
                         let x_date = (x / multiplier) as i32;
                         let (x_mod_7, x_weekday) = calculate_x_mod_7_and_x_weekday(x_date);
-                        Ok(Some(x + (calculate_advance(
-                            x_date,
-                            x_mod_7,
-                            n,
-                            x_weekday,
-                            &weekend,
-                            cache.as_ref(),
-                            &holidays,
-                        )? as i64
-                            * multiplier))
-                    )
+                        Ok(Some(
+                            x + (calculate_advance(
+                                x_date,
+                                x_mod_7,
+                                n,
+                                x_weekday,
+                                &weekend,
+                                cache.as_ref(),
+                                &holidays,
+                            )? as i64
+                                * multiplier),
+                        ))
                     }
                     _ => Ok(None),
                 }),
