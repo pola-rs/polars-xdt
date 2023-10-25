@@ -100,7 +100,7 @@ import holidays
 uk_holidays = holidays.country_holidays("UK", years=[2023, 2024])
 
 result = df.with_columns(
-    date_shifted=plb.col("date").bdt.advance_n_days(
+    date_shifted=plb.col("date").bdt.offset_by(
       by='5bd',
       holidays=uk_holidays,
     )
