@@ -19,7 +19,7 @@ reverse_mapping = {value: key for key, value in mapping.items()}
 def get_result(
     start_date: dt.date | pl.Series, end_date: dt.date, **kwargs: Mapping[str, Any]
 ) -> int:
-    return (
+    return (  # type: ignore[no-any-return]
         pl.DataFrame({"end_date": [end_date]})
         .select(n=plb.col("end_date").bdt.sub(start_date, **kwargs))["n"]  # type: ignore[arg-type]
         .item()
@@ -31,7 +31,11 @@ def get_result(
     end_date=st.dates(min_value=dt.date(1000, 1, 1), max_value=dt.date(9999, 12, 31)),
     function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
 )
-def test_against_np_busday_offset(start_date: dt.date, end_date: dt.date, function: Callable[[dt.date], dt.date| pl.Series]) -> None:
+def test_against_np_busday_offset(
+    start_date: dt.date,
+    end_date: dt.date,
+    function: Callable[[dt.date], dt.date | pl.Series],
+) -> None:
     result = get_result(function(start_date), end_date)
     expected = np.busday_count(start_date, end_date)
     assert result == expected

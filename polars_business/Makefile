@@ -13,6 +13,9 @@ install-release: venv
 	unset CONDA_PREFIX && \
 	source venv/bin/activate && maturin develop --release -m polars_business/Cargo.toml
 
+pre-commit: venv
+	cargo fmt --all --manifest-path polars_business/Cargo.toml && cargo clippy --all-features --manifest-path polars_business/Cargo.toml
+
 clean:
 	-@rm -r venv
 	-@cd expression_lib && cargo clean

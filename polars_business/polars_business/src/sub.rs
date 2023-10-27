@@ -1,6 +1,6 @@
+use crate::business_days::weekday;
 use polars::prelude::arity::binary_elementwise;
 use polars::prelude::*;
-use crate::business_days::weekday;
 
 fn date_diff(mut start_date: i32, mut end_date: i32) -> i32 {
     let swapped = start_date > end_date;
@@ -63,20 +63,16 @@ pub(crate) fn impl_sub(
     let out = match end_dates.len() {
         1 => {
             if let Some(end_date) = end_dates.get(0) {
-                start_dates.apply(|x_date| {
-                    x_date.map(|start_date| {
-                        date_diff(start_date, end_date)
-                    })
-                })
+                start_dates.apply(|x_date| x_date.map(|start_date| date_diff(start_date, end_date)))
             } else {
                 Int32Chunked::full_null(start_dates.name(), start_dates.len())
             }
         }
-        _ => binary_elementwise(start_dates, &end_dates, |opt_s, opt_n| match (opt_s, opt_n) {
-            (Some(start_date), Some(end_date)) => {
-                Some(date_diff(start_date, end_date))
+        _ => binary_elementwise(start_dates, end_dates, |opt_s, opt_n| {
+            match (opt_s, opt_n) {
+                (Some(start_date), Some(end_date)) => Some(date_diff(start_date, end_date)),
+                _ => None,
             }
-            _ => None,
         }),
     };
     Ok(out.into_series())
