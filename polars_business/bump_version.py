@@ -6,6 +6,7 @@ import subprocess
 how = sys.argv[1]
 
 subprocess.run(["cp", "../README.md", "polars_business/README.md"])
+subprocess.run(["cp", "../LICENSE", "polars_business/LICENSE"])
 
 with open("polars_business/pyproject.toml", "r", encoding="utf-8") as f:
     content = f.read()

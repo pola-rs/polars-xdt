@@ -41,7 +41,7 @@ jobs:
         working-directory: polars_business
       - run: venv/bin/python -m pytest tests
         working-directory: polars_business
-      - run: venv/bin/python -m mypy .
+      - run: venv/bin/python -m mypy polars_business/polars_business/ tests
         working-directory: polars_business
 
       - name: Build wheels

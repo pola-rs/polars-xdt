@@ -4,15 +4,16 @@ build-backend = "maturin"
 
 [project]
 name = "polars-business"
-requires-python = ">=3.8"
+description = "Business day utilities for Polars"
+readme = "README.md"
+authors = [
+  { name="Marco Gorelli", email="33491632+MarcoGorelli@users.noreply.github.com" },
+]
+license = { file = "LICENSE" }
 classifiers = [
   "Programming Language :: Rust",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 version = "0.1.29"
-authors = [
-  { name="Marco Gorelli", email="33491632+MarcoGorelli@users.noreply.github.com" },
-]
-description = "Business day utilities for Polars"
-readme = "README.md"
+requires-python = ">=3.8"

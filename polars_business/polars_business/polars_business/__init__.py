@@ -104,6 +104,31 @@ class ExprBusinessDateTimeNamespace:
             return result
         return result.dt.offset_by(by)
 
+    def sub(
+        self,
+        end_dates: str | pl.Expr,
+        *,
+        weekend: Sequence[str] = ("Sat", "Sun"),
+        holidays: Sequence[date] | None = None,
+    ) -> pl.Expr:
+        if weekend != ("Sat", "Sun"):
+            raise NotImplementedError(
+                "custom weekends are not yet supported - coming soon!"
+            )
+        if holidays:
+            raise NotImplementedError(
+                "custom holidays are not yet supported - coming soon!"
+            )
+        if isinstance(end_dates, str):
+            end_dates = pl.col(end_dates)
+        result = self._expr._register_plugin(
+            lib=lib,
+            symbol="sub",
+            is_elementwise=True,
+            args=[end_dates],
+        )
+        return result
+
 
 class BExpr(pl.Expr):
     @property

@@ -17,7 +17,10 @@ reverse_mapping = {value: key for key, value in mapping.items()}
 
 
 def get_result(
-    date: dt.date, dtype: PolarsDataType, by: str | pl.Series, **kwargs: Mapping[str, Any]
+    date: dt.date,
+    dtype: PolarsDataType,
+    by: str | pl.Series,
+    **kwargs: Mapping[str, Any],
 ) -> dt.date:
     if dtype == pl.Date:
         result = (
@@ -53,7 +56,12 @@ def get_result(
     ),
     function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
 )
-def test_against_np_busday_offset(date: dt.date, n: int, dtype: PolarsDataType, function: Callable[[str], str | pl.Series]) -> None:
+def test_against_np_busday_offset(
+    date: dt.date,
+    n: int,
+    dtype: PolarsDataType,
+    function: Callable[[str], str | pl.Series],
+) -> None:
     # how to do this...
     # convert time zone of date
     assume(date.strftime("%a") not in ("Sat", "Sun"))
@@ -97,7 +105,11 @@ def test_against_pandas_bday_offset(date: dt.date, n: int) -> None:
     function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
 )
 def test_against_np_busday_offset_with_holidays(
-    date: dt.date, n: int, holidays: list[dt.date], dtype: PolarsDataType, function: Callable[[str], str | pl.Series]
+    date: dt.date,
+    n: int,
+    holidays: list[dt.date],
+    dtype: PolarsDataType,
+    function: Callable[[str], str | pl.Series],
 ) -> None:
     assume(date.strftime("%a") not in ("Sat", "Sun"))
     assume(date not in holidays)  # TODO: remove once unwrap is removed
@@ -125,7 +137,11 @@ def test_against_np_busday_offset_with_holidays(
     function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
 )
 def test_against_np_busday_offset_with_weekends(
-    date: dt.date, n: int, weekend: list[dt.date], dtype: PolarsDataType, function: Callable[[str], str | pl.Series]
+    date: dt.date,
+    n: int,
+    weekend: list[dt.date],
+    dtype: PolarsDataType,
+    function: Callable[[str], str | pl.Series],
 ) -> None:
     assume(date.strftime("%a") not in weekend)
     result = get_result(date, dtype, by=function(f"{n}bd"), weekend=weekend)  # type: ignore[arg-type]
@@ -158,8 +174,12 @@ def test_against_np_busday_offset_with_weekends(
     function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
 )
 def test_against_np_busday_offset_with_weekends_and_holidays(
-    date: dt.date, n: int, weekend: list[str], holidays: list[dt.date], dtype: PolarsDataType, function: Callable[[str], str | pl.Series]
-
+    date: dt.date,
+    n: int,
+    weekend: list[str],
+    holidays: list[dt.date],
+    dtype: PolarsDataType,
+    function: Callable[[str], str | pl.Series],
 ) -> None:
     assume(date.strftime("%a") not in weekend)
     assume(date not in holidays)
