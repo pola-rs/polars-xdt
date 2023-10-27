@@ -4,7 +4,7 @@
 	<img
 		width="400"
 		alt="polars-business"
-		src="https://github.com/MarcoGorelli/polars-business/blob/d38b5a68ae7aa8d5bacacb16359dc851f2c1e637/assets/polars-business.png">
+		src="https://github.com/MarcoGorelli/polars-business/assets/33491632/25fc2f26-8097-4b86-85c6-c40c75c30f38">
 </h1>
 
 [![PyPI version](https://badge.fury.io/py/polars-business.svg)](https://badge.fury.io/py/polars-business)
@@ -52,6 +52,7 @@ Supported functions are:
   - `holidays` argument, for passing custom holidays
   - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
 - `plb.datetime_range`: same as above, but the output will be `Datetime` dtype.
+- `Expr.bdt.sub`: subtract two `Date`s and count the  number of business dates between them!
 
 See `Examples` below!
 
@@ -74,7 +75,10 @@ Let's shift `Date` forwards by 5 days, excluding Saturday and Sunday:
 
 ```python
 result = df.with_columns(
-    date_shifted=plb.col("date").bdt.offset_by('5bd')
+    date_shifted=plb.col("date").bdt.offset_by(
+      '5bd',
+      weekend=('Sat', 'Sun'),
+    )
 )
 print(result)
 ```
@@ -91,17 +95,18 @@ shape: (3, 2)
 └────────────┴──────────────┘
 ```
 
-Let's shift `Date` forwards by 5 days, excluding Saturday and Sunday and UK holidays
+Let's shift `Date` forwards by 5 days, excluding Friday, Saturday, and England holidays
 for 2023 and 2024:
 
 ```python
 import holidays
 
-uk_holidays = holidays.country_holidays("UK", years=[2023, 2024])
+uk_holidays = holidays.country_holidays("UK", subdiv='England', years=[2023, 2024])
 
 result = df.with_columns(
-    date_shifted=plb.col("date").bdt.advance_n_days(
+    date_shifted=plb.col("date").bdt.offset_by(
       by='5bd',
+      weekend=('Sat', 'Sun'),
       holidays=uk_holidays,
     )
 )
@@ -114,33 +119,34 @@ shape: (3, 2)
 │ ---        ┆ ---          │
 │ date       ┆ date         │
 ╞════════════╪══════════════╡
-│ 2023-04-03 ┆ 2023-04-11   │
+│ 2023-04-03 ┆ 2023-04-12   │
 │ 2023-09-01 ┆ 2023-09-08   │
 │ 2024-01-04 ┆ 2024-01-11   │
 └────────────┴──────────────┘
 ```
 
-Let's shift `Date` forwards by 5 days, excluding only Sunday:
+Count the number of business dates between two columns:
 ```python
-result = df.with_columns(
-    date_shifted=plb.col("date").bdt.offset_by(
-      by='5bd',
-      weekend=['Sun'],
-    )
+df = pl.DataFrame(
+    {
+        "start": [date(2023, 1, 4), date(2023, 5, 1), date(2023, 9, 9)],
+        "end": [date(2023, 2, 8), date(2023, 5, 2), date(2023, 12, 30)],
+    }
 )
+result = df.with_columns(n_business_days=plb.col("end").bdt.sub("start"))
 print(result)
 ```
 ```
-shape: (3, 2)
-┌────────────┬──────────────┐
-│ date       ┆ date_shifted │
-│ ---        ┆ ---          │
-│ date       ┆ date         │
-╞════════════╪══════════════╡
-│ 2023-04-03 ┆ 2023-04-08   │
-│ 2023-09-01 ┆ 2023-09-07   │
-│ 2024-01-04 ┆ 2024-01-10   │
-└────────────┴──────────────┘
+shape: (3, 3)
+┌────────────┬────────────┬─────────────────┐
+│ start      ┆ end        ┆ n_business_days │
+│ ---        ┆ ---        ┆ ---             │
+│ date       ┆ date       ┆ i32             │
+╞════════════╪════════════╪═════════════════╡
+│ 2023-01-04 ┆ 2023-02-08 ┆ 25              │
+│ 2023-05-01 ┆ 2023-05-02 ┆ 1               │
+│ 2023-09-09 ┆ 2023-12-30 ┆ 80              │
+└────────────┴────────────┴─────────────────┘
 ```
 
 Benchmarks
@@ -150,6 +156,7 @@ Single-threaded performance is:
 - about on par with NumPy
 - at least an order of magnitude faster than pandas.
 
-but note that Polars will take care of parallelisation for you.
+but note that Polars will take care of parallelisation for you, and that this plugin
+will fit in with Polars lazy execution.
 
 Check out https://www.kaggle.com/code/marcogorelli/polars-business for some comparisons.
