@@ -52,7 +52,7 @@ Supported functions are:
   - `holidays` argument, for passing custom holidays
   - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
 - `plb.datetime_range`: same as above, but the output will be `Datetime` dtype.
-- `plb.sub`: subtract two `Date`s and count the  number of business dates between them!
+- `Expr.bdt.sub`: subtract two `Date`s and count the  number of business dates between them!
 
 See `Examples` below!
 
