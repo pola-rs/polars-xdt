@@ -1,7 +1,20 @@
 import polars as pl
+import numpy as np
 import polars_business as plb
 from datetime import date
 
-df = pl.DataFrame({"ts": [date(2020, 1, 1)]})
+# ok, let's just do it as expression for now
+# get something working, can always change the api later if necessary
+# but really, nobody don't give no shit
 
-print(df.with_columns(ts_shifted=plb.col("ts").bdt.offset_by('3bd')))
+df = pl.DataFrame({
+    "start": [date(2019, 12, 30)]*41,
+    "end": pl.date_range(date(2019, 12, 30), date(2020, 2, 8), eager=True),
+})
+with pl.Config(tbl_rows=100):
+    print(df.with_columns(
+        start_weekday=pl.col('start').dt.weekday(),
+        end_weekday=pl.col('end').dt.weekday(),
+        result=plb.col('end').bdt.sub('start'),
+        result_np = pl.Series(np.busday_count(df['start'], df['end']))
+    ))
