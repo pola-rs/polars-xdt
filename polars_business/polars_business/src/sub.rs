@@ -30,24 +30,60 @@ pub(crate) fn impl_sub(
         }
         _ => binary_elementwise(start_dates, &end_dates, |opt_s, opt_n| match (opt_s, opt_n) {
             (Some(mut start_date), Some(mut end_date)) => {
+                println!("***");
                 let swapped = start_date > end_date;
                 if swapped {
                     (start_date, end_date) = (end_date, start_date);
+                    start_date += 1;
+                    end_date += 1;
                 }
-                let start_weekday = weekday(start_date);
-                let end_weekday = weekday(end_date);
-                if end_weekday == 7 {
-                    end_date -= 1
-                };
-                if start_weekday == 7 {
-                    start_date += 1
-                };
-                let result = end_date - start_date;
-                let result = result - (result/7)*2;
+
+                println!("start: {:?}", start_date);
+                println!("end: {:?}", end_date);
+
+                let mut start_weekday = weekday(start_date);
+                let mut end_weekday = weekday(end_date);
+                println!("start weekday: {:?}", start_weekday);
+                println!("end weekday: {:?}", end_weekday);
+
+                if start_weekday == 6 {
+                    start_date += 2;
+                    start_weekday = 1;
+                } else if start_weekday == 7 {
+                    start_date += 1;
+                    start_weekday = 1;
+                }
+                if end_weekday == 6 {
+                    end_date += 2;
+                    end_weekday = 1;
+                } else if end_weekday == 7 {
+                    end_date += 1;
+                    end_weekday = 1;
+                }
+
+                println!("start: {:?}", start_date);
+                println!("end: {:?}", end_date);
+
+                let diff = end_date - start_date;
+
+                let whole_weeks = diff / 7;
+                let mut count = 0;
+                count += whole_weeks * 5;
+                start_date += whole_weeks * 7;
+                while start_date < end_date {
+                    if start_weekday < 6 {
+                        count += 1;
+                    }
+                    start_date += 1;
+                    start_weekday += 1;
+                    if start_weekday > 7 {
+                        start_weekday = 1;
+                    }
+                }
                 if swapped {
-                    Some(-result)
+                    Some(-count)
                 } else {
-                    Some(result)
+                    Some(count)
                 }
             }
             _ => None,
