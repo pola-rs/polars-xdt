@@ -8,8 +8,8 @@ from datetime import date
 # but really, nobody don't give no shit
 
 df = pl.DataFrame({
-    "start": [date(2019, 12, 30)]*41,
-    "end": pl.date_range(date(2019, 12, 30), date(2020, 2, 8), eager=True),
+    "start": pl.date_range(date(2019, 12, 30), date(2020, 2, 8), eager=True),
+    "end": [date(2020, 2, 1)]*42,
 })
 with pl.Config(tbl_rows=100):
     print(df.with_columns(
