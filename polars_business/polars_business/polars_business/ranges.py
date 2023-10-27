@@ -79,7 +79,7 @@ def date_range(
     if holidays is None:
         holidays = []
 
-    if not re.match(r"^-?\d+bd$", interval):
+    if not (isinstance(interval, str) and re.match(r"^-?\d+bd$", interval)):
         raise ValueError(
             "Only intervals of the form 'nbd' (where n is an integer) are supported."
         )
@@ -172,7 +172,7 @@ def datetime_range(
     if holidays is None:
         holidays = []
 
-    if not re.match(r"^-?\d+bd$", interval):
+    if not (isinstance(interval, str) and re.match(r"^-?\d+bd$", interval)):
         raise ValueError(
             "Only intervals of the form 'nbd' (where n is an integer) are supported."
         )
