@@ -9,7 +9,7 @@ from datetime import date
 
 df = pl.DataFrame({
     "start": pl.date_range(date(2019, 12, 30), date(2020, 2, 8), eager=True),
-    "end": [date(2020, 2, 1)]*42,
+    "end": [date(2020, 2, 1)]*41,
 })
 with pl.Config(tbl_rows=100):
     print(df.with_columns(

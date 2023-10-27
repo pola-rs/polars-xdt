@@ -29,15 +29,26 @@ pub(crate) fn impl_sub(
             }
         }
         _ => binary_elementwise(start_dates, &end_dates, |opt_s, opt_n| match (opt_s, opt_n) {
-            (Some(start_date), Some(end_date)) => {
+            (Some(mut start_date), Some(mut end_date)) => {
+                let swapped = start_date > end_date;
+                if swapped {
+                    (start_date, end_date) = (end_date, start_date);
+                }
+                let start_weekday = weekday(start_date);
                 let end_weekday = weekday(end_date);
-                let end_date = if end_weekday == 7 {
-                    end_date - 1
-                } else {
-                    end_date
+                if end_weekday == 7 {
+                    end_date -= 1
+                };
+                if start_weekday == 7 {
+                    start_date += 1
                 };
                 let result = end_date - start_date;
-                Some(result - ((result)/7)*2)
+                let result = result - (result/7)*2;
+                if swapped {
+                    Some(-result)
+                } else {
+                    Some(result)
+                }
             }
             _ => None,
         }),
