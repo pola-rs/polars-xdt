@@ -41,6 +41,8 @@ jobs:
         working-directory: polars_business
       - run: venv/bin/python -m pytest tests
         working-directory: polars_business
+      - run: venv/bin/python -m mypy .
+        working-directory: polars_business
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
