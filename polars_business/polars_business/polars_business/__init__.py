@@ -112,9 +112,9 @@ class ExprBusinessDateTimeNamespace:
         holidays: Sequence[date] | None = None,
     ) -> pl.Expr:
         if weekend != ('Sat', 'Sun'):
-            raise NotImplementedError("customer weekends are not yet supported - coming soon!")
+            raise NotImplementedError("custom weekends are not yet supported - coming soon!")
         if holidays:
-            raise NotImplementedError("customer holidays are not yet supported - coming soon!")
+            raise NotImplementedError("custom holidays are not yet supported - coming soon!")
         if isinstance(end_dates, str):
             end_dates = pl.col(end_dates)
         result = self._expr._register_plugin(

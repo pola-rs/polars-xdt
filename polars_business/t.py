@@ -15,6 +15,6 @@ with pl.Config(tbl_rows=100):
     print(df.with_columns(
         start_weekday=pl.col('start').dt.weekday(),
         end_weekday=pl.col('end').dt.weekday(),
-        result=plb.col('end').bdt.sub('start'),
+        result=plb.col('end').bdt.sub('start', weekend=('Fri',)),
         result_np = pl.Series(np.busday_count(df['start'], df['end']))
     ))
