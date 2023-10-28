@@ -13,7 +13,6 @@ with open("polars_business/pyproject.toml", "r", encoding="utf-8") as f:
 old_version = re.search(r'version = "(.*)"', content).group(1)
 version = old_version.split(".")
 if how == "patch":
-    breakpoint()
     version = ".".join(version[:-1] + [str(int(version[-1]) + 1)])
 elif how == "minor":
     version = ".".join(version[:-2] + [str(int(version[-2]) + 1), "0"])

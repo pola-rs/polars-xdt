@@ -127,51 +127,81 @@ pub(crate) fn calculate_n_days_with_holidays(
     Ok(n_days)
 }
 
-pub(crate) fn calculate_n_days_with_weekend_and_holidays(
-    x: i32,
+pub(crate) fn calculate_advance(
+    mut date: i32,
     x_mod_7: i32,
-    n: i32,
-    x_weekday: i32,
+    mut offset: i32,
+    mut day_of_week: i32,
     weekmask: &[bool; 7],
     cache: Option<&AHashMap<i32, i32>>,
     holidays: &[i32],
 ) -> PolarsResult<i32> {
-    let cache = cache.unwrap();
     let n_weekdays = weekmask.iter().filter(|&x| *x).count() as i32;
+    if offset > 0 {
+        let original_date = date;
+        let holidays_begin = match holidays.binary_search(&date) {
+            Ok(x) => x,
+            Err(x) => x,
+        };
 
-    if unsafe { !*weekmask.get_unchecked(x_weekday as usize - 1) } {
-        return its_a_business_date_error_message(x);
-    };
+        date += (offset/n_weekdays)*7;
+        offset = offset % n_weekdays;
 
-    let mut n_days = calculate_n_days_without_holidays_slow(x_weekday, n, n_weekdays, cache);
+        let holidays_temp = match holidays[holidays_begin..].binary_search(&date) {
+            Ok(x) => x+1,
+            Err(x) => x,
+        } + holidays_begin;
 
-    if holidays.binary_search(&x).is_ok() {
-        return its_a_business_date_error_message(x);
-    }
-    let mut count_hols = count_holidays(x, x + n_days, holidays);
-    while count_hols > 0 {
-        let n_days_before = n_days;
-        if n_days > 0 {
-            n_days = n_days
-                + calculate_n_days_without_holidays_slow(
-                    weekday(x_mod_7 + n_days),
-                    count_hols,
-                    n_weekdays,
-                    cache,
-                );
-            count_hols = count_holidays(x + n_days_before + 1, x + n_days, holidays);
-        } else {
-            n_days = n_days
-                + calculate_n_days_without_holidays_slow(
-                    weekday(x_mod_7 + n_days),
-                    -count_hols,
-                    n_weekdays,
-                    cache,
-                );
-            count_hols = count_holidays(x + n_days_before - 1, x + n_days, holidays);
+        offset += (holidays_temp - holidays_begin) as i32;
+        let holidays_begin = holidays_temp;
+
+        while offset > 0 {
+            date += 1;
+            day_of_week += 1;
+            if day_of_week > 7 {
+                day_of_week = 1;
+            }
+            if unsafe {
+                (*weekmask.get_unchecked(day_of_week as usize - 1))
+                & (!holidays[holidays_begin..].contains(&date))
+             } {
+                offset -= 1;
+            }
         }
+        Ok(date - original_date)
+    } else {
+        let original_date = date;
+        let holidays_end = match holidays.binary_search(&date) {
+            Ok(x) => x+1,
+            Err(x) => x,
+        };
+
+        date += (offset/n_weekdays)*7;
+        offset = offset % n_weekdays;
+
+        let holidays_temp = match holidays.binary_search(&date) {
+            Ok(x) => x,
+            Err(x) => x,
+        };
+
+        offset -= (holidays_end - holidays_temp) as i32;
+        let holidays_end = holidays_temp;
+
+        while offset < 0 {
+            date -= 1;
+            day_of_week -= 1;
+            if day_of_week == 0 {
+                day_of_week = 7;
+            }
+            if unsafe {
+                (*weekmask.get_unchecked(day_of_week as usize - 1))
+                & (!holidays.contains(&date))
+             } {
+                offset += 1;
+            }
+        }
+        Ok(date - original_date)
     }
-    Ok(n_days)
 }
 
 pub(crate) fn calculate_n_days_with_weekend(
@@ -263,16 +293,6 @@ pub(crate) fn impl_advance_n_days(
     };
 
     let n = n.i32()?;
-
-    let calculate_advance = match (
-        weekmask == &[true, true, true, true, true, false, false],
-        holidays.is_empty(),
-    ) {
-        (true, true) => calculate_n_days_without_holidays_fast,
-        (true, false) => calculate_n_days_with_holidays,
-        (false, true) => calculate_n_days_with_weekend,
-        (false, false) => calculate_n_days_with_weekend_and_holidays,
-    };
 
     match s.dtype() {
         DataType::Date => {

@@ -6,10 +6,10 @@ from typing import Sequence, Iterable
 
 reverse_mapping = {value: key for key, value in plb.mapping.items()}
 
-start = date(2998, 1, 10)
-n = 0
-weekend = ["Sat", "Sun"]
-holidays = []  # type: ignore
+start = date(2000, 1, 1)
+n = 7
+weekend = []
+holidays = [date(2000, 1, 8)]
 weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
 
 df = pl.DataFrame({"dates": [start]})
@@ -36,8 +36,3 @@ print(
         )
     ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
 )
-
-print("here")
-print(pl.select(plb.date_range(date(2020, 1, 1), date(2020, 2, 1))))
-print("there")
-print(plb.date_range(date(2020, 1, 1), date(2020, 2, 1), "2bd1h", eager=True))
