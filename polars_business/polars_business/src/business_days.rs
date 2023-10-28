@@ -1,4 +1,3 @@
-use ahash::AHashMap;
 use chrono::NaiveDateTime;
 use polars::prelude::arity::try_binary_elementwise;
 use polars::prelude::*;
@@ -9,7 +8,6 @@ pub(crate) fn weekday(x: i32) -> i32 {
     ((x - 4) % 7 + 7) % 7 + 1
 }
 
-
 pub(crate) fn calculate_advance(
     mut date: i32,
     mut offset: i32,
@@ -18,7 +16,6 @@ pub(crate) fn calculate_advance(
     n_weekdays: i32,
     holidays: &[i32],
 ) -> PolarsResult<i32> {
-
     if holidays.contains(&date) | unsafe { !*weekmask.get_unchecked(day_of_week as usize - 1) } {
         let date = NaiveDateTime::from_timestamp_opt(date as i64 * 24 * 60 * 60, 0)
             .unwrap()
@@ -32,11 +29,11 @@ pub(crate) fn calculate_advance(
             Err(x) => x,
         };
 
-        date += (offset/n_weekdays)*7;
-        offset = offset % n_weekdays;
+        date += (offset / n_weekdays) * 7;
+        offset %= n_weekdays;
 
         let holidays_temp = match holidays[holidays_begin..].binary_search(&date) {
-            Ok(x) => x+1,
+            Ok(x) => x + 1,
             Err(x) => x,
         } + holidays_begin;
 
@@ -51,20 +48,20 @@ pub(crate) fn calculate_advance(
             }
             if unsafe {
                 (*weekmask.get_unchecked(day_of_week as usize - 1))
-                & (!holidays[holidays_begin..].contains(&date))
-             } {
+                    & (!holidays[holidays_begin..].contains(&date))
+            } {
                 offset -= 1;
             }
         }
         Ok(date)
     } else {
         let holidays_end = match holidays.binary_search(&date) {
-            Ok(x) => x+1,
+            Ok(x) => x + 1,
             Err(x) => x,
         };
 
-        date += (offset/n_weekdays)*7;
-        offset = offset % n_weekdays;
+        date += (offset / n_weekdays) * 7;
+        offset %= n_weekdays;
 
         let holidays_temp = match holidays[..holidays_end].binary_search(&date) {
             Ok(x) => x,
@@ -82,15 +79,14 @@ pub(crate) fn calculate_advance(
             }
             if unsafe {
                 (*weekmask.get_unchecked(day_of_week as usize - 1))
-                & (!holidays[..holidays_end].contains(&date))
-             } {
+                    & (!holidays[..holidays_end].contains(&date))
+            } {
                 offset += 1;
             }
         }
         Ok(date)
     }
 }
-
 
 pub(crate) fn impl_advance_n_days(
     s: &Series,
@@ -120,14 +116,7 @@ pub(crate) fn impl_advance_n_days(
                     if let Some(n) = n.get(0) {
                         ca.try_apply(|x_date| {
                             let x_weekday = weekday(x_date);
-                            calculate_advance(
-                                    x_date,
-                                    n,
-                                    x_weekday,
-                                    weekmask,
-                                    n_weekdays,
-                                    &holidays,
-                                )
+                            calculate_advance(x_date, n, x_weekday, weekmask, n_weekdays, &holidays)
                         })
                     } else {
                         Ok(Int32Chunked::full_null(ca.name(), ca.len()))
@@ -136,16 +125,9 @@ pub(crate) fn impl_advance_n_days(
                 _ => try_binary_elementwise(ca, n, |opt_s, opt_n| match (opt_s, opt_n) {
                     (Some(x_date), Some(n)) => {
                         let x_weekday = weekday(x_date);
-                        Ok(Some(
-                                calculate_advance(
-                                    x_date,
-                                    n,
-                                    x_weekday,
-                                    weekmask,
-                                    n_weekdays,
-                                    &holidays,
-                                )?,
-                        ))
+                        Ok(Some(calculate_advance(
+                            x_date, n, x_weekday, weekmask, n_weekdays, &holidays,
+                        )?))
                     }
                     _ => Ok(None),
                 }),
@@ -170,12 +152,7 @@ pub(crate) fn impl_advance_n_days(
                             let x_date = (x / multiplier) as i32;
                             let x_weekday = weekday(x_date);
                             Ok(x + ((calculate_advance(
-                                x_date,
-                                n,
-                                x_weekday,
-                                weekmask,
-                                n_weekdays,
-                                &holidays,
+                                x_date, n, x_weekday, weekmask, n_weekdays, &holidays,
                             )? - x_date) as i64
                                 * multiplier))
                         })
@@ -189,13 +166,8 @@ pub(crate) fn impl_advance_n_days(
                         let x_weekday = weekday(x_date);
                         Ok(Some(
                             x + ((calculate_advance(
-                                x_date,
-                                n,
-                                x_weekday,
-                                weekmask,
-                                n_weekdays,
-                                &holidays,
-                            )?-x_date) as i64
+                                x_date, n, x_weekday, weekmask, n_weekdays, &holidays,
+                            )? - x_date) as i64
                                 * multiplier),
                         ))
                     }
