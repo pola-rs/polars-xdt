@@ -7,17 +7,18 @@ weekend = ['Sat', 'Sun']
 holidays = [date(2000, 1, 1)]
 
 df = pl.DataFrame({
-    'date': [date(2000, 3, 1), date(2000, 4, 3)]
+    'date': [date(2000, 3, 1), date(2000, 4, 3)],
+    'date2': [date(2000, 3, 3), date(2000, 4, 19)]
 })
 
 print(df.with_columns(
     busday_offset=plb.col("date").bdt.offset_by('3bd', weekend=weekend, holidays=holidays),
     is_busday=plb.col("date").bdt.is_workday(weekend=weekend, holidays=holidays),
     busday_count=plb.col('date').bdt.sub(
-        pl.lit(date(2000, 1, 2)), 
+        date(2000, 1, 2), 
         weekend=weekend, 
         holidays=holidays
-    )
+    ),
 ))
 
 # ok this is obviously wrong...what's going on???

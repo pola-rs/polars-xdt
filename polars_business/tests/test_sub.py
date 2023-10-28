@@ -112,3 +112,17 @@ def test_empty_weekmask() -> None:
                 "start", weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
             )
         )
+
+def test_sub_lit() -> None:
+    df = pl.DataFrame(
+        {
+            "end": [dt.date(2020, 1, 3), dt.date(2020, 1, 5)],
+        }
+    )
+    result = df.select(
+        plb.col("end").bdt.sub(
+            pl.lit(dt.date(2020, 1, 1)),
+        )
+    )
+    assert result['end'][0] == 2
+    assert result['end'][1] == 3

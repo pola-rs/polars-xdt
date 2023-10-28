@@ -60,11 +60,11 @@ pub(crate) fn impl_sub(
     let start_dates = start_dates.date()?;
     let end_dates = end_dates.date()?;
     let n_weekdays = weekmask.iter().filter(|&x| *x).count() as i32;
-    let out = match end_dates.len() {
+    let out = match start_dates.len() {
         1 => {
-            if let Some(end_date) = end_dates.get(0) {
-                start_dates.apply(|x_date| {
-                    x_date.map(|start_date| {
+            if let Some(start_date) = start_dates.get(0) {
+                end_dates.apply(|x_date| {
+                    x_date.map(|end_date| {
                         date_diff(start_date, end_date, weekmask, n_weekdays, holidays)
                     })
                 })

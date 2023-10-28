@@ -53,6 +53,14 @@ Supported functions are:
   - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
 - `plb.datetime_range`: same as above, but the output will be `Datetime` dtype.
 - `Expr.bdt.sub`: subtract two `Date`s and count the  number of business dates between them!
+  Arguments:
+  - `start`: column to subtract
+  - `holidays` argument, for passing custom holidays
+  - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
+- `Expr.bdt.is_workday`: determine if a given `Date` is a workday.
+  Arguments:
+  - `holidays` argument, for passing custom holidays
+  - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
 
 See `Examples` below!
 
