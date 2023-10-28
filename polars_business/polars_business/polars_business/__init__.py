@@ -116,9 +116,11 @@ class ExprBusinessDateTimeNamespace:
             weekmask = [True, True, True, True, True, False, False]
         else:
             weekmask = [False if reverse_mapping[i] in weekend else True for i in range(1, 8)]
-        if holidays:
-            raise NotImplementedError(
-                "custom holidays are not yet supported - coming soon!"
+        if not holidays:
+            holidays_int = []
+        else:
+            holidays_int = sorted(
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays if holiday.strftime('%a') not in weekend}
             )
         if isinstance(end_dates, str):
             end_dates = pl.col(end_dates)
@@ -129,6 +131,7 @@ class ExprBusinessDateTimeNamespace:
             args=[end_dates],
             kwargs={
                 'weekmask': weekmask,
+                'holidays': holidays_int,
             }
         )
         return result

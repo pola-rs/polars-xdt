@@ -27,7 +27,7 @@ fn advance_n_days(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<
 
 #[derive(Deserialize)]
 pub struct SubKwargs {
-    // holidays: Vec<i32>,
+    holidays: Vec<i32>,
     weekmask: [bool; 7],
 }
 
@@ -36,5 +36,6 @@ fn sub(inputs: &[Series], kwargs: SubKwargs) -> PolarsResult<Series> {
     let begin_dates = &inputs[0];
     let end_dates = &inputs[1];
     let weekmask = kwargs.weekmask;
-    impl_sub(begin_dates, end_dates, &weekmask)
+    let holidays = kwargs.holidays;
+    impl_sub(begin_dates, end_dates, &weekmask, &holidays)
 }

@@ -20,17 +20,18 @@ def get_result(
     start_date: dt.date | pl.Series,
     end_date: dt.date,
     weekend: list[str],
+    holidays: list[dt.date],
 ) -> int:
     return (  # type: ignore[no-any-return]
         pl.DataFrame({"end_date": [end_date]})
-        .select(n=plb.col("end_date").bdt.sub(start_date, weekend=weekend))["n"]  # type: ignore[arg-type]
+        .select(n=plb.col("end_date").bdt.sub(start_date, weekend=weekend, holidays=holidays))["n"]  # type: ignore[arg-type]
         .item()
     )
 
 
 @given(
-    start_date=st.dates(min_value=dt.date(1000, 1, 1), max_value=dt.date(9999, 12, 31)),
-    end_date=st.dates(min_value=dt.date(1000, 1, 1), max_value=dt.date(9999, 12, 31)),
+    start_date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+    end_date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
     function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
     weekend=st.lists(
         st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
@@ -38,14 +39,20 @@ def get_result(
         max_size=6,  # todo: fail if 7
         unique=True,
     ),
+    holidays=st.lists(
+        st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+        min_size=1,
+        max_size=300,
+    ),
 )
 def test_against_np_busday_count(
     start_date: dt.date,
     end_date: dt.date,
     weekend: list[str],
+    holidays: list[dt.date],
     function: Callable[[dt.date], dt.date | pl.Series],
 ) -> None:
-    result = get_result(function(start_date), end_date, weekend=weekend)
+    result = get_result(function(start_date), end_date, weekend=weekend, holidays=holidays)
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
-    expected = np.busday_count(start_date, end_date, weekmask=weekmask)
+    expected = np.busday_count(start_date, end_date, weekmask=weekmask, holidays=holidays)
     assert result == expected
