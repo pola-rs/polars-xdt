@@ -12,7 +12,7 @@ from typing import Sequence, cast, Iterable, Protocol
 
 lib = _get_shared_lib_location(__file__)
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 reverse_mapping = {value: key for key, value in mapping.items()}
