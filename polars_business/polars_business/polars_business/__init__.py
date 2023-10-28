@@ -112,8 +112,8 @@ class ExprBusinessDateTimeNamespace:
             },
         )
         if fastpath:
-            return result
-        return result.dt.offset_by(by)
+            return cast(BExpr, result)
+        return cast(BExpr, result.dt.offset_by(by))
 
     def sub(
         self,
@@ -145,7 +145,7 @@ class ExprBusinessDateTimeNamespace:
                 "holidays": holidays_int,
             },
         )
-        return result
+        return cast(BExpr, result)
 
     def is_workday(
         self,
@@ -217,7 +217,7 @@ def workday_count(
     elif not isinstance(end, pl.Expr):
         end = pl.lit(end)
 
-    return end.bdt.sub(start, weekend=weekend, holidays=holidays).alias('workday_count')
+    return end.bdt.sub(start, weekend=weekend, holidays=holidays).alias("workday_count")  # type: ignore[no-any-return, attr-defined]
 
 
 __all__ = [

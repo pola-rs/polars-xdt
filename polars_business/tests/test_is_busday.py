@@ -23,7 +23,9 @@ def get_result(
 ) -> int:
     return (  # type: ignore[no-any-return]
         pl.DataFrame({"date": [date]})
-        .select(plb.col("date").bdt.is_workday(weekend=weekend, holidays=holidays))["date"]  # type: ignore[arg-type]
+        .select(plb.col("date").bdt.is_workday(weekend=weekend, holidays=holidays))[
+            "date"
+        ]
         .item()
     )
 
