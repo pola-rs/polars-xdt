@@ -7,9 +7,9 @@ from typing import Sequence, Iterable
 reverse_mapping = {value: key for key, value in plb.mapping.items()}
 
 start = date(2000, 1, 1)
-n = 7
-weekend = []
-holidays = [date(2000, 1, 8)]
+n = -7
+weekend = ['Sat', 'Sun']
+holidays = []
 weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
 
 df = pl.DataFrame({"dates": [start]})

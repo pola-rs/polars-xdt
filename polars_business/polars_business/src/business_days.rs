@@ -10,14 +10,6 @@ pub(crate) fn weekday(x: i32) -> i32 {
 }
 
 
-fn its_a_business_date_error_message(x: i32) -> PolarsResult<i32> {
-    let date = NaiveDateTime::from_timestamp_opt(x as i64 * 24 * 60 * 60, 0)
-        .unwrap()
-        .format("%Y-%m-%d");
-    polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", date))
-}
-
-
 pub(crate) fn calculate_advance(
     mut date: i32,
     mut offset: i32,
@@ -26,6 +18,14 @@ pub(crate) fn calculate_advance(
     n_weekdays: i32,
     holidays: &[i32],
 ) -> PolarsResult<i32> {
+
+    if holidays.contains(&date) | unsafe { !*weekmask.get_unchecked(day_of_week as usize - 1) } {
+        let date = NaiveDateTime::from_timestamp_opt(date as i64 * 24 * 60 * 60, 0)
+            .unwrap()
+            .format("%Y-%m-%d");
+        polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", date))
+    };
+
     if offset > 0 {
         let holidays_begin = match holidays.binary_search(&date) {
             Ok(x) => x,
@@ -66,7 +66,7 @@ pub(crate) fn calculate_advance(
         date += (offset/n_weekdays)*7;
         offset = offset % n_weekdays;
 
-        let holidays_temp = match holidays.binary_search(&date) {
+        let holidays_temp = match holidays[..holidays_end].binary_search(&date) {
             Ok(x) => x,
             Err(x) => x,
         };
@@ -82,7 +82,7 @@ pub(crate) fn calculate_advance(
             }
             if unsafe {
                 (*weekmask.get_unchecked(day_of_week as usize - 1))
-                & (!holidays.contains(&date))
+                & (!holidays[..holidays_end].contains(&date))
              } {
                 offset += 1;
             }
