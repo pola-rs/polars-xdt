@@ -13,6 +13,7 @@ lib = _get_shared_lib_location(__file__)
 __version__ = "0.2.0"
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
+reverse_mapping = {value: key for key, value in mapping.items()}
 
 
 @pl.api.register_expr_namespace("business")
@@ -111,10 +112,10 @@ class ExprBusinessDateTimeNamespace:
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
     ) -> pl.Expr:
-        if weekend != ("Sat", "Sun"):
-            raise NotImplementedError(
-                "custom weekends are not yet supported - coming soon!"
-            )
+        if weekend == ("Sat", "Sun"):
+            weekmask = [True, True, True, True, True, False, False]
+        else:
+            weekmask = [False if reverse_mapping[i] in weekend else True for i in range(1, 8)]
         if holidays:
             raise NotImplementedError(
                 "custom holidays are not yet supported - coming soon!"
@@ -126,6 +127,9 @@ class ExprBusinessDateTimeNamespace:
             symbol="sub",
             is_elementwise=True,
             args=[end_dates],
+            kwargs={
+                'weekmask': weekmask,
+            }
         )
         return result
 
