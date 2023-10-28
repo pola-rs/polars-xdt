@@ -29,17 +29,21 @@ def get_result(
             .item()
         )
     else:
-        result = (
-            pl.DataFrame({"ts": [dt.datetime(date.year, date.month, date.day)]})
-            .select(
-                pl.col("ts")
-                .dt.cast_time_unit(dtype.time_unit)  # type: ignore[union-attr]
-                .dt.replace_time_zone(dtype.time_zone)  # type: ignore[union-attr]
-                .bdt.offset_by(by=by, **kwargs)  # type: ignore[attr-defined]
-                .dt.date()
-            )["ts"]
-            .item()
-        )
+        try:
+            result = (
+                pl.DataFrame({"ts": [dt.datetime(date.year, date.month, date.day)]})
+                .select(
+                    pl.col("ts")
+                    .dt.cast_time_unit(dtype.time_unit)  # type: ignore[union-attr]
+                    .dt.replace_time_zone(dtype.time_zone)  # type: ignore[union-attr]
+                    .bdt.offset_by(by=by, **kwargs)  # type: ignore[attr-defined]
+                    .dt.date()
+                )["ts"]
+                .item()
+            )
+        except Exception as exp:
+            assert "non-existent" in str(exp) or "ambiguous" in str(exp)
+            reject()
     return result  # type: ignore[no-any-return]
 
 

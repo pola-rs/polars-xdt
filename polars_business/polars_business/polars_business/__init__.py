@@ -15,13 +15,18 @@ __version__ = "0.2.1"
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 reverse_mapping = {value: key for key, value in mapping.items()}
 
+
 def get_weekmask(weekend: Sequence[str]) -> list[bool]:
     if weekend == ("Sat", "Sun"):
         weekmask = [True, True, True, True, True, False, False]
     else:
-        weekmask = [False if reverse_mapping[i] in weekend else True for i in range(1, 8)]
+        weekmask = [
+            False if reverse_mapping[i] in weekend else True for i in range(1, 8)
+        ]
     if sum(weekmask) == 0:
-        raise ValueError(f"At least one day of the week must be a business day. Got weekend={weekend}")
+        raise ValueError(
+            f"At least one day of the week must be a business day. Got weekend={weekend}"
+        )
     return weekmask
 
 
@@ -120,7 +125,11 @@ class ExprBusinessDateTimeNamespace:
             holidays_int = []
         else:
             holidays_int = sorted(
-                {(holiday - date(1970, 1, 1)).days for holiday in holidays if holiday.strftime('%a') not in weekend}
+                {
+                    (holiday - date(1970, 1, 1)).days
+                    for holiday in holidays
+                    if holiday.strftime("%a") not in weekend
+                }
             )
         if isinstance(end_dates, str):
             end_dates = pl.col(end_dates)
@@ -130,9 +139,9 @@ class ExprBusinessDateTimeNamespace:
             is_elementwise=True,
             args=[end_dates],
             kwargs={
-                'weekmask': weekmask,
-                'holidays': holidays_int,
-            }
+                "weekmask": weekmask,
+                "holidays": holidays_int,
+            },
         )
         return result
 

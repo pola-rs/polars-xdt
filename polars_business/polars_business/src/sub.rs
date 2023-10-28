@@ -32,7 +32,7 @@ fn date_diff(
     count += whole_weeks * n_weekdays;
     start_date += whole_weeks * 7;
     while start_date < end_date {
-        if unsafe {*weekmask.get_unchecked(start_weekday-1)} {
+        if unsafe { *weekmask.get_unchecked(start_weekday - 1) } {
             count += 1;
         }
         start_date += 1;
@@ -59,18 +59,24 @@ pub(crate) fn impl_sub(
     }
     let start_dates = start_dates.date()?;
     let end_dates = end_dates.date()?;
-    let n_weekdays = weekmask.into_iter().filter(|&x| *x).count() as i32;
+    let n_weekdays = weekmask.iter().filter(|&x| *x).count() as i32;
     let out = match end_dates.len() {
         1 => {
             if let Some(end_date) = end_dates.get(0) {
-                start_dates.apply(|x_date| x_date.map(|start_date| date_diff(start_date, end_date, weekmask, n_weekdays, holidays)))
+                start_dates.apply(|x_date| {
+                    x_date.map(|start_date| {
+                        date_diff(start_date, end_date, weekmask, n_weekdays, holidays)
+                    })
+                })
             } else {
                 Int32Chunked::full_null(start_dates.name(), start_dates.len())
             }
         }
         _ => binary_elementwise(start_dates, end_dates, |opt_s, opt_n| {
             match (opt_s, opt_n) {
-                (Some(start_date), Some(end_date)) => Some(date_diff(start_date, end_date, weekmask, n_weekdays, holidays)),
+                (Some(start_date), Some(end_date)) => Some(date_diff(
+                    start_date, end_date, weekmask, n_weekdays, holidays,
+                )),
                 _ => None,
             }
         }),

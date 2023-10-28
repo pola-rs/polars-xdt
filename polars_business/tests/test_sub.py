@@ -52,10 +52,15 @@ def test_against_np_busday_count(
     holidays: list[dt.date],
     function: Callable[[dt.date], dt.date | pl.Series],
 ) -> None:
-    result = get_result(function(start_date), end_date, weekend=weekend, holidays=holidays)
+    result = get_result(
+        function(start_date), end_date, weekend=weekend, holidays=holidays
+    )
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
-    expected = np.busday_count(start_date, end_date, weekmask=weekmask, holidays=holidays)
+    expected = np.busday_count(
+        start_date, end_date, weekmask=weekmask, holidays=holidays
+    )
     assert result == expected
+
 
 @given(
     start_date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
@@ -83,7 +88,7 @@ def test_against_naive_python(
     expected = 0
     start_date_copy = start_date
     while start_date_copy < end_date:
-        if start_date_copy.strftime('%a') in weekend:
+        if start_date_copy.strftime("%a") in weekend:
             start_date_copy += dt.timedelta(days=1)
             continue
         if start_date_copy in holidays:
@@ -102,4 +107,8 @@ def test_empty_weekmask() -> None:
         }
     )
     with pytest.raises(ValueError):
-        df.select(plb.col('end').bdt.sub('start', weekend=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']))
+        df.select(
+            plb.col("end").bdt.sub(
+                "start", weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            )
+        )

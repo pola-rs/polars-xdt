@@ -27,14 +27,14 @@ pub(crate) fn advance_few_days(x_weekday: usize, n: i32, weekmask: &[bool; 7]) -
     while n > 0 {
         n_days += 1;
         x_weekday = fast_modulo(x_weekday, 1);
-        if unsafe {*weekmask.get_unchecked(x_weekday as usize-1)} {
+        if unsafe { *weekmask.get_unchecked(x_weekday - 1) } {
             n -= 1;
         }
     }
     while n < 0 {
         n_days -= 1;
         x_weekday = fast_modulo(x_weekday, -1);
-        if unsafe {*weekmask.get_unchecked(x_weekday as usize-1)} {
+        if unsafe { *weekmask.get_unchecked(x_weekday - 1) } {
             n += 1;
         }
     }
@@ -137,9 +137,9 @@ pub(crate) fn calculate_n_days_with_weekend_and_holidays(
     holidays: &[i32],
 ) -> PolarsResult<i32> {
     let cache = cache.unwrap();
-    let n_weekdays = weekmask.into_iter().filter(|&x| *x).count() as i32;
+    let n_weekdays = weekmask.iter().filter(|&x| *x).count() as i32;
 
-    if unsafe{!*weekmask.get_unchecked(x_weekday as usize-1)} {
+    if unsafe { !*weekmask.get_unchecked(x_weekday as usize - 1) } {
         return its_a_business_date_error_message(x);
     };
 
@@ -184,9 +184,9 @@ pub(crate) fn calculate_n_days_with_weekend(
     _holidays: &[i32],
 ) -> PolarsResult<i32> {
     let cache = cache.unwrap();
-    let n_weekdays = weekmask.into_iter().filter(|&x| *x).count() as i32;
+    let n_weekdays = weekmask.iter().filter(|&x| *x).count() as i32;
 
-    if unsafe{!*weekmask.get_unchecked(x_weekday as usize-1)} {
+    if unsafe { !*weekmask.get_unchecked(x_weekday as usize - 1) } {
         return its_a_business_date_error_message(x);
     };
 
@@ -237,32 +237,37 @@ pub(crate) fn impl_advance_n_days(
     let original_dtype = s.dtype();
 
     // Set up weeekend cache.
-    let n_weekdays = weekmask.into_iter().filter(|&x| *x).count() as i32;
+    let n_weekdays = weekmask.iter().filter(|&x| *x).count() as i32;
     let capacity = (n_weekdays + 1) * n_weekdays;
-    let cache: Option<AHashMap<i32, i32>> = if weekmask == &[true, true, true, true, true, false, false] {
-        None
-    } else {
-        let mut cache: AHashMap<i32, i32> = AHashMap::with_capacity(capacity as usize);
-        let weekdays = (1..=7).filter(|x| unsafe {*weekmask.get_unchecked(x-1)});
-        for x_weekday in weekdays {
-            for n_days in (-n_weekdays)..=n_weekdays {
-                let value = advance_few_days(x_weekday, n_days, weekmask);
-                cache.insert(10 * n_days + x_weekday as i32, value);
+    let cache: Option<AHashMap<i32, i32>> =
+        if weekmask == &[true, true, true, true, true, false, false] {
+            None
+        } else {
+            let mut cache: AHashMap<i32, i32> = AHashMap::with_capacity(capacity as usize);
+            let weekdays = (1..=7).filter(|x| unsafe { *weekmask.get_unchecked(x - 1) });
+            for x_weekday in weekdays {
+                for n_days in (-n_weekdays)..=n_weekdays {
+                    let value = advance_few_days(x_weekday, n_days, weekmask);
+                    cache.insert(10 * n_days + x_weekday as i32, value);
+                }
             }
-        }
-        Some(cache)
-    };
+            Some(cache)
+        };
 
     // Only keep holidays which aren't on weekends.
-    let holidays: Vec<i32> = {holidays
-        .into_iter()
-        .filter(|x| unsafe{*weekmask.get_unchecked(weekday(*x) as usize-1)} )
-        .collect()
+    let holidays: Vec<i32> = {
+        holidays
+            .into_iter()
+            .filter(|x| unsafe { *weekmask.get_unchecked(weekday(*x) as usize - 1) })
+            .collect()
     };
 
     let n = n.i32()?;
 
-    let calculate_advance = match (weekmask == &[true, true, true, true, true, false, false], holidays.is_empty()) {
+    let calculate_advance = match (
+        weekmask == &[true, true, true, true, true, false, false],
+        holidays.is_empty(),
+    ) {
         (true, true) => calculate_n_days_without_holidays_fast,
         (true, false) => calculate_n_days_with_holidays,
         (false, true) => calculate_n_days_with_weekend,
