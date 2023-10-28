@@ -3,23 +3,21 @@ import numpy as np
 import polars_business as plb
 from datetime import date
 
-df = pl.DataFrame(
-    {
-        "start": [date(2020, 1, 1)],
-        "end": [date(2020, 1, 5)],
-    }
-)
-holidays = [date(2020, 1, 3), date(2020, 1, 5)]
-with pl.Config(tbl_rows=100):
-    print(
-        df.with_columns(
-            start_weekday=pl.col("start").dt.weekday(),
-            end_weekday=pl.col("end").dt.weekday(),
-            result=plb.col("end").bdt.sub(
-                "start", weekend=("Sat", "Sun"), holidays=holidays
-            ),
-            result_np=pl.Series(
-                np.busday_count(df["start"], df["end"], holidays=holidays)
-            ),
-        )
+weekend = ['Sat', 'Sun']
+holidays = [date(2000, 1, 1)]
+
+df = pl.DataFrame({
+    'date': [date(2000, 3, 1), date(2000, 4, 3)]
+})
+
+print(df.with_columns(
+    busday_offset=plb.col("date").bdt.offset_by('3bd', weekend=weekend, holidays=holidays),
+    is_busday=plb.col("date").bdt.is_workday(weekend=weekend, holidays=holidays),
+    busday_count=plb.col('date').bdt.sub(
+        pl.lit(date(2000, 1, 2)), 
+        weekend=weekend, 
+        holidays=holidays
     )
+))
+
+# ok this is obviously wrong...what's going on???

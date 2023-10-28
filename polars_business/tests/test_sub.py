@@ -36,7 +36,7 @@ def get_result(
     weekend=st.lists(
         st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
         min_size=0,
-        max_size=6,  # todo: fail if 7
+        max_size=6,
         unique=True,
     ),
     holidays=st.lists(
@@ -68,7 +68,7 @@ def test_against_np_busday_count(
     weekend=st.lists(
         st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
         min_size=0,
-        max_size=6,  # todo: fail if 7
+        max_size=6,
         unique=True,
     ),
     holidays=st.lists(

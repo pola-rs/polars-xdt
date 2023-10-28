@@ -1,5 +1,6 @@
 use crate::business_days::*;
 use crate::sub::*;
+use crate::is_workday::*;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use serde::Deserialize;
@@ -32,4 +33,12 @@ fn sub(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<Series> {
     let weekmask = kwargs.weekmask;
     let holidays = kwargs.holidays;
     impl_sub(begin_dates, end_dates, &weekmask, &holidays)
+}
+
+#[polars_expr(output_type=Boolean)]
+fn is_workday(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<Series> {
+    let dates = &inputs[0];
+    let weekmask = kwargs.weekmask;
+    let holidays = kwargs.holidays;
+    impl_is_workday(dates, &weekmask, &holidays)
 }

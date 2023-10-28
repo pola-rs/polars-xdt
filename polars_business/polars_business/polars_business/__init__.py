@@ -145,6 +145,35 @@ class ExprBusinessDateTimeNamespace:
         )
         return result
 
+    def is_workday(
+        self,
+        *,
+        weekend: Sequence[str] = ("Sat", "Sun"),
+        holidays: Sequence[date] | None = None,
+    ) -> pl.Expr:
+        weekmask = get_weekmask(weekend)
+        if not holidays:
+            holidays_int = []
+        else:
+            holidays_int = sorted(
+                {
+                    (holiday - date(1970, 1, 1)).days
+                    for holiday in holidays
+                    if holiday.strftime("%a") not in weekend
+                }
+            )
+        result = self._expr._register_plugin(
+            lib=lib,
+            symbol="is_workday",
+            is_elementwise=True,
+            args=[],
+            kwargs={
+                "weekmask": weekmask,
+                "holidays": holidays_int,
+            },
+        )
+        return result
+
 
 class BExpr(pl.Expr):
     @property
