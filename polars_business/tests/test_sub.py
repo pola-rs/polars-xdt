@@ -56,3 +56,39 @@ def test_against_np_busday_count(
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
     expected = np.busday_count(start_date, end_date, weekmask=weekmask, holidays=holidays)
     assert result == expected
+
+@given(
+    start_date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+    end_date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+    weekend=st.lists(
+        st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
+        min_size=0,
+        max_size=6,  # todo: fail if 7
+        unique=True,
+    ),
+    holidays=st.lists(
+        st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+        min_size=1,
+        max_size=300,
+    ),
+)
+def test_against_naive_python(
+    start_date: dt.date,
+    end_date: dt.date,
+    weekend: list[str],
+    holidays: list[dt.date],
+) -> None:
+    assume(end_date > start_date)
+    result = get_result(start_date, end_date, weekend=weekend, holidays=holidays)
+    expected = 0
+    start_date_copy = start_date
+    while start_date_copy < end_date:
+        if start_date_copy.strftime('%a') in weekend:
+            start_date_copy += dt.timedelta(days=1)
+            continue
+        if start_date_copy in holidays:
+            start_date_copy += dt.timedelta(days=1)
+            continue
+        start_date_copy += dt.timedelta(days=1)
+        expected += 1
+    assert result == expected
