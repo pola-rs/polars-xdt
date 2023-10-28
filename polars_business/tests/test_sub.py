@@ -113,6 +113,7 @@ def test_empty_weekmask() -> None:
             )
         )
 
+
 def test_sub_lit() -> None:
     df = pl.DataFrame(
         {
@@ -124,5 +125,23 @@ def test_sub_lit() -> None:
             pl.lit(dt.date(2020, 1, 1)),
         )
     )
-    assert result['end'][0] == 2
-    assert result['end'][1] == 3
+    assert result["end"][0] == 2
+    assert result["end"][1] == 3
+
+
+def test_workday_count() -> None:
+    df = pl.DataFrame(
+        {
+            "start": [dt.date(2020, 1, 3), dt.date(2020, 1, 5)],
+            "end": [dt.date(2020, 1, 8), dt.date(2020, 1, 20)],
+        }
+    )
+    result = df.with_columns(plb.workday_count("start", "end"))
+    assert result["workday_count"][0] == 3
+    assert result["workday_count"][1] == 10
+    result = df.with_columns(plb.workday_count("start", dt.date(2020, 1, 8)))
+    assert result["workday_count"][0] == 3
+    assert result["workday_count"][1] == 2
+    result = df.with_columns(plb.workday_count(dt.date(2020, 1, 5), pl.col("end")))
+    assert result["workday_count"][0] == 2
+    assert result["workday_count"][1] == 10

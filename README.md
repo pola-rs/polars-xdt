@@ -46,21 +46,21 @@ Supported functions are:
   - `'1bd'` in the string language (i.e. "1 business day")
   - `holidays` argument, for passing custom holidays
   - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
-- `plb.date_range`: just like [polars.date_range](https://pola-rs.github.io/polars/py-polars/html/reference/expressions/api/polars.date_range.html#polars-date-range),
+- `plb.date_range`, `plb.datetime_range`: just like [polars.date_range](https://pola-rs.github.io/polars/py-polars/html/reference/expressions/api/polars.date_range.html#polars-date-range),
   but also accepts:
   - `'1bd'` in the string language (i.e. "1 business day")
-  - `holidays` argument, for passing custom holidays
-  - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
-- `plb.datetime_range`: same as above, but the output will be `Datetime` dtype.
-- `Expr.bdt.sub`: subtract two `Date`s and count the  number of business dates between them!
+  - `holidays` for passing custom holidays
+  - `weekend` for passing custom a weekend (default is ('Sat', 'Sun'))
+- `plb.workday_count`: count the  number of business dates between two `Date` columns!
   Arguments:
-  - `start`: column to subtract
-  - `holidays` argument, for passing custom holidays
-  - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
+  - `start`: column with start dates
+  - `end`: column with end dates
+  - `holidays` for passing custom holidays
+  - `weekend` for passing custom a weekend (default is ('Sat', 'Sun'))
 - `Expr.bdt.is_workday`: determine if a given `Date` is a workday.
   Arguments:
-  - `holidays` argument, for passing custom holidays
-  - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
+  - `holidays` for passing custom holidays
+  - `weekend` for passing custom a weekend (default is ('Sat', 'Sun'))
 
 See `Examples` below!
 
@@ -141,7 +141,7 @@ df = pl.DataFrame(
         "end": [date(2023, 2, 8), date(2023, 5, 2), date(2023, 12, 30)],
     }
 )
-result = df.with_columns(n_business_days=plb.col("end").bdt.sub("start"))
+result = df.with_columns(n_business_days=plb.workday_count('start', 'end'))
 print(result)
 ```
 ```
@@ -162,7 +162,7 @@ Benchmarks
 
 Single-threaded performance is:
 - about on par with NumPy
-- at least an order of magnitude faster than pandas.
+- about an order of magnitude faster than pandas.
 
 but note that Polars will take care of parallelisation for you, and that this plugin
 will fit in with Polars lazy execution.

@@ -1,7 +1,7 @@
 mod business_days;
 mod expressions;
-mod sub;
 mod is_workday;
+mod sub;
 
 #[cfg(target_os = "linux")]
 use jemallocator::Jemalloc;

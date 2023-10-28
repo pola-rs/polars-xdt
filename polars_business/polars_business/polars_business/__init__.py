@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import polars as pl
 from polars.utils.udfs import _get_shared_lib_location
 import re
@@ -74,7 +76,7 @@ class ExprBusinessDateTimeNamespace:
         *,
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
-    ) -> pl.Expr:
+    ) -> BExpr:
         if (
             isinstance(by, str)
             and (match := re.search(r"(\d+bd)", by)) is not None
@@ -119,7 +121,7 @@ class ExprBusinessDateTimeNamespace:
         *,
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
-    ) -> pl.Expr:
+    ) -> BExpr:
         weekmask = get_weekmask(weekend)
         if not holidays:
             holidays_int = []
@@ -198,6 +200,24 @@ class BColumn(Protocol):
 
 
 col = cast(BColumn, pl.col)
+
+
+def workday_count(
+    start: str | pl.Expr | date,
+    end: str | pl.Expr | date,
+    weekend: Sequence[str] = ("Sat", "Sun"),
+    holidays: Sequence[date] | None = None,
+) -> BExpr:
+    if isinstance(start, str):
+        start = col(start)
+    elif not isinstance(start, pl.Expr):
+        start = pl.lit(start)
+    if isinstance(end, str):
+        end = col(end)
+    elif not isinstance(end, pl.Expr):
+        end = pl.lit(end)
+
+    return end.bdt.sub(start, weekend=weekend, holidays=holidays).alias('workday_count')
 
 
 __all__ = [
