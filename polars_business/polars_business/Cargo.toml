@@ -9,7 +9,6 @@ name = "polars_business"
 crate-type = ["cdylib"]
 
 [dependencies]
-ahash = ">=0.8.5"
 pyo3 = { version = "0.20.0", features = ["extension-module"] }
 pyo3-polars = { version = "0.8", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
