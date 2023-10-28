@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 
 BENCHMARKS = [1, 2, 3, 4]
-BENCHMARKS = [4]
+# BENCHMARKS = [4]
 
 SIZE = 1_000_000
 
