@@ -237,13 +237,11 @@ def test_starting_on_non_business() -> None:
     start = dt.date(2000, 1, 1)
     n = -7
     weekend = ["Sat", "Sun"]
-    holidays = []
     df = pl.DataFrame({"dates": [start]})
     with pytest.raises(pl.ComputeError):
         df.with_columns(
             dates_shifted=plb.col("dates").bdt.offset_by(
                 by=f"{n}bd",
-                holidays=holidays,
                 weekend=weekend,
             )
         )
