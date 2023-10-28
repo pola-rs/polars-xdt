@@ -1,0 +1,53 @@
+import datetime as dt
+import pytest
+import pandas as pd  # type: ignore
+from typing import Mapping, Any, Callable
+
+import hypothesis.strategies as st
+import numpy as np
+from hypothesis import given, assume, reject
+
+import polars as pl
+import polars_business as plb
+from polars.type_aliases import PolarsDataType
+
+
+mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
+reverse_mapping = {value: key for key, value in mapping.items()}
+
+
+def get_result(
+    date: dt.date,
+    weekend: list[str],
+    holidays: list[dt.date],
+) -> int:
+    return (  # type: ignore[no-any-return]
+        pl.DataFrame({"date": [date]})
+        .select(plb.col("date").bdt.is_workday(weekend=weekend, holidays=holidays))["date"]  # type: ignore[arg-type]
+        .item()
+    )
+
+
+@given(
+    date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+    weekend=st.lists(
+        st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
+        min_size=0,
+        max_size=6,
+        unique=True,
+    ),
+    holidays=st.lists(
+        st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+        min_size=1,
+        max_size=300,
+    ),
+)
+def test_against_np_is_busday(
+    date: dt.date,
+    weekend: list[str],
+    holidays: list[dt.date],
+) -> None:
+    result = get_result(date, weekend=weekend, holidays=holidays)
+    weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
+    expected = np.is_busday(date, weekmask=weekmask, holidays=holidays)
+    assert result == expected
