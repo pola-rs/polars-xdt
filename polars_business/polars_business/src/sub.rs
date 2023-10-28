@@ -16,22 +16,7 @@ fn date_diff(
     }
 
     let mut start_weekday = weekday(start_date) as usize;
-
-    // if start_weekday == 6 {
-    //     start_date += 2;
-    //     start_weekday = 1;
-    // } else if start_weekday == 7 {
-    //     start_date += 1;
-    //     start_weekday = 1;
-    // }
-    // if end_weekday == 6 {
-    //     end_date += 2;
-    // } else if end_weekday == 7 {
-    //     end_date += 1;
-    // }
-
     let diff = end_date - start_date;
-
     let whole_weeks = diff / 7;
     let mut count = 0;
     count += whole_weeks * n_weekdays;
