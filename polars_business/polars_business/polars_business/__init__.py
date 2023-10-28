@@ -15,6 +15,15 @@ __version__ = "0.2.0"
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 reverse_mapping = {value: key for key, value in mapping.items()}
 
+def get_weekmask(weekend: Sequence[str]) -> list[bool]:
+    if weekend == ("Sat", "Sun"):
+        weekmask = [True, True, True, True, True, False, False]
+    else:
+        weekmask = [False if reverse_mapping[i] in weekend else True for i in range(1, 8)]
+    if sum(weekmask) == 0:
+        raise ValueError(f"At least one day of the week must be a business day. Got weekend={weekend}")
+    return weekmask
+
 
 @pl.api.register_expr_namespace("business")
 class BusinessDayTools:
@@ -35,10 +44,7 @@ class BusinessDayTools:
             holidays = sorted(
                 {(holiday - date(1970, 1, 1)).days for holiday in holidays}
             )
-        if weekend == ("Sat", "Sun"):
-            weekend = [6, 7]
-        else:
-            weekend = sorted({mapping[name] for name in weekend})
+        weekmask = get_weekmask(weekend)
 
         return self._expr._register_plugin(
             lib=lib,
@@ -47,7 +53,7 @@ class BusinessDayTools:
             args=[n],
             kwargs={
                 "holidays": holidays,
-                "weekend": weekend,
+                "weekmask": weekmask,
             },
         )
 
@@ -86,10 +92,7 @@ class ExprBusinessDateTimeNamespace:
             holidays_int = sorted(
                 {(holiday - date(1970, 1, 1)).days for holiday in holidays}
             )
-        if weekend == ("Sat", "Sun"):
-            weekend_int = [6, 7]
-        else:
-            weekend_int = sorted({mapping[name] for name in weekend})
+        weekmask = get_weekmask(weekend)
 
         result = self._expr._register_plugin(
             lib=lib,
@@ -98,7 +101,7 @@ class ExprBusinessDateTimeNamespace:
             args=[n],
             kwargs={
                 "holidays": holidays_int,
-                "weekend": weekend_int,
+                "weekmask": weekmask,
             },
         )
         if fastpath:
@@ -112,10 +115,7 @@ class ExprBusinessDateTimeNamespace:
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
     ) -> pl.Expr:
-        if weekend == ("Sat", "Sun"):
-            weekmask = [True, True, True, True, True, False, False]
-        else:
-            weekmask = [False if reverse_mapping[i] in weekend else True for i in range(1, 8)]
+        weekmask = get_weekmask(weekend)
         if not holidays:
             holidays_int = []
         else:

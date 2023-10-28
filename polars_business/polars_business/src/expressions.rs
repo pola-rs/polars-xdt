@@ -7,7 +7,7 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 pub struct BusinessDayKwargs {
     holidays: Vec<i32>,
-    weekend: Vec<i32>,
+    weekmask: [bool; 7],
 }
 
 fn bday_output(input_fields: &[Field]) -> PolarsResult<Field> {
@@ -19,20 +19,14 @@ fn bday_output(input_fields: &[Field]) -> PolarsResult<Field> {
 fn advance_n_days(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<Series> {
     let s = &inputs[0];
     let n = &inputs[1].cast(&DataType::Int32)?;
-    let weekend = kwargs.weekend;
+    let weekmask = kwargs.weekmask;
     let holidays = kwargs.holidays;
 
-    impl_advance_n_days(s, n, holidays, weekend)
-}
-
-#[derive(Deserialize)]
-pub struct SubKwargs {
-    holidays: Vec<i32>,
-    weekmask: [bool; 7],
+    impl_advance_n_days(s, n, holidays, &weekmask)
 }
 
 #[polars_expr(output_type=Int32)]
-fn sub(inputs: &[Series], kwargs: SubKwargs) -> PolarsResult<Series> {
+fn sub(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<Series> {
     let begin_dates = &inputs[0];
     let end_dates = &inputs[1];
     let weekmask = kwargs.weekmask;

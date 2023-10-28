@@ -92,3 +92,14 @@ def test_against_naive_python(
         start_date_copy += dt.timedelta(days=1)
         expected += 1
     assert result == expected
+
+
+def test_empty_weekmask() -> None:
+    df = pl.DataFrame(
+        {
+            "start": [dt.date(2020, 1, 1)],
+            "end": [dt.date(2020, 1, 5)],
+        }
+    )
+    with pytest.raises(ValueError):
+        df.select(plb.col('end').bdt.sub('start', weekend=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']))
