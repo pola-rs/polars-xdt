@@ -196,7 +196,7 @@ class ExprBusinessDateTimeNamespace:
             )
         weekmask = get_weekmask(weekend)
 
-        result = self._expr._register_plugin(
+        result = self._expr.register_plugin(
             lib=lib,
             symbol="advance_n_days",
             is_elementwise=True,
@@ -231,7 +231,7 @@ class ExprBusinessDateTimeNamespace:
             )
         if isinstance(end_dates, str):
             end_dates = pl.col(end_dates)
-        result = self._expr._register_plugin(
+        result = self._expr.register_plugin(
             lib=lib,
             symbol="sub",
             is_elementwise=True,
@@ -260,7 +260,7 @@ class ExprBusinessDateTimeNamespace:
                     if holiday.strftime("%a") not in weekend
                 }
             )
-        result = self._expr._register_plugin(
+        result = self._expr.register_plugin(
             lib=lib,
             symbol="is_workday",
             is_elementwise=True,

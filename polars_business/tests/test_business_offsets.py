@@ -87,7 +87,7 @@ def test_against_np_busday_offset(
         date, dtype, by=function(f"{n}bd"), weekend=weekend, holidays=holidays, roll=roll  # type: ignore[arg-type]
     )
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
-    expected = np.busday_offset(date, n, weekmask=weekmask, holidays=holidays, roll=roll)
+    expected = np.busday_offset(date, n, weekmask=weekmask, holidays=holidays)
     assert np.datetime64(result) == expected
 
 @given(
