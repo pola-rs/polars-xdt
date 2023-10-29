@@ -155,7 +155,7 @@ def test_against_np_busday_offset_with_weekends(
 
 
 @given(
-    date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+    date=st.dates(min_value=dt.date(1969, 1, 1), max_value=dt.date(1971, 12, 31)),
     n=st.integers(min_value=-30, max_value=30),
     weekend=st.lists(
         st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
@@ -163,7 +163,7 @@ def test_against_np_busday_offset_with_weekends(
         max_size=7,
     ),
     holidays=st.lists(
-        st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+        st.dates(min_value=dt.date(1969, 1, 1), max_value=dt.date(1971, 12, 31)),
         min_size=1,
         max_size=300,
     ),
