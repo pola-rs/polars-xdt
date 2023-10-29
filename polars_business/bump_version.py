@@ -3,6 +3,10 @@ import sys
 import re
 import subprocess
 
+subprocess.run(['make', 'install-release'])
+subprocess.run(['make', 'clean'], cwd='docs')
+subprocess.run(['make', 'html'], cwd='docs')
+
 how = sys.argv[1]
 
 subprocess.run(["cp", "../README.md", "polars_business/README.md"])
