@@ -1,0 +1,6 @@
+sphinx
+numpydoc
+sphinx_autosummary_accessors
+sphinx_copybutton
+sphinx-design
+sphinx-favicon

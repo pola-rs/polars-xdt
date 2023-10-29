@@ -88,25 +88,3 @@ def test_eager_custom_holiday() -> None:
     )
     assert_series_equal(result, expected)
 
-
-def test_datetime_range() -> None:
-    result = plb.datetime_range(
-        datetime(2023, 1, 1, 1),
-        datetime(2023, 1, 10, 1),
-        eager=True,
-        weekend=["Fri", "Sat"],
-    )
-    expected = pl.Series(
-        "datetime",
-        [
-            datetime(2023, 1, 1, 1),
-            datetime(2023, 1, 2, 1),
-            datetime(2023, 1, 3, 1),
-            datetime(2023, 1, 4, 1),
-            datetime(2023, 1, 5, 1),
-            datetime(2023, 1, 8, 1),
-            datetime(2023, 1, 9, 1),
-            datetime(2023, 1, 10, 1),
-        ],
-    )
-    assert_series_equal(result, expected)

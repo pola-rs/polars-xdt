@@ -5,7 +5,7 @@ from polars.utils.udfs import _get_shared_lib_location
 import re
 from datetime import date
 
-from polars_business.ranges import date_range, datetime_range
+from polars_business.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
 from typing import Sequence, cast, Iterable, Protocol
@@ -305,7 +305,46 @@ def workday_count(
     holidays: Sequence[date] | None = None,
 ) -> BExpr:
     """
-    Yo wassup.
+    Count the number of workdays between two columns of dates.
+
+    Parameters
+    ----------
+    start
+        Start date(s). This can be a string column, a date column, or a single date.
+    end
+        End date(s). This can be a string column, a date column, or a single date.
+    weekend
+        The days of the week that are considered weekends. Defaults to ("Sat", "Sun").
+    holidays
+        The holidays to exclude from the calculation. Defaults to None. This should
+        be a list of ``datetime.date`` s.
+    
+    Returns
+    -------
+    polars.Expr
+
+    Examples
+    --------
+    >>> from datetime import date
+    >>> import polars as pl
+    >>> import polars_business as plb
+    >>> df = pl.DataFrame(
+    ...     {
+    ...         "start": [date(2023, 1, 4), date(2023, 5, 1), date(2023, 9, 9)],
+    ...         "end": [date(2023, 2, 8), date(2023, 5, 2), date(2023, 12, 30)],
+    ...     }
+    ... )
+    >>> df.with_columns(n_business_days=plb.workday_count("start", "end"))
+    shape: (3, 3)
+    ┌────────────┬────────────┬─────────────────┐
+    │ start      ┆ end        ┆ n_business_days │
+    │ ---        ┆ ---        ┆ ---             │
+    │ date       ┆ date       ┆ i32             │
+    ╞════════════╪════════════╪═════════════════╡
+    │ 2023-01-04 ┆ 2023-02-08 ┆ 25              │
+    │ 2023-05-01 ┆ 2023-05-02 ┆ 1               │
+    │ 2023-09-09 ┆ 2023-12-30 ┆ 80              │
+    └────────────┴────────────┴─────────────────┘
     """
     if isinstance(start, str):
         start = col(start)
@@ -322,6 +361,5 @@ def workday_count(
 __all__ = [
     "col",
     "date_range",
-    "datetime_range",
     "workday_count",
 ]

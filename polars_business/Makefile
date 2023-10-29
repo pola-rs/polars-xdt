@@ -16,11 +16,6 @@ install-release: venv
 pre-commit: venv
 	cargo fmt --all --manifest-path polars_business/Cargo.toml && cargo clippy --all-features --manifest-path polars_business/Cargo.toml
 
-clean:
-	-@rm -r venv
-	-@cd expression_lib && cargo clean
-
-
 run: install
 	source venv/bin/activate && python run.py
 

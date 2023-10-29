@@ -47,7 +47,7 @@ Supported functions are:
   - `holidays` argument, for passing custom holidays
   - `weekend` argument, for passing custom a weekend (default is ('Sat', 'Sun'))
   - `roll` argument, for controlling what to do when the original date is not a workday
-- `plb.date_range`, `plb.datetime_range`: just like [polars.date_range](https://pola-rs.github.io/polars/py-polars/html/reference/expressions/api/polars.date_range.html#polars-date-range),
+- `plb.date_range`, just like [polars.date_range](https://pola-rs.github.io/polars/py-polars/html/reference/expressions/api/polars.date_range.html#polars-date-range),
   but also accepts:
   - `'1bd'` in the string language (i.e. "1 business day")
   - `holidays` for passing custom holidays
@@ -110,13 +110,13 @@ for 2023 and 2024:
 ```python
 import holidays
 
-uk_holidays = holidays.country_holidays("UK", subdiv='England', years=[2023, 2024])
+england_holidays = holidays.country_holidays("UK", subdiv='ENG', years=[2023, 2024])
 
 result = df.with_columns(
     date_shifted=plb.col("date").bdt.offset_by(
-      by='5bd',
-      weekend=('Sat', 'Sun'),
-      holidays=uk_holidays,
+    by='5bd',
+    weekend=('Sat', 'Sun'),
+    holidays=england_holidays,
     )
 )
 print(result)
