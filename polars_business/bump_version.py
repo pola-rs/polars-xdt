@@ -18,6 +18,8 @@ elif how == "minor":
     version = ".".join(version[:-2] + [str(int(version[-2]) + 1), "0"])
 elif how == "major":
     version = ".".join([str(int(version[0]) + 1), "0", "0"])
+else:
+    sys.exit(1)
 content = content.replace(f'version = "{old_version}"', f'version = "{version}"')
 with open("polars_business/pyproject.toml", "w", encoding="utf-8") as f:
     f.write(content)
