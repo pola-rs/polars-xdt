@@ -8,7 +8,7 @@ from datetime import date
 from polars_business.ranges import date_range, datetime_range
 
 from polars.type_aliases import PolarsDataType
-from typing import Sequence, cast, Iterable, Protocol
+from typing import Sequence, cast, Iterable, Protocol, Literal
 
 lib = _get_shared_lib_location(__file__)
 
@@ -61,6 +61,7 @@ class BusinessDayTools:
             kwargs={
                 "holidays": holidays,
                 "weekmask": weekmask,
+                "roll": None,
             },
         )
 
@@ -74,6 +75,7 @@ class ExprBusinessDateTimeNamespace:
         self,
         by: str | pl.Expr,
         *,
+        roll: Literal["raise", "forward", "backward"] = "raise",
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
     ) -> BExpr:
@@ -109,6 +111,7 @@ class ExprBusinessDateTimeNamespace:
             kwargs={
                 "holidays": holidays_int,
                 "weekmask": weekmask,
+                "roll": roll,
             },
         )
         if fastpath:
@@ -143,6 +146,7 @@ class ExprBusinessDateTimeNamespace:
             kwargs={
                 "weekmask": weekmask,
                 "holidays": holidays_int,
+                "roll": None,
             },
         )
         return cast(BExpr, result)
@@ -172,6 +176,7 @@ class ExprBusinessDateTimeNamespace:
             kwargs={
                 "weekmask": weekmask,
                 "holidays": holidays_int,
+                "roll": None,
             },
         )
         return result

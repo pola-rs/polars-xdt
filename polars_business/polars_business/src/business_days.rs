@@ -15,12 +15,44 @@ pub(crate) fn calculate_advance(
     weekmask: &[bool; 7],
     n_weekdays: i32,
     holidays: &[i32],
+    roll: &str,
 ) -> PolarsResult<i32> {
-    if holidays.contains(&date) | unsafe { !*weekmask.get_unchecked(day_of_week as usize - 1) } {
-        let date = NaiveDateTime::from_timestamp_opt(date as i64 * 24 * 60 * 60, 0)
-            .unwrap()
-            .format("%Y-%m-%d");
-        polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", date))
+    match roll {
+        "raise" => {
+            if holidays.contains(&date)
+                | unsafe { !*weekmask.get_unchecked(day_of_week as usize - 1) }
+            {
+                let date = NaiveDateTime::from_timestamp_opt(date as i64 * 24 * 60 * 60, 0)
+                    .unwrap()
+                    .format("%Y-%m-%d");
+                polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. Use `roll` argument.", date))
+            }
+        }
+        "forward" => {
+            while holidays.contains(&date)
+                | unsafe { !*weekmask.get_unchecked(day_of_week as usize - 1) }
+            {
+                date += 1;
+                day_of_week += 1;
+                if day_of_week > 7 {
+                    day_of_week = 1;
+                }
+            }
+        }
+        "backward" => {
+            while holidays.contains(&date)
+                | unsafe { !*weekmask.get_unchecked(day_of_week as usize - 1) }
+            {
+                date -= 1;
+                day_of_week -= 1;
+                if day_of_week == 0 {
+                    day_of_week = 7;
+                }
+            }
+        }
+        _ => {
+            unreachable!() // todo make enum
+        }
     };
 
     if offset > 0 {
@@ -93,6 +125,7 @@ pub(crate) fn impl_advance_n_days(
     n: &Series,
     holidays: Vec<i32>,
     weekmask: &[bool; 7],
+    roll: &str,
 ) -> PolarsResult<Series> {
     let original_dtype = s.dtype();
 
@@ -116,7 +149,9 @@ pub(crate) fn impl_advance_n_days(
                     if let Some(n) = n.get(0) {
                         ca.try_apply(|x_date| {
                             let x_weekday = weekday(x_date);
-                            calculate_advance(x_date, n, x_weekday, weekmask, n_weekdays, &holidays)
+                            calculate_advance(
+                                x_date, n, x_weekday, weekmask, n_weekdays, &holidays, roll,
+                            )
                         })
                     } else {
                         Ok(Int32Chunked::full_null(ca.name(), ca.len()))
@@ -126,7 +161,7 @@ pub(crate) fn impl_advance_n_days(
                     (Some(x_date), Some(n)) => {
                         let x_weekday = weekday(x_date);
                         Ok(Some(calculate_advance(
-                            x_date, n, x_weekday, weekmask, n_weekdays, &holidays,
+                            x_date, n, x_weekday, weekmask, n_weekdays, &holidays, roll,
                         )?))
                     }
                     _ => Ok(None),
@@ -152,7 +187,7 @@ pub(crate) fn impl_advance_n_days(
                             let x_date = (x / multiplier) as i32;
                             let x_weekday = weekday(x_date);
                             Ok(x + ((calculate_advance(
-                                x_date, n, x_weekday, weekmask, n_weekdays, &holidays,
+                                x_date, n, x_weekday, weekmask, n_weekdays, &holidays, roll,
                             )? - x_date) as i64
                                 * multiplier))
                         })
@@ -166,7 +201,7 @@ pub(crate) fn impl_advance_n_days(
                         let x_weekday = weekday(x_date);
                         Ok(Some(
                             x + ((calculate_advance(
-                                x_date, n, x_weekday, weekmask, n_weekdays, &holidays,
+                                x_date, n, x_weekday, weekmask, n_weekdays, &holidays, roll,
                             )? - x_date) as i64
                                 * multiplier),
                         ))
