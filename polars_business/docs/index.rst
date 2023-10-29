@@ -1,5 +1,5 @@
-Welcome to polars-business's documentation!
-===========================================
+Polars-business
+===============
 
 **Polars-business** is a Python library which is a plugin for
 Polars, a blazingly fast dataframe library.
@@ -15,10 +15,3 @@ Polars, a blazingly fast dataframe library.
    installation
    tutorial
    API
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
