@@ -76,6 +76,7 @@ class ExprBusinessDateTimeNamespace:
         *,
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
+        roll: str = "raise",
     ) -> BExpr:
         if (
             isinstance(by, str)
@@ -109,6 +110,7 @@ class ExprBusinessDateTimeNamespace:
             kwargs={
                 "holidays": holidays_int,
                 "weekmask": weekmask,
+                "roll": roll,
             },
         )
         if fastpath:

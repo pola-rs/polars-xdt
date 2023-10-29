@@ -1,7 +1,8 @@
 import datetime as dt
 import pytest
 import pandas as pd  # type: ignore
-from typing import Mapping, Any, Callable
+from typing import Mapping, Any, Callable, Literal
+from polars.exceptions import ComputeError
 
 import hypothesis.strategies as st
 import numpy as np
@@ -48,119 +49,13 @@ def get_result(
 
 
 @given(
-    date=st.dates(min_value=dt.date(1000, 1, 1), max_value=dt.date(9999, 12, 31)),
-    n=st.integers(min_value=-30, max_value=30),
-    dtype=st.sampled_from(
-        [
-            pl.Date,
-            pl.Datetime("ms"),
-            pl.Datetime("ms", "Asia/Kathmandu"),
-            pl.Datetime("us", "Europe/London"),
-        ]
-    ),
-    function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
-)
-def test_against_np_busday_offset(
-    date: dt.date,
-    n: int,
-    dtype: PolarsDataType,
-    function: Callable[[str], str | pl.Series],
-) -> None:
-    # how to do this...
-    # convert time zone of date
-    assume(date.strftime("%a") not in ("Sat", "Sun"))
-    result = get_result(date, dtype, by=function(f"{n}bd"))
-    expected = np.busday_offset(date, n)
-    assert np.datetime64(result) == expected
-
-
-@given(
-    date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(9999, 12, 31)),
-    n=st.integers(min_value=-30, max_value=30),
-)
-def test_against_pandas_bday_offset(date: dt.date, n: int) -> None:
-    # maybe just remove this one?
-    assume(date.strftime("%a") not in ("Sat", "Sun"))
-    result = (
-        pl.DataFrame({"ts": [date]})
-        .select(plb.col("ts").bdt.offset_by(by=f"{n}bd"))["ts"]
-        .item()
-    )
-    expected = pd.Timestamp(date) + pd.tseries.offsets.BusinessDay(n)
-    assert pd.Timestamp(result) == expected
-
-
-@given(
-    date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
-    n=st.integers(min_value=-30, max_value=30),
-    holidays=st.lists(
-        st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
-        min_size=1,
-        max_size=300,
-    ),
-    dtype=st.sampled_from(
-        [
-            pl.Date,
-            pl.Datetime("ms"),
-            pl.Datetime("ms", "Asia/Kathmandu"),
-            pl.Datetime("us", "Europe/London"),
-        ]
-    ),
-    function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
-)
-def test_against_np_busday_offset_with_holidays(
-    date: dt.date,
-    n: int,
-    holidays: list[dt.date],
-    dtype: PolarsDataType,
-    function: Callable[[str], str | pl.Series],
-) -> None:
-    assume(date.strftime("%a") not in ("Sat", "Sun"))
-    assume(date not in holidays)  # TODO: remove once unwrap is removed
-    result = get_result(date, dtype, by=function(f"{n}bd"), holidays=holidays)  # type: ignore[arg-type]
-    expected = np.busday_offset(date, n, holidays=holidays)
-    assert np.datetime64(result) == expected
-
-
-@given(
-    date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
-    n=st.integers(min_value=-30, max_value=30),
-    weekend=st.lists(
-        st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
-        min_size=0,
-        max_size=7,
-    ),
-    dtype=st.sampled_from(
-        [
-            pl.Date,
-            pl.Datetime("ms"),
-            pl.Datetime("ms", "Asia/Kathmandu"),
-            pl.Datetime("us", "Europe/London"),
-        ]
-    ),
-    function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
-)
-def test_against_np_busday_offset_with_weekends(
-    date: dt.date,
-    n: int,
-    weekend: list[dt.date],
-    dtype: PolarsDataType,
-    function: Callable[[str], str | pl.Series],
-) -> None:
-    assume(date.strftime("%a") not in weekend)
-    result = get_result(date, dtype, by=function(f"{n}bd"), weekend=weekend)  # type: ignore[arg-type]
-    weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
-    expected = np.busday_offset(date, n, weekmask=weekmask)
-    assert np.datetime64(result) == expected
-
-
-@given(
     date=st.dates(min_value=dt.date(1969, 1, 1), max_value=dt.date(1971, 12, 31)),
     n=st.integers(min_value=-30, max_value=30),
     weekend=st.lists(
         st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
         min_size=0,
-        max_size=7,
+        max_size=6,
+        unique=True,
     ),
     holidays=st.lists(
         st.dates(min_value=dt.date(1969, 1, 1), max_value=dt.date(1971, 12, 31)),
@@ -177,7 +72,7 @@ def test_against_np_busday_offset_with_weekends(
     ),
     function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
 )
-def test_against_np_busday_offset_with_weekends_and_holidays(
+def test_against_np_busday_offset(
     date: dt.date,
     n: int,
     weekend: list[str],
@@ -187,13 +82,54 @@ def test_against_np_busday_offset_with_weekends_and_holidays(
 ) -> None:
     assume(date.strftime("%a") not in weekend)
     assume(date not in holidays)
+    roll = 'raise'
     result = get_result(
-        date, dtype, by=function(f"{n}bd"), weekend=weekend, holidays=holidays  # type: ignore[arg-type]
+        date, dtype, by=function(f"{n}bd"), weekend=weekend, holidays=holidays, roll=roll  # type: ignore[arg-type]
     )
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
-    expected = np.busday_offset(date, n, weekmask=weekmask, holidays=holidays)
+    expected = np.busday_offset(date, n, weekmask=weekmask, holidays=holidays, roll=roll)
     assert np.datetime64(result) == expected
 
+@given(
+    date=st.dates(min_value=dt.date(1969, 1, 1), max_value=dt.date(1971, 12, 31)),
+    n=st.integers(min_value=-30, max_value=30),
+    weekend=st.lists(
+        st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
+        min_size=0,
+        max_size=6,
+        unique=True,
+    ),
+    holidays=st.lists(
+        st.dates(min_value=dt.date(1969, 1, 1), max_value=dt.date(1971, 12, 31)),
+        min_size=1,
+        max_size=300,
+    ),
+    dtype=st.sampled_from(
+        [
+            pl.Date,
+            pl.Datetime("ms"),
+            pl.Datetime("ms", "Asia/Kathmandu"),
+            pl.Datetime("us", "Europe/London"),
+        ]
+    ),
+    function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
+    roll = st.sampled_from(['forward', 'backward'])
+)
+def test_against_np_busday_offset_with_roll(
+    date: dt.date,
+    n: int,
+    weekend: list[str],
+    holidays: list[dt.date],
+    dtype: PolarsDataType,
+    function: Callable[[str], str | pl.Series],
+    roll: Literal["forward", "backward"],
+) -> None:
+    result = get_result(
+        date, dtype, by=function(f"{n}bd"), weekend=weekend, holidays=holidays, roll=roll  # type: ignore[arg-type]
+    )
+    weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
+    expected = np.busday_offset(date, n, weekmask=weekmask, holidays=holidays, roll=roll)
+    assert np.datetime64(result) == expected
 
 @pytest.mark.parametrize(
     ("by", "expected"),
