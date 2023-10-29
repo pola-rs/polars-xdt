@@ -78,6 +78,96 @@ class ExprBusinessDateTimeNamespace:
         holidays: Sequence[date] | None = None,
         roll: str = "raise",
     ) -> BExpr:
+        """
+        Offset this date by a relative time offset.
+
+        Parameters
+        ----------
+        by
+            The offset to apply. This can be a string of the form "nbd" (where n is an integer),
+            or a polars expression that evaluates to such a string. Additional units are passed
+            to `polars.dt.offset_by`.
+        weekend
+            The days of the week that are considered weekends. Defaults to ("Sat", "Sun").
+        holidays
+            The holidays to exclude from the calculation. Defaults to None.
+        roll
+            How to handle dates that fall on a non-workday.
+
+            - "raise" raise an error (default).
+            - "forward" roll forward to the next business day.
+            - "backward" roll backward to the previous business day.
+        
+        Returns
+        -------
+        polars.Expr
+
+        Examples
+        --------
+        >>> import polars as pl
+        >>> import polars_business as plb
+        >>> df = pl.DataFrame(
+        ...     {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
+        ... )
+        >>> df.with_columns(
+        ...     date_shifted=plb.col("date").bdt.offset_by("1bd"),
+        ... )
+        shape: (3, 2)
+        ┌────────────┬──────────────┐
+        │ date       ┆ date_shifted │
+        │ ---        ┆ ---          │
+        │ date       ┆ date         │
+        ╞════════════╪══════════════╡
+        │ 2023-04-03 ┆ 2023-04-04   │
+        │ 2023-09-01 ┆ 2023-09-04   │
+        │ 2024-01-04 ┆ 2024-01-05   │
+        └────────────┴──────────────┘
+
+        You can also specify custom weekends and holidays:
+
+        >>> import holidays
+        >>> holidays_england = holidays.country_holidays(
+        ...     "UK", subdiv="ENG", years=[2023, 2024]
+        ... )
+        >>> df.with_columns(
+        ...     date_shifted=plb.col("date").bdt.offset_by(
+        ...         "5bd",
+        ...         holidays=holidays_england,
+        ...         weekend=["Fri", "Sat"],
+        ...         roll="backward",
+        ...     ),
+        ... )
+        shape: (3, 2)
+        ┌────────────┬──────────────┐
+        │ date       ┆ date_shifted │
+        │ ---        ┆ ---          │
+        │ date       ┆ date         │
+        ╞════════════╪══════════════╡
+        │ 2023-04-03 ┆ 2023-04-11   │
+        │ 2023-09-01 ┆ 2023-09-07   │
+        │ 2024-01-04 ┆ 2024-01-11   │
+        └────────────┴──────────────┘
+
+        You can also pass expressions to `by`:
+
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)],
+        ...         "by": ["1bd", "2bd", "-3bd"],
+        ...     }
+        ... )
+        >>> df.with_columns(date_shifted=pl.col("date").bdt.offset_by(pl.col("by")))
+        shape: (3, 3)
+        ┌────────────┬──────┬──────────────┐
+        │ date       ┆ by   ┆ date_shifted │
+        │ ---        ┆ ---  ┆ ---          │
+        │ date       ┆ str  ┆ date         │
+        ╞════════════╪══════╪══════════════╡
+        │ 2023-04-03 ┆ 1bd  ┆ 2023-04-04   │
+        │ 2023-09-01 ┆ 2bd  ┆ 2023-09-05   │
+        │ 2024-01-04 ┆ -3bd ┆ 2024-01-01   │
+        └────────────┴──────┴──────────────┘
+        """
         if (
             isinstance(by, str)
             and (match := re.search(r"(\d+bd)", by)) is not None
