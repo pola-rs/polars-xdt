@@ -67,7 +67,11 @@ class BusinessDayTools:
 
 @pl.api.register_expr_namespace("bdt")
 class ExprBusinessDateTimeNamespace:
+    """
+    Business day functions.
+    """
     def __init__(self, expr: pl.Expr):
+        """foo"""
         self._expr = expr
 
     def offset_by(
@@ -300,6 +304,9 @@ def workday_count(
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
 ) -> BExpr:
+    """
+    Yo wassup.
+    """
     if isinstance(start, str):
         start = col(start)
     elif not isinstance(start, pl.Expr):
@@ -316,4 +323,5 @@ __all__ = [
     "col",
     "date_range",
     "datetime_range",
+    "workday_count",
 ]

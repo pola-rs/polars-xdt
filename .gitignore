@@ -6,3 +6,7 @@ target/
 rust-toolchain.toml
 *.pyc
 .hypothesis/
+*.html
+*.bat
+*.js
+polars_business/docs/_build
