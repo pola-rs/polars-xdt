@@ -4,7 +4,7 @@
 	<img
 		width="400"
 		alt="polars-business"
-		src="https://github.com/MarcoGorelli/polars-business/assets/33491632/25fc2f26-8097-4b86-85c6-c40c75c30f38">
+		src="https://github.com/MarcoGorelli/polars-business/assets/33491632/928c68c4-4e71-45a7-bc89-14922c7ce61b">
 </h1>
 
 [![PyPI version](https://badge.fury.io/py/polars-business.svg)](https://badge.fury.io/py/polars-business)
