@@ -9,7 +9,7 @@ import os
 subprocess.run(['make', 'install-release'])
 subprocess.run(['make', 'clean'], cwd='docs')
 subprocess.run(['make', 'html'], cwd='docs')
-os.system('cp docs/_build/html/* ./../docs-polars-business/ -r')
+os.system('cp docs/_build/html/* ../../docs-polars-business/ -r')
 subprocess.run(['git', 'add', '.'], cwd='../../docs-polars-business')
 subprocess.run(['git', 'commit', '-m', '\"new version\"'], cwd='../../docs-polars-business')
 subprocess.run(['git', 'push'], cwd='../../docs-polars-business')
