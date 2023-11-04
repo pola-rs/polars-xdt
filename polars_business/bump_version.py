@@ -12,7 +12,7 @@ subprocess.run(['make', 'html'], cwd='docs')
 os.system('cp docs/_build/html/* ../../docs-polars-business/ -r')
 subprocess.run(['git', 'add', '.'], cwd='../../docs-polars-business')
 subprocess.run(['git', 'commit', '-m', '\"new version\"'], cwd='../../docs-polars-business')
-subprocess.run(['git', 'push'], cwd='../../docs-polars-business')
+subprocess.run(['git', 'push', 'origin', 'HEAD'], cwd='../../docs-polars-business')
 
 how = sys.argv[1]
 
