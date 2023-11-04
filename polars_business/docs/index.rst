@@ -4,7 +4,7 @@ Polars-business
 **Polars-business** is a Python library which is a plugin for
 Polars, a blazingly fast dataframe library.
 
-.. image:: https://github.com/MarcoGorelli/polars-business/assets/33491632/25fc2f26-8097-4b86-85c6-c40c75c30f38
+.. image:: https://github.com/MarcoGorelli/polars-business/assets/33491632/928c68c4-4e71-45a7-bc89-14922c7ce61b
   :width: 400
   :alt: Polar bear in an office with a nice warm cup of coffee
 
