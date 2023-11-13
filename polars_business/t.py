@@ -6,29 +6,21 @@ from datetime import date
 weekend = ["Sat", "Sun"]
 holidays = [date(2000, 1, 1)]
 
-df = pl.DataFrame(
-    {
-        "date": [date(2000, 3, 1), date(2000, 4, 3)],
-        "date2": [date(2000, 3, 3), date(2000, 4, 19)],
-    }
-)
+import polars as pl
+import polars_business as plb
+import datetime as dt
 
-print(
-    df.with_columns(
-        busday_offset=plb.col("date").bdt.offset_by(
-            "3bd", weekend=weekend, holidays=holidays
-        ),
-        is_busday=plb.col("date").bdt.is_workday(weekend=weekend, holidays=holidays),
-        workday_count=plb.col("date2").bdt.sub(
-            date(2000, 1, 2), weekend=weekend, holidays=holidays
-        ),
-        workday_count2=plb.workday_count(
-            date(2000, 1, 2),
-            "date2",
-            weekend=weekend,
-            holidays=holidays,
-        ),
+data = {"a": [1, 2, 2], "date": [
+    dt.date(2022, 2, 1),
+    dt.date(2023, 2, 1),
+    dt.date(2023, 3, 1),
+]}
+df = pl.DataFrame(data)
+
+print(df
+    .group_by(['a'])
+    .agg(
+        minDate=plb.col.date.min().bdt.offset_by('-1bd'),
+        maxDate=plb.col.date.min().bdt.offset_by('1bd')
     )
 )
-
-# ok this is obviously wrong...what's going on???

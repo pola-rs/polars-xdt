@@ -174,12 +174,14 @@ class ExprBusinessDateTimeNamespace:
         """
         if (
             isinstance(by, str)
-            and (match := re.search(r"(\d+bd)", by)) is not None
+            and (match := re.search(r"(-?\d+bd)", by)) is not None
             and (len(match.group(1)) == len(by))
         ):
             # Fast path - do we have a business day offset, and nothing else?
             n: int | pl.Expr = int(by[:-2])
             fastpath = True
+        elif isinstance(by, str):
+            raise ValueError("`by` must be a string of the form 'nbd', where `n` is an integer")
         else:
             if not isinstance(by, pl.Expr):
                 by = pl.lit(by)
