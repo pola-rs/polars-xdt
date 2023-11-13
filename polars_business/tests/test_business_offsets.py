@@ -3,7 +3,6 @@ from polars.testing import assert_frame_equal
 import pytest
 import pandas as pd  # type: ignore
 from typing import Mapping, Any, Callable, Literal
-from polars.exceptions import ComputeError
 
 import hypothesis.strategies as st
 import numpy as np
