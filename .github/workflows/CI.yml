@@ -39,7 +39,7 @@ jobs:
       - uses: mozilla-actions/sccache-action@v0.0.3
       - run: make install
         working-directory: polars_business
-      - run: venv/bin/python -m pytest tests
+      - run: venv/bin/python -m pytest tests -vv
         working-directory: polars_business
       - run: venv/bin/python -m mypy polars_business/polars_business/ tests
         working-directory: polars_business
