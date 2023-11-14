@@ -183,8 +183,7 @@ class ExprBusinessDateTimeNamespace:
         else:
             if not isinstance(by, pl.Expr):
                 by = pl.lit(by)
-            negate = 2 * by.str.starts_with("-").cast(pl.Int32) - 1
-            n = by.str.extract(r"(\d+)bd").cast(pl.Int32) * negate * -1
+            n = (by.str.extract(r"^(-?)") + by.str.extract(r"(\d+)bd")).cast(pl.Int32)
             by = by.str.replace(r"(\d+bd)", "")
             fastpath = False
 

@@ -1,8 +1,8 @@
 import datetime as dt
+from polars.testing import assert_frame_equal
 import pytest
 import pandas as pd  # type: ignore
 from typing import Mapping, Any, Callable, Literal
-from polars.exceptions import ComputeError
 
 import hypothesis.strategies as st
 import numpy as np
@@ -193,3 +193,22 @@ def test_starting_on_non_business() -> None:
                 weekend=weekend,
             )
         )
+
+
+def test_within_group_by() -> None:
+    data = {"a": [1, 2], "date": [dt.datetime(2022, 2, 1), dt.datetime(2023, 2, 1)]}
+    df = pl.DataFrame(data)
+
+    result = (df
+        .group_by(['a'])
+        .agg(
+            minDate=plb.col.date.min().bdt.offset_by('-3bd'),  # type: ignore[attr-defined]
+            maxDate=plb.col.date.max().bdt.offset_by('3bd'),  # type: ignore[attr-defined]
+        )
+    ).sort('a', descending=True)
+    expected = pl.DataFrame({
+        'a': [2, 1],
+        'minDate': [dt.datetime(2023, 1, 27), dt.datetime(2022, 1, 27)],
+        'maxDate': [dt.datetime(2023, 2, 6), dt.datetime(2022, 2, 4)],
+    })
+    assert_frame_equal(result, expected)
