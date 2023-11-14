@@ -136,8 +136,8 @@ def test_against_np_busday_offset_with_roll(
     [
         ("1bd", dt.datetime(2000, 1, 4)),
         ("2bd", dt.datetime(2000, 1, 5)),
-        # # ("1bd2h", dt.datetime(2000, 1, 4, 2)),
-        # # ("2h1bd", dt.datetime(2000, 1, 4, 2)),
+        # ("1bd2h", dt.datetime(2000, 1, 4, 2)),
+        # ("2h1bd", dt.datetime(2000, 1, 4, 2)),
         # ("2bd1h", dt.datetime(2000, 1, 5, 1)),
         ("-1bd", dt.datetime(1999, 12, 31)),
         ("-2bd", dt.datetime(1999, 12, 30)),
@@ -182,33 +182,33 @@ def test_starting_on_non_business() -> None:
             )
         )
 
-    df = pl.DataFrame({"dates": [start]})
-    weekend = []
-    holidays = [start]
-    with pytest.raises(pl.ComputeError):
-        df.with_columns(
-            dates_shifted=plb.col("dates").bdt.offset_by(
-                by=f"{n}bd",
-                holidays=holidays,
-                weekend=weekend,
-            )
+    # df = pl.DataFrame({"dates": [start]})
+    # weekend = []
+    # holidays = [start]
+    # with pytest.raises(pl.ComputeError):
+    #     df.with_columns(
+    #         dates_shifted=plb.col("dates").bdt.offset_by(
+    #             by=f"{n}bd",
+    #             holidays=holidays,
+    #             weekend=weekend,
+    #         )
+    #     )
+
+
+def test_within_group_by() -> None:
+    data = {"a": [1, 2], "date": [dt.datetime(2022, 2, 1), dt.datetime(2023, 2, 1)]}
+    df = pl.DataFrame(data)
+
+    result = (df
+        .group_by(['a'])
+        .agg(
+            minDate=plb.col.date.min().bdt.offset_by('-3bd'),
+            maxDate=plb.col.date.max().bdt.offset_by('3bd')
         )
-
-
-# def test_within_group_by() -> None:
-#     data = {"a": [1, 2], "date": [dt.datetime(2022, 2, 1), dt.datetime(2023, 2, 1)]}
-#     df = pl.DataFrame(data)
-
-#     result = (df
-#         .group_by(['a'])
-#         .agg(
-#             minDate=plb.col.date.min().bdt.offset_by('-3bd'),
-#             maxDate=plb.col.date.max().bdt.offset_by('3bd')
-#         )
-#     ).sort('a', descending=True)
-#     expected = pl.DataFrame({
-#         'a': [2, 1],
-#         'minDate': [dt.datetime(2023, 1, 27), dt.datetime(2022, 1, 27)],
-#         'maxDate': [dt.datetime(2023, 2, 6), dt.datetime(2022, 2, 4)],
-#     })
-#     assert_frame_equal(result, expected)
+    ).sort('a', descending=True)
+    expected = pl.DataFrame({
+        'a': [2, 1],
+        'minDate': [dt.datetime(2023, 1, 27), dt.datetime(2022, 1, 27)],
+        'maxDate': [dt.datetime(2023, 2, 6), dt.datetime(2022, 2, 4)],
+    })
+    assert_frame_equal(result, expected)

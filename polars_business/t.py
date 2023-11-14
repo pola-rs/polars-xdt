@@ -20,7 +20,7 @@ df = pl.DataFrame(data)
 print(df
     .group_by(['a'])
     .agg(
-        minDate=plb.col.date.min().bdt.offset_by('-0bd'),
-        maxDate=plb.col.date.min().bdt.offset_by('0bd')
+        minDate=plb.col.date.min().bdt.offset_by('-3bd'),
+        maxDate=plb.col.date.min().bdt.offset_by('3bd1h')
     )
 )
