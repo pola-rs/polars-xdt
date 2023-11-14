@@ -202,8 +202,8 @@ def test_within_group_by() -> None:
     result = (df
         .group_by(['a'])
         .agg(
-            minDate=plb.col.date.min().bdt.offset_by('-3bd'),
-            maxDate=plb.col.date.max().bdt.offset_by('3bd')
+            minDate=plb.col.date.min().bdt.offset_by('-3bd'),  # type: ignore[attr-defined]
+            maxDate=plb.col.date.max().bdt.offset_by('3bd'),  # type: ignore[attr-defined]
         )
     ).sort('a', descending=True)
     expected = pl.DataFrame({
