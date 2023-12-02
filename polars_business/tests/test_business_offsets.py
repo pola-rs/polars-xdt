@@ -3,7 +3,6 @@ from __future__ import annotations
 import datetime as dt
 from polars.testing import assert_frame_equal
 import pytest
-import pandas as pd  # type: ignore
 from typing import Mapping, Any, Callable, Literal
 
 import hypothesis.strategies as st
@@ -84,13 +83,14 @@ def test_against_np_busday_offset(
 ) -> None:
     assume(date.strftime("%a") not in weekend)
     assume(date not in holidays)
-    roll = 'raise'
+    roll = "raise"
     result = get_result(
         date, dtype, by=function(f"{n}bd"), weekend=weekend, holidays=holidays, roll=roll  # type: ignore[arg-type]
     )
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
     expected = np.busday_offset(date, n, weekmask=weekmask, holidays=holidays)
     assert np.datetime64(result) == expected
+
 
 @given(
     date=st.dates(min_value=dt.date(1969, 1, 1), max_value=dt.date(1971, 12, 31)),
@@ -115,7 +115,7 @@ def test_against_np_busday_offset(
         ]
     ),
     function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
-    roll = st.sampled_from(['forward', 'backward'])
+    roll=st.sampled_from(["forward", "backward"]),
 )
 def test_against_np_busday_offset_with_roll(
     date: dt.date,
@@ -130,8 +130,11 @@ def test_against_np_busday_offset_with_roll(
         date, dtype, by=function(f"{n}bd"), weekend=weekend, holidays=holidays, roll=roll  # type: ignore[arg-type]
     )
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
-    expected = np.busday_offset(date, n, weekmask=weekmask, holidays=holidays, roll=roll)
+    expected = np.busday_offset(
+        date, n, weekmask=weekmask, holidays=holidays, roll=roll
+    )
     assert np.datetime64(result) == expected
+
 
 @pytest.mark.parametrize(
     ("by", "expected"),
@@ -203,16 +206,17 @@ def test_within_group_by() -> None:
     data = {"a": [1, 2], "date": [dt.datetime(2022, 2, 1), dt.datetime(2023, 2, 1)]}
     df = pl.DataFrame(data)
 
-    result = (df
-        .group_by(['a'])
-        .agg(
-            minDate=plb.col.date.min().bdt.offset_by('-3bd'),  # type: ignore[attr-defined]
-            maxDate=plb.col.date.max().bdt.offset_by('3bd'),  # type: ignore[attr-defined]
+    result = (
+        df.group_by(["a"]).agg(
+            minDate=plb.col.date.min().bdt.offset_by("-3bd"),  # type: ignore[attr-defined]
+            maxDate=plb.col.date.max().bdt.offset_by("3bd"),  # type: ignore[attr-defined]
         )
-    ).sort('a', descending=True)
-    expected = pl.DataFrame({
-        'a': [2, 1],
-        'minDate': [dt.datetime(2023, 1, 27), dt.datetime(2022, 1, 27)],
-        'maxDate': [dt.datetime(2023, 2, 6), dt.datetime(2022, 2, 4)],
-    })
+    ).sort("a", descending=True)
+    expected = pl.DataFrame(
+        {
+            "a": [2, 1],
+            "minDate": [dt.datetime(2023, 1, 27), dt.datetime(2022, 1, 27)],
+            "maxDate": [dt.datetime(2023, 2, 6), dt.datetime(2022, 2, 4)],
+        }
+    )
     assert_frame_equal(result, expected)

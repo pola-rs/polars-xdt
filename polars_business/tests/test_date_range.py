@@ -1,7 +1,7 @@
 from __future__ import annotations
 import polars as pl
 import pytest
-from datetime import date, datetime
+from datetime import date
 import polars_business as plb
 from polars.testing import assert_series_equal
 
