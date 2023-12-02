@@ -1,4 +1,5 @@
 from __future__ import annotations
+import sys
 import datetime as dt
 import pytest
 import pandas as pd  # type: ignore
@@ -46,6 +47,7 @@ def get_result(
         max_size=300,
     ),
 )
+@pytest.mark.skipif(sys.version_info <= (3, 8), reason='bug in old numpy version')
 def test_against_np_busday_count(
     start_date: dt.date,
     end_date: dt.date,
