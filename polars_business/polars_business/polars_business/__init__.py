@@ -70,6 +70,7 @@ class ExprBusinessDateTimeNamespace:
     """
     Business day functions.
     """
+
     def __init__(self, expr: pl.Expr):
         """foo"""
         self._expr = expr
@@ -101,7 +102,7 @@ class ExprBusinessDateTimeNamespace:
             - "raise" raise an error (default).
             - "forward" roll forward to the next business day.
             - "backward" roll backward to the previous business day.
-        
+
         Returns
         -------
         polars.Expr
@@ -317,7 +318,7 @@ def workday_count(
     holidays
         The holidays to exclude from the calculation. Defaults to None. This should
         be a list of ``datetime.date`` s.
-    
+
     Returns
     -------
     polars.Expr

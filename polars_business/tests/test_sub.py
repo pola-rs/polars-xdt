@@ -1,7 +1,7 @@
+from __future__ import annotations
 import datetime as dt
 import pytest
-import pandas as pd  # type: ignore
-from typing import Mapping, Any, Callable
+from typing import Callable
 
 import hypothesis.strategies as st
 import numpy as np
@@ -9,7 +9,6 @@ from hypothesis import given, assume, reject
 
 import polars as pl
 import polars_business as plb
-from polars.type_aliases import PolarsDataType
 
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
@@ -59,6 +58,11 @@ def test_against_np_busday_count(
     expected = np.busday_count(
         start_date, end_date, weekmask=weekmask, holidays=holidays
     )
+    if start_date > end_date and tuple(
+        int(v) for v in np.__version__.split(".")[:2]
+    ) < (1, 25):
+        # Bug in old versions of numpy
+        reject()
     assert result == expected
 
 
