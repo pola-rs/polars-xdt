@@ -15,5 +15,5 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-version = "0.3.15"
+version = "0.3.16"
 requires-python = ">=3.8"
