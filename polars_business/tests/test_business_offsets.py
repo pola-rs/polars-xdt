@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime as dt
 from polars.testing import assert_frame_equal
 import pytest
