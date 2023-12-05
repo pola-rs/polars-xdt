@@ -13,9 +13,9 @@ pyo3 = { version = "0.20.0", features = ["extension-module"] }
 pyo3-polars = { version = "0.9", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 chrono = "0.4.31"
-polars = { version = "0.35.2", features = ["dtype-date"], default-features = false }
-polars-time = { version = "0.35.2", features = ["timezones"], default-features = false }
-polars-ops = { version = "0.35.2", default-features = false }
+polars = { version = "0.35.4", features = ["dtype-date"], default-features = false }
+polars-time = { version = "0.35.4", features = ["timezones"], default-features = false }
+polars-ops = { version = "0.35.4", default-features = false }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }
