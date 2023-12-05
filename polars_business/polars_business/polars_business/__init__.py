@@ -4,14 +4,14 @@ import polars as pl
 from polars.utils.udfs import _get_shared_lib_location
 import re
 from datetime import date
+import sys
 
 from polars_business.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
-from sys import version_info
 from typing import Iterable, Literal, Protocol, Sequence, cast, get_args
 
-if version_info >= (3, 10):
+if sys.version_info >= (3, 10):
     from typing import TypeAlias
 else:
     from typing_extensions import TypeAlias
