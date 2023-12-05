@@ -8,9 +8,16 @@ from datetime import date
 from polars_business.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
-from typing import Iterable, Literal, Protocol, Sequence, TypeAlias, cast, get_args
+from sys import version_info
+from typing import Iterable, Literal, Protocol, Sequence, cast, get_args
+
+if version_info >= (3, 10):
+    from typing import TypeAlias
+else:
+    from typing_extensions import TypeAlias
 
 RollStrategy: TypeAlias = Literal["raise", "forward", "backward"]
+
 
 lib = _get_shared_lib_location(__file__)
 
