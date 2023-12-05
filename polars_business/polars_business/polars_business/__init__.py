@@ -4,11 +4,20 @@ import polars as pl
 from polars.utils.udfs import _get_shared_lib_location
 import re
 from datetime import date
+import sys
 
 from polars_business.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
-from typing import Sequence, cast, Iterable, Protocol
+from typing import Iterable, Literal, Protocol, Sequence, cast, get_args
+
+if sys.version_info >= (3, 10):
+    from typing import TypeAlias
+else:
+    from typing_extensions import TypeAlias
+
+RollStrategy: TypeAlias = Literal["raise", "forward", "backward"]
+
 
 lib = _get_shared_lib_location(__file__)
 
@@ -81,7 +90,7 @@ class ExprBusinessDateTimeNamespace:
         *,
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
-        roll: str = "raise",
+        roll: RollStrategy = "raise",
     ) -> BExpr:
         """
         Offset this date by a relative time offset.
@@ -173,6 +182,12 @@ class ExprBusinessDateTimeNamespace:
         │ 2024-01-04 ┆ -3bd ┆ 2024-01-01   │
         └────────────┴──────┴──────────────┘
         """
+        if roll not in (valid_roll_strategies := get_args(RollStrategy)):
+            allowed = ", ".join(repr(m) for m in valid_roll_strategies)
+            raise ValueError(
+                f"`roll` strategy must be one of {{{allowed}}}, got {roll!r}"
+            )
+
         if (
             isinstance(by, str)
             and (match := re.search(r"(\d+bd)", by)) is not None

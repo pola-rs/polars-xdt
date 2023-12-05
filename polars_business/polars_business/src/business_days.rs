@@ -25,7 +25,9 @@ pub(crate) fn calculate_advance(
                 let date = NaiveDateTime::from_timestamp_opt(date as i64 * 24 * 60 * 60, 0)
                     .unwrap()
                     .format("%Y-%m-%d");
-                polars_bail!(ComputeError: format!("date {} is not a business date, cannot advance. `roll` argument coming soon.", date))
+                polars_bail!(ComputeError:
+                    format!("date {} is not a business date, cannot advance; set a valid `roll` strategy.", date)
+                )
             };
         }
         "forward" => {
@@ -50,7 +52,11 @@ pub(crate) fn calculate_advance(
                 }
             }
         }
-        _ => unreachable!(),
+        _ => {
+            polars_bail!(InvalidOperation:
+                "`roll` must be one of 'raise', 'forward' or 'backward'; found '{}'", roll
+            )
+        }
     }
 
     if offset > 0 {
