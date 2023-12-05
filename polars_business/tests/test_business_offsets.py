@@ -220,3 +220,11 @@ def test_within_group_by() -> None:
         }
     )
     assert_frame_equal(result, expected)
+
+
+def test_invalid_roll_strategy() -> None:
+    df = pl.DataFrame(
+        {"date": pl.date_range(dt.date(2023, 12, 1), dt.date(2023, 12, 5), eager=True)}
+    )
+    with pytest.raises(ValueError):
+        df.with_columns(plb.col("date").bdt.offset_by("1bd", roll="cabbage"))
