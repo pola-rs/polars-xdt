@@ -174,32 +174,30 @@ def test_extra_args_w_series() -> None:
     assert result[1] == dt.datetime(1999, 12, 30, 23)
 
 
-# Uncommented due to suprious segfault on some CI
-# runs, can't reproduce locally
-# def test_starting_on_non_business() -> None:
-#     start = dt.date(2000, 1, 1)
-#     n = -7
-#     weekend = ["Sat", "Sun"]
-#     df = pl.DataFrame({"dates": [start]})
-#     with pytest.raises(pl.ComputeError):
-#         df.with_columns(
-#             dates_shifted=plb.col("dates").bdt.offset_by(
-#                 by=f"{n}bd",
-#                 weekend=weekend,
-#             )
-#         )
+def test_starting_on_non_business() -> None:
+    start = dt.date(2000, 1, 1)
+    n = -7
+    weekend = ["Sat", "Sun"]
+    df = pl.DataFrame({"dates": [start]})
+    with pytest.raises(pl.ComputeError):
+        df.with_columns(
+            dates_shifted=plb.col("dates").bdt.offset_by(
+                by=f"{n}bd",
+                weekend=weekend,
+            )
+        )
 
-#     df = pl.DataFrame({"dates": [start]})
-#     weekend = []
-#     holidays = [start]
-#     with pytest.raises(pl.ComputeError):
-#         df.with_columns(
-#             dates_shifted=plb.col("dates").bdt.offset_by(
-#                 by=f"{n}bd",
-#                 holidays=holidays,
-#                 weekend=weekend,
-#             )
-#         )
+    df = pl.DataFrame({"dates": [start]})
+    weekend = []
+    holidays = [start]
+    with pytest.raises(pl.ComputeError):
+        df.with_columns(
+            dates_shifted=plb.col("dates").bdt.offset_by(
+                by=f"{n}bd",
+                holidays=holidays,
+                weekend=weekend,
+            )
+        )
 
 
 def test_within_group_by() -> None:
@@ -226,5 +224,5 @@ def test_invalid_roll_strategy() -> None:
     df = pl.DataFrame(
         {"date": pl.date_range(dt.date(2023, 12, 1), dt.date(2023, 12, 5), eager=True)}
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(pl.ComputeError):
         df.with_columns(plb.col("date").bdt.offset_by("1bd", roll="cabbage"))  # type: ignore[arg-type]

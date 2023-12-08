@@ -182,12 +182,6 @@ class ExprBusinessDateTimeNamespace:
         │ 2024-01-04 ┆ -3bd ┆ 2024-01-01   │
         └────────────┴──────┴──────────────┘
         """
-        if roll not in (valid_roll_strategies := get_args(RollStrategy)):
-            allowed = ", ".join(repr(m) for m in valid_roll_strategies)
-            raise ValueError(
-                f"`roll` strategy must be one of {{{allowed}}}, got {roll!r}"
-            )
-
         if (
             isinstance(by, str)
             and (match := re.search(r"(\d+bd)", by)) is not None
