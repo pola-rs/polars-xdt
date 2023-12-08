@@ -10,12 +10,12 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.20.0", features = ["extension-module"] }
-pyo3-polars = { version = "0.9", features = ["derive"] }
+pyo3-polars = { version = "*", path="../../pyo3-polars/pyo3-polars", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 chrono = "0.4.31"
-polars = { version = "0.35.4", features = ["dtype-date"], default-features = false }
-polars-time = { version = "0.35.4", features = ["timezones"], default-features = false }
-polars-ops = { version = "0.35.4", default-features = false }
+polars = { version = "*", path="../../polars/crates/polars", features = ["dtype-date"], default-features = false }
+polars-time = { version = "*", path="../../polars/crates/polars-time", features = ["timezones"], default-features = false }
+polars-ops = { version = "*", path="../../polars/crates/polars-ops", default-features = false }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }

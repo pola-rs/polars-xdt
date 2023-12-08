@@ -1,0 +1,6 @@
+[submodule "polars"]
+	path = polars
+	url = git@github.com:pola-rs/polars.git
+[submodule "pyo3-polars"]
+	path = pyo3-polars
+	url = git@github.com:pola-rs/pyo3-polars.git
