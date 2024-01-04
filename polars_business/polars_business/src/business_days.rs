@@ -182,7 +182,7 @@ pub(crate) fn impl_advance_n_days(
             let ca = &polars_ops::prelude::replace_time_zone(
                 s.datetime()?,
                 None,
-                &Utf8Chunked::from_iter(std::iter::once("raise")),
+                &StringChunked::from_iter(std::iter::once("raise")),
             )?;
             let out = match n.len() {
                 1 => {
@@ -216,7 +216,7 @@ pub(crate) fn impl_advance_n_days(
             let out = polars_ops::prelude::replace_time_zone(
                 &out?.into_datetime(*time_unit, None),
                 time_zone.as_deref(),
-                &Utf8Chunked::from_iter(std::iter::once("raise")),
+                &StringChunked::from_iter(std::iter::once("raise")),
             )?;
             out.cast(original_dtype)
         }
