@@ -9,7 +9,7 @@ from polars.testing import assert_series_equal
 def test_eager() -> None:
     result = plb.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True)
     expected = pl.Series(
-        "date",
+        "literal",
         [
             date(2023, 1, 2),
             date(2023, 1, 3),
@@ -25,7 +25,7 @@ def test_eager() -> None:
 
 def test_expr() -> None:
     expected = pl.Series(
-        "date",
+        "literal",
         [
             date(2023, 1, 2),
             date(2023, 1, 3),
@@ -37,7 +37,7 @@ def test_expr() -> None:
         ],
     )
     result = pl.select(plb.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))[
-        "date"
+        "literal"
     ]
     assert_series_equal(result, expected)
 
@@ -52,7 +52,7 @@ def test_eager_custom_weekend() -> None:
         date(2023, 1, 1), date(2023, 1, 10), eager=True, weekend=["Fri", "Sat"]
     )
     expected = pl.Series(
-        "date",
+        "literal",
         [
             date(2023, 1, 1),
             date(2023, 1, 2),
@@ -76,7 +76,7 @@ def test_eager_custom_holiday() -> None:
         holidays=[date(2023, 1, 2)],
     )
     expected = pl.Series(
-        "date",
+        "literal",
         [
             date(2023, 1, 1),
             date(2023, 1, 3),
