@@ -112,7 +112,7 @@ def date_range(
     --------
     >>> from datetime import date
     >>> import polars as pl
-    >>> import polars_ts as pts
+    >>> import polars_tse as pts
     >>> pl.DataFrame(
     ...     {
     ...         "date": pts.date_range(

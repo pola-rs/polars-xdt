@@ -2,7 +2,7 @@ from __future__ import annotations
 import polars as pl
 import pytest
 from datetime import date
-import polars_ts as pts
+import polars_tse as pts
 from polars.testing import assert_series_equal
 
 

@@ -1,6 +1,6 @@
 ﻿polars\_business.workday\_count
 ===============================
 
-.. currentmodule:: polars_ts
+.. currentmodule:: polars_tse
 
 .. autofunction:: workday_count

@@ -22,7 +22,7 @@ pub(crate) fn impl_is_workday(
             })
         }
         _ => {
-            polars_bail!(InvalidOperation: "polars_ts is_workday currently only works on Date type. \
+            polars_bail!(InvalidOperation: "polars_tse is_workday currently only works on Date type. \
             For now, please cast to Date first.")
         }
     };

@@ -6,7 +6,7 @@ import re
 from datetime import date
 import sys
 
-from polars_ts.ranges import date_range
+from polars_tse.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
 from typing import Iterable, Literal, Protocol, Sequence, cast, get_args
@@ -41,10 +41,10 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
     return weekmask
 
 
-@pl.api.register_expr_namespace("bdt")
-class ExprBusinessDateTimeNamespace:
+@pl.api.register_expr_namespace("tse")
+class ExprTimeSeriesExtrasNamespace:
     """
-    Business day functions.
+    Time Series Extras.
     """
 
     def __init__(self, expr: pl.Expr):
@@ -58,7 +58,7 @@ class ExprBusinessDateTimeNamespace:
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
         roll: RollStrategy = "raise",
-    ) -> BExpr:
+    ) -> TSEExpr:
         """
         Offset this date by a relative time offset.
 
@@ -86,12 +86,12 @@ class ExprBusinessDateTimeNamespace:
         Examples
         --------
         >>> import polars as pl
-        >>> import polars_ts as pts
+        >>> import polars_tse as pts
         >>> df = pl.DataFrame(
         ...     {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
         ... )
         >>> df.with_columns(
-        ...     date_shifted=pts.col("date").bdt.offset_by("1bd"),
+        ...     date_shifted=pts.col("date").tse.offset_by("1bd"),
         ... )
         shape: (3, 2)
         ┌────────────┬──────────────┐
@@ -111,7 +111,7 @@ class ExprBusinessDateTimeNamespace:
         ...     "UK", subdiv="ENG", years=[2023, 2024]
         ... )
         >>> df.with_columns(
-        ...     date_shifted=pts.col("date").bdt.offset_by(
+        ...     date_shifted=pts.col("date").tse.offset_by(
         ...         "5bd",
         ...         holidays=holidays_england,
         ...         weekend=["Fri", "Sat"],
@@ -137,7 +137,7 @@ class ExprBusinessDateTimeNamespace:
         ...         "by": ["1bd", "2bd", "-3bd"],
         ...     }
         ... )
-        >>> df.with_columns(date_shifted=pl.col("date").bdt.offset_by(pl.col("by")))
+        >>> df.with_columns(date_shifted=pl.col("date").tse.offset_by(pl.col("by")))
         shape: (3, 3)
         ┌────────────┬──────┬──────────────┐
         │ date       ┆ by   ┆ date_shifted │
@@ -184,8 +184,8 @@ class ExprBusinessDateTimeNamespace:
             },
         )
         if fastpath:
-            return cast(BExpr, result)
-        return cast(BExpr, result.dt.offset_by(by))
+            return cast(TSEExpr, result)
+        return cast(TSEExpr, result.dt.offset_by(by))
 
     def sub(
         self,
@@ -193,7 +193,7 @@ class ExprBusinessDateTimeNamespace:
         *,
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
-    ) -> BExpr:
+    ) -> TSEExpr:
         weekmask = get_weekmask(weekend)
         if not holidays:
             holidays_int = []
@@ -217,7 +217,7 @@ class ExprBusinessDateTimeNamespace:
                 "holidays": holidays_int,
             },
         )
-        return cast(BExpr, result)
+        return cast(TSEExpr, result)
 
     def is_workday(
         self,
@@ -249,29 +249,29 @@ class ExprBusinessDateTimeNamespace:
         return result
 
 
-class BExpr(pl.Expr):
+class TSEExpr(pl.Expr):
     @property
-    def bdt(self) -> ExprBusinessDateTimeNamespace:
-        return ExprBusinessDateTimeNamespace(self)
+    def tse(self) -> ExprTimeSeriesExtrasNamespace:
+        return ExprTimeSeriesExtrasNamespace(self)
 
 
-class BColumn(Protocol):
+class TSEColumn(Protocol):
     def __call__(
         self,
         name: str | PolarsDataType | Iterable[str] | Iterable[PolarsDataType],
         *more_names: str | PolarsDataType,
-    ) -> BExpr:
+    ) -> TSEExpr:
         ...
 
     def __getattr__(self, name: str) -> pl.Expr:
         ...
 
     @property
-    def bdt(self) -> ExprBusinessDateTimeNamespace:
+    def tse(self) -> ExprTimeSeriesExtrasNamespace:
         ...
 
 
-col = cast(BColumn, pl.col)
+col = cast(TSEColumn, pl.col)
 
 
 def workday_count(
@@ -279,7 +279,7 @@ def workday_count(
     end: str | pl.Expr | date,
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
-) -> BExpr:
+) -> TSEExpr:
     """
     Count the number of workdays between two columns of dates.
 
@@ -303,14 +303,14 @@ def workday_count(
     --------
     >>> from datetime import date
     >>> import polars as pl
-    >>> import polars_ts as pts
+    >>> import polars_tse as tse
     >>> df = pl.DataFrame(
     ...     {
     ...         "start": [date(2023, 1, 4), date(2023, 5, 1), date(2023, 9, 9)],
     ...         "end": [date(2023, 2, 8), date(2023, 5, 2), date(2023, 12, 30)],
     ...     }
     ... )
-    >>> df.with_columns(n_business_days=pts.workday_count("start", "end"))
+    >>> df.with_columns(n_business_days=tse.workday_count("start", "end"))
     shape: (3, 3)
     ┌────────────┬────────────┬─────────────────┐
     │ start      ┆ end        ┆ n_business_days │
@@ -331,7 +331,7 @@ def workday_count(
     elif not isinstance(end, pl.Expr):
         end = pl.lit(end)
 
-    return end.bdt.sub(start, weekend=weekend, holidays=holidays).alias("workday_count")  # type: ignore[no-any-return, attr-defined]
+    return end.tse.sub(start, weekend=weekend, holidays=holidays).alias("workday_count")  # type: ignore[no-any-return, attr-defined]
 
 
 __all__ = [

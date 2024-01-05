@@ -8,7 +8,7 @@ import numpy as np
 from hypothesis import given, assume, reject
 
 import polars as pl
-import polars_ts as pts
+import polars_tse as pts
 
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
@@ -23,7 +23,7 @@ def get_result(
 ) -> int:
     return (  # type: ignore[no-any-return]
         pl.DataFrame({"end_date": [end_date]})
-        .select(n=pts.col("end_date").bdt.sub(start_date, weekend=weekend, holidays=holidays))["n"]  # type: ignore[arg-type]
+        .select(n=pts.col("end_date").tse.sub(start_date, weekend=weekend, holidays=holidays))["n"]  # type: ignore[arg-type]
         .item()
     )
 
@@ -112,7 +112,7 @@ def test_empty_weekmask() -> None:
     )
     with pytest.raises(ValueError):
         df.select(
-            pts.col("end").bdt.sub(
+            pts.col("end").tse.sub(
                 "start", weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
             )
         )
@@ -125,7 +125,7 @@ def test_sub_lit() -> None:
         }
     )
     result = df.select(
-        pts.col("end").bdt.sub(
+        pts.col("end").tse.sub(
             pl.lit(dt.date(2020, 1, 1)),
         )
     )
