@@ -48,6 +48,7 @@ jobs:
         run: |
           set -e
           pip install -r requirements.txt
+          make install
           pip install pytest
           pytest
 
@@ -79,6 +80,7 @@ jobs:
         run: |
           set -e
           pip install -r requirements.txt
+          make install
           pip install pytest
           pytest
 
@@ -109,6 +111,7 @@ jobs:
         run: |
           set -e
           pip install -r requirements.txt
+          make install
           pip install pytest
           pytest
 
