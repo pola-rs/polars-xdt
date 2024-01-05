@@ -52,11 +52,18 @@ pub(crate) fn impl_sub(
     end_dates: &Series,
     start_dates: &Series,
     weekmask: &[bool; 7],
-    holidays: &[i32],
+    holidays: Vec<i32>,
 ) -> PolarsResult<Series> {
     if (start_dates.dtype() != &DataType::Date) || (end_dates.dtype() != &DataType::Date) {
-        polars_bail!(InvalidOperation: "polars_xdt sub only works on Date type. Please cast to Date first.");
-    }
+        polars_bail!(InvalidOperation: "polars_xdt.workday_count only works on Date type. Please cast to Date first.");
+    } 
+    // Only keep holidays which aren't on weekends.
+    let holidays: Vec<i32> = {
+        holidays
+            .into_iter()
+            .filter(|x| unsafe { *weekmask.get_unchecked(weekday(*x) as usize - 1) })
+            .collect()
+    };
     let start_dates = start_dates.date()?;
     let end_dates = end_dates.date()?;
     let n_weekdays = weekmask.iter().filter(|&x| *x).count() as i32;
@@ -65,7 +72,7 @@ pub(crate) fn impl_sub(
             if let Some(end_date) = end_dates.get(0) {
                 start_dates.apply(|x_date| {
                     x_date.map(|start_date| {
-                        date_diff(start_date, end_date, weekmask, n_weekdays, holidays)
+                        date_diff(start_date, end_date, weekmask, n_weekdays, &holidays)
                     })
                 })
             } else {
@@ -76,7 +83,7 @@ pub(crate) fn impl_sub(
             if let Some(start_date) = start_dates.get(0) {
                 end_dates.apply(|x_date| {
                     x_date.map(|end_date| {
-                        date_diff(start_date, end_date, weekmask, n_weekdays, holidays)
+                        date_diff(start_date, end_date, weekmask, n_weekdays, &holidays)
                     })
                 })
             } else {
@@ -86,7 +93,7 @@ pub(crate) fn impl_sub(
         _ => binary_elementwise(start_dates, end_dates, |opt_s, opt_n| {
             match (opt_s, opt_n) {
                 (Some(start_date), Some(end_date)) => Some(date_diff(
-                    start_date, end_date, weekmask, n_weekdays, holidays,
+                    start_date, end_date, weekmask, n_weekdays, &holidays,
                 )),
                 _ => None,
             }

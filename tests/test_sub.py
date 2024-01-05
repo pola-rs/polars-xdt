@@ -8,7 +8,7 @@ import numpy as np
 from hypothesis import given, assume, reject
 
 import polars as pl
-import polars_xdt  # noqa: F401
+import polars_xdt as xdt
 
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
@@ -140,12 +140,12 @@ def test_workday_count() -> None:
             "end": [dt.date(2020, 1, 8), dt.date(2020, 1, 20)],
         }
     )
-    result = df.with_columns(pts.workday_count("start", "end"))
+    result = df.with_columns(xdt.workday_count("start", "end"))
     assert result["workday_count"][0] == 3
     assert result["workday_count"][1] == 10
-    result = df.with_columns(pts.workday_count("start", dt.date(2020, 1, 8)))
+    result = df.with_columns(xdt.workday_count("start", dt.date(2020, 1, 8)))
     assert result["workday_count"][0] == 3
     assert result["workday_count"][1] == 2
-    result = df.with_columns(pts.workday_count(dt.date(2020, 1, 5), pl.col("end")))
+    result = df.with_columns(xdt.workday_count(dt.date(2020, 1, 5), pl.col("end")))
     assert result["workday_count"][0] == 2
     assert result["workday_count"][1] == 10

@@ -115,7 +115,7 @@ def date_range(
     >>> import polars_xdt  # noqa: F401
     >>> pl.DataFrame(
     ...     {
-    ...         "date": pts.date_range(
+    ...         "date": xdt.date_range(
     ...             date(2023, 1, 1), date(2023, 1, 10), "1bd", eager=True
     ...         ),
     ...     }
