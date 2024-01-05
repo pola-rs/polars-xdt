@@ -6,11 +6,11 @@
 	<img
 		width="400"
 		alt="polars-xdt"
-		src="https://github.com/MarcoGorelli/polars-business/assets/33491632/928c68c4-4e71-45a7-bc89-14922c7ce61b">
+		src="https://github.com/MarcoGorelli/polars-xdt/assets/33491632/928c68c4-4e71-45a7-bc89-14922c7ce61b">
 </h1>
 
-[![PyPI version](https://badge.fury.io/py/polars-business.svg)](https://badge.fury.io/py/polars-business)
-[![Read the docs!](https://img.shields.io/badge/Read%20the%20docs!-coolgreen?style=flat&link=https://marcogorelli.github.io/polars-business-docs/)](https://marcogorelli.github.io/polars-business-docs/)
+[![PyPI version](https://badge.fury.io/py/polars-xdt.svg)](https://badge.fury.io/py/polars-xdt)
+[![Read the docs!](https://img.shields.io/badge/Read%20the%20docs!-coolgreen?style=flat&link=https://marcogorelli.github.io/polars-xdt-docs/)](https://marcogorelli.github.io/polars-xdt-docs/)
 
 eXtra stuff for DateTimes in [Polars](https://www.pola.rs/).
 
