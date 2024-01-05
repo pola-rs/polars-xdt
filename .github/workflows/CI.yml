@@ -47,6 +47,7 @@ jobs:
         shell: bash
         run: |
           set -e
+          pip install -r requirements.txt
           pip install polars-xdt --find-links dist --force-reinstall
           pip install pytest
           pytest
@@ -93,6 +94,7 @@ jobs:
         shell: bash
         run: |
           set -e
+          pip install -r requirements.txt
           pip install polars-xdt --find-links dist --force-reinstall
           pip install pytest
           pytest
@@ -123,6 +125,7 @@ jobs:
         shell: bash
         run: |
           set -e
+          pip install -r requirements.txt
           pip install polars-xdt --find-links dist --force-reinstall
           pip install pytest
           pytest
