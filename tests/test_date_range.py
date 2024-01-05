@@ -2,12 +2,12 @@ from __future__ import annotations
 import polars as pl
 import pytest
 from datetime import date
-import polars_xdt  # noqa: F401
+import polars_xdt as xdt  # noqa: F401
 from polars.testing import assert_series_equal
 
 
 def test_eager() -> None:
-    result = pts.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True)
+    result = xdt.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True)
     expected = pl.Series(
         "literal",
         [
@@ -36,7 +36,7 @@ def test_expr() -> None:
             date(2023, 1, 10),
         ],
     )
-    result = pl.select(pts.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))[
+    result = pl.select(xdt.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))[
         "literal"
     ]
     assert_series_equal(result, expected)
@@ -44,11 +44,11 @@ def test_expr() -> None:
 
 def test_invalid() -> None:
     with pytest.raises(ValueError):
-        pts.date_range(date(2023, 1, 1), date(2023, 1, 10), "1bd1h")
+        xdt.date_range(date(2023, 1, 1), date(2023, 1, 10), "1bd1h")
 
 
 def test_eager_custom_weekend() -> None:
-    result = pts.date_range(
+    result = xdt.date_range(
         date(2023, 1, 1), date(2023, 1, 10), eager=True, weekend=["Fri", "Sat"]
     )
     expected = pl.Series(
@@ -68,7 +68,7 @@ def test_eager_custom_weekend() -> None:
 
 
 def test_eager_custom_holiday() -> None:
-    result = pts.date_range(
+    result = xdt.date_range(
         date(2023, 1, 1),
         date(2023, 1, 10),
         eager=True,

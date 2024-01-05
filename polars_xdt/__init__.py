@@ -201,7 +201,6 @@ class ExprXDTNamespace:
                 {
                     (holiday - date(1970, 1, 1)).days
                     for holiday in holidays
-                    if holiday.strftime("%a") not in weekend
                 }
             )
         if isinstance(end_dates, str):
@@ -232,7 +231,6 @@ class ExprXDTNamespace:
                 {
                     (holiday - date(1970, 1, 1)).days
                     for holiday in holidays
-                    if holiday.strftime("%a") not in weekend
                 }
             )
         result = self._expr.register_plugin(

@@ -133,7 +133,7 @@ pub(crate) fn impl_advance_n_days(
 ) -> PolarsResult<Series> {
     let original_dtype = s.dtype();
 
-    // // Only keep holidays which aren't on weekends.
+    // Only keep holidays which aren't on weekends.
     let holidays: Vec<i32> = {
         holidays
             .into_iter()

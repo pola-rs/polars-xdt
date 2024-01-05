@@ -16,6 +16,6 @@ Then, if you can run
     from datetime import date
     import polars_xdt  # noqa: F401
 
-    print(pts.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))
+    print(xdt.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))
 
 it means installation all worked correctly!

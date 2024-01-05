@@ -1,5 +1,6 @@
 use crate::business_days::weekday;
 use polars::prelude::*;
+use pyo3_polars::export::polars_core::utils::{arrow::array::BooleanArray, CustomIterTools};
 
 pub(crate) fn impl_is_workday(
     dates: &Series,
@@ -9,16 +10,16 @@ pub(crate) fn impl_is_workday(
     let out = match dates.dtype() {
         DataType::Date => {
             let dates = dates.date()?;
-            dates.apply(|x_date| {
-                x_date.map(|date| {
-                    let day_of_week = weekday(date) as usize;
-                    match unsafe { *weekmask.get_unchecked(day_of_week - 1) }
-                        & (!holidays.contains(&date))
-                    {
-                        true => 1,
-                        false => 0,
-                    }
-                })
+            dates.downcast_iter().map(|arr| -> BooleanArray {
+                arr.into_iter()
+                    .map(|date| {
+                        date.map(
+                            |date|
+                                unsafe { *weekmask.get_unchecked(weekday(*date) as usize - 1) }
+                                && (!holidays.contains(date))
+                        )
+                    })
+                    .collect_trusted()
             })
         }
         _ => {
@@ -26,5 +27,5 @@ pub(crate) fn impl_is_workday(
             For now, please cast to Date first.")
         }
     };
-    Ok(out.cast(&DataType::Boolean)?.into_series())
+    Ok(BooleanChunked::from_chunk_iter(dates.name(), out).into_series())
 }

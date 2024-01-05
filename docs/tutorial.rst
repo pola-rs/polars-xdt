@@ -83,7 +83,7 @@ Count the number of business dates between two columns:
             "end": [date(2023, 2, 8), date(2023, 5, 2), date(2023, 12, 30)],
         }
     )
-    result = df.with_columns(n_business_days=pts.workday_count('start', 'end'))
+    result = df.with_columns(n_business_days=xdt.workday_count('start', 'end'))
     print(result)
 
 
