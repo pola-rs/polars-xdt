@@ -1,4 +1,6 @@
-# Polars Time Series eXtras
+# polars-xdt
+
+## eXtra stuff for DateTimes
 
 <h1 align="center">
 	<img
