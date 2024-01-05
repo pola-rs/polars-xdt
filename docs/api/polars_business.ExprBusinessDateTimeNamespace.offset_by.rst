@@ -1,6 +1,6 @@
 ﻿polars\_business.ExprBusinessDateTimeNamespace.offset\_by
 =========================================================
 
-.. currentmodule:: polars_business
+.. currentmodule:: polars_tse
 
 .. automethod:: ExprBusinessDateTimeNamespace.offset_by

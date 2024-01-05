@@ -6,7 +6,7 @@ import re
 from datetime import date
 import sys
 
-from polars_business.ranges import date_range
+from polars_tse.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
 from typing import Iterable, Literal, Protocol, Sequence, cast, get_args
@@ -39,39 +39,6 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
             f"At least one day of the week must be a business day. Got weekend={weekend}"
         )
     return weekmask
-
-
-@pl.api.register_expr_namespace("business")
-class BusinessDayTools:
-    def __init__(self, expr: pl.Expr):
-        self._expr = expr
-
-    def advance_n_days(self, n, weekend=("Sat", "Sun"), holidays=None) -> pl.Expr:  # type: ignore
-        import warnings
-
-        warnings.warn(
-            "`.business.advance_n_days` has been renamed to `.bdt.offset_by`, please use that instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if not holidays:
-            holidays = []
-        else:
-            holidays = sorted(
-                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
-            )
-        weekmask = get_weekmask(weekend)
-
-        return self._expr._register_plugin(
-            lib=lib,
-            symbol="advance_n_days",
-            is_elementwise=True,
-            args=[n],
-            kwargs={
-                "holidays": holidays,
-                "weekmask": weekmask,
-            },
-        )
 
 
 @pl.api.register_expr_namespace("bdt")
@@ -119,12 +86,12 @@ class ExprBusinessDateTimeNamespace:
         Examples
         --------
         >>> import polars as pl
-        >>> import polars_business as plb
+        >>> import polars_tse as pts
         >>> df = pl.DataFrame(
         ...     {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
         ... )
         >>> df.with_columns(
-        ...     date_shifted=plb.col("date").bdt.offset_by("1bd"),
+        ...     date_shifted=pts.col("date").bdt.offset_by("1bd"),
         ... )
         shape: (3, 2)
         ┌────────────┬──────────────┐
@@ -144,7 +111,7 @@ class ExprBusinessDateTimeNamespace:
         ...     "UK", subdiv="ENG", years=[2023, 2024]
         ... )
         >>> df.with_columns(
-        ...     date_shifted=plb.col("date").bdt.offset_by(
+        ...     date_shifted=pts.col("date").bdt.offset_by(
         ...         "5bd",
         ...         holidays=holidays_england,
         ...         weekend=["Fri", "Sat"],
@@ -336,14 +303,14 @@ def workday_count(
     --------
     >>> from datetime import date
     >>> import polars as pl
-    >>> import polars_business as plb
+    >>> import polars_tse as pts
     >>> df = pl.DataFrame(
     ...     {
     ...         "start": [date(2023, 1, 4), date(2023, 5, 1), date(2023, 9, 9)],
     ...         "end": [date(2023, 2, 8), date(2023, 5, 2), date(2023, 12, 30)],
     ...     }
     ... )
-    >>> df.with_columns(n_business_days=plb.workday_count("start", "end"))
+    >>> df.with_columns(n_business_days=pts.workday_count("start", "end"))
     shape: (3, 3)
     ┌────────────┬────────────┬─────────────────┐
     │ start      ┆ end        ┆ n_business_days │

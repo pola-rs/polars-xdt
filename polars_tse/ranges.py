@@ -112,10 +112,10 @@ def date_range(
     --------
     >>> from datetime import date
     >>> import polars as pl
-    >>> import polars_business as plb
+    >>> import polars_tse as pts
     >>> pl.DataFrame(
     ...     {
-    ...         "date": plb.date_range(
+    ...         "date": pts.date_range(
     ...             date(2023, 1, 1), date(2023, 1, 10), "1bd", eager=True
     ...         ),
     ...     }

@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'polars-business'
+project = 'polars-tse'
 copyright = '2023, Marco Gorelli'
 author = 'Marco Gorelli'
 
