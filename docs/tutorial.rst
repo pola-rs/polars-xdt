@@ -8,7 +8,7 @@ Say we start with
     from datetime import date
 
     import polars as pl
-    import polars_xts  # noqa: F401
+    import polars_xdt  # noqa: F401
 
 
     df = pl.DataFrame(
@@ -21,7 +21,7 @@ Let's shift `Date` forwards by 5 days, excluding Saturday and Sunday:
 .. code-block:: python
 
     result = df.with_columns(
-        date_shifted=pl.col("date").xts.offset_by(
+        date_shifted=pl.col("date").xdt.offset_by(
         '5bd',
         weekend=('Sat', 'Sun'),
         )
@@ -52,7 +52,7 @@ for 2023 and 2024 (note: you'll need to install the
     england_holidays = holidays.country_holidays("UK", subdiv='ENG', years=[2023, 2024])
 
     result = df.with_columns(
-        date_shifted=pl.col("date").xts.offset_by(
+        date_shifted=pl.col("date").xdt.offset_by(
         by='5bd',
         weekend=('Sat', 'Sun'),
         holidays=england_holidays,

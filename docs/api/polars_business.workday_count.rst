@@ -1,6 +1,6 @@
 ﻿polars\_business.workday\_count
 ===============================
 
-.. currentmodule:: polars_xts
+.. currentmodule:: polars_xdt
 
 .. autofunction:: workday_count

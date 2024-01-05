@@ -6,7 +6,7 @@ import numpy as np
 from hypothesis import given
 
 import polars as pl
-import polars_xts  # noqa: F401
+import polars_xdt  # noqa: F401
 
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
@@ -20,7 +20,7 @@ def get_result(
 ) -> int:
     return (  # type: ignore[no-any-return]
         pl.DataFrame({"date": [date]})
-        .select(pl.col("date").xts.is_workday(weekend=weekend, holidays=holidays))[
+        .select(pl.col("date").xdt.is_workday(weekend=weekend, holidays=holidays))[
             "date"
         ]
         .item()
