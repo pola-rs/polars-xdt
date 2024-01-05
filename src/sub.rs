@@ -56,7 +56,7 @@ pub(crate) fn impl_sub(
 ) -> PolarsResult<Series> {
     if (start_dates.dtype() != &DataType::Date) || (end_dates.dtype() != &DataType::Date) {
         polars_bail!(InvalidOperation: "polars_xdt.workday_count only works on Date type. Please cast to Date first.");
-    } 
+    }
     // Only keep holidays which aren't on weekends.
     let holidays: Vec<i32> = {
         holidays
