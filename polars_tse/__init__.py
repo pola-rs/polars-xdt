@@ -6,7 +6,7 @@ import re
 from datetime import date
 import sys
 
-from polars_tse.ranges import date_range
+from polars_tsx.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
 from typing import Iterable, Literal, Protocol, Sequence, cast, get_args
@@ -86,12 +86,12 @@ class ExprTimeSeriesExtrasNamespace:
         Examples
         --------
         >>> import polars as pl
-        >>> import polars_tse as pts
+        >>> import polars_tsx as pts
         >>> df = pl.DataFrame(
         ...     {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
         ... )
         >>> df.with_columns(
-        ...     date_shifted=pts.col("date").tse.offset_by("1bd"),
+        ...     date_shifted=pts.col("date").tsx.offset_by("1bd"),
         ... )
         shape: (3, 2)
         ┌────────────┬──────────────┐
@@ -111,7 +111,7 @@ class ExprTimeSeriesExtrasNamespace:
         ...     "UK", subdiv="ENG", years=[2023, 2024]
         ... )
         >>> df.with_columns(
-        ...     date_shifted=pts.col("date").tse.offset_by(
+        ...     date_shifted=pts.col("date").tsx.offset_by(
         ...         "5bd",
         ...         holidays=holidays_england,
         ...         weekend=["Fri", "Sat"],
@@ -137,7 +137,7 @@ class ExprTimeSeriesExtrasNamespace:
         ...         "by": ["1bd", "2bd", "-3bd"],
         ...     }
         ... )
-        >>> df.with_columns(date_shifted=pl.col("date").tse.offset_by(pl.col("by")))
+        >>> df.with_columns(date_shifted=pl.col("date").tsx.offset_by(pl.col("by")))
         shape: (3, 3)
         ┌────────────┬──────┬──────────────┐
         │ date       ┆ by   ┆ date_shifted │
@@ -251,7 +251,7 @@ class ExprTimeSeriesExtrasNamespace:
 
 class TSEExpr(pl.Expr):
     @property
-    def tse(self) -> ExprTimeSeriesExtrasNamespace:
+    def tsx(self) -> ExprTimeSeriesExtrasNamespace:
         return ExprTimeSeriesExtrasNamespace(self)
 
 
@@ -267,7 +267,7 @@ class TSEColumn(Protocol):
         ...
 
     @property
-    def tse(self) -> ExprTimeSeriesExtrasNamespace:
+    def tsx(self) -> ExprTimeSeriesExtrasNamespace:
         ...
 
 
@@ -303,7 +303,7 @@ def workday_count(
     --------
     >>> from datetime import date
     >>> import polars as pl
-    >>> import polars_tse as tse
+    >>> import polars_tsx as tsx
     >>> df = pl.DataFrame(
     ...     {
     ...         "start": [date(2023, 1, 4), date(2023, 5, 1), date(2023, 9, 9)],
@@ -331,7 +331,7 @@ def workday_count(
     elif not isinstance(end, pl.Expr):
         end = pl.lit(end)
 
-    return end.tse.sub(start, weekend=weekend, holidays=holidays).alias("workday_count")  # type: ignore[no-any-return, attr-defined]
+    return end.tsx.sub(start, weekend=weekend, holidays=holidays).alias("workday_count")  # type: ignore[no-any-return, attr-defined]
 
 
 __all__ = [

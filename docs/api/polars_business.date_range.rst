@@ -1,6 +1,6 @@
 ﻿polars\_business.date\_range
 ============================
 
-.. currentmodule:: polars_tse
+.. currentmodule:: polars_tsx
 
 .. autofunction:: date_range
