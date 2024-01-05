@@ -1,4 +1,0 @@
-{
-    "rust-analyzer.cargo.features": "all",
-    "rust-analyzer.linkedProjects": ["polars_business/polars_business/Cargo.toml"]
-}

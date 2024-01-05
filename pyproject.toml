@@ -3,8 +3,8 @@ requires = ["maturin>=1.0,<2.0", "polars>=0.20.0"]
 build-backend = "maturin"
 
 [project]
-name = "polars-business"
-description = "Business day utilities for Polars"
+name = "polars-ts"
+description = "Time Series Extras (e.g. business day utilities) for Polars"
 readme = "README.md"
 authors = [
   { name="Marco Gorelli", email="33491632+MarcoGorelli@users.noreply.github.com" },

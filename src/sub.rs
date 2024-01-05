@@ -55,7 +55,7 @@ pub(crate) fn impl_sub(
     holidays: &[i32],
 ) -> PolarsResult<Series> {
     if (start_dates.dtype() != &DataType::Date) || (end_dates.dtype() != &DataType::Date) {
-        polars_bail!(InvalidOperation: "polars_business sub only works on Date type. Please cast to Date first.");
+        polars_bail!(InvalidOperation: "polars_ts sub only works on Date type. Please cast to Date first.");
     }
     let start_dates = start_dates.date()?;
     let end_dates = end_dates.date()?;

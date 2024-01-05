@@ -7,14 +7,14 @@ venv:  ## Set up virtual environment
 
 install: venv
 	unset CONDA_PREFIX && \
-	source venv/bin/activate && maturin develop -m polars_business/Cargo.toml
+	source venv/bin/activate && maturin develop
 
 install-release: venv
 	unset CONDA_PREFIX && \
-	source venv/bin/activate && maturin develop --release -m polars_business/Cargo.toml
+	source venv/bin/activate && maturin develop --release
 
 pre-commit: venv
-	cargo fmt --all --manifest-path polars_business/Cargo.toml && cargo clippy --all-features --manifest-path polars_business/Cargo.toml
+	cargo fmt --all && cargo clippy --all-features
 
 run: install
 	source venv/bin/activate && python run.py

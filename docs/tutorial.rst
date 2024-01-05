@@ -8,7 +8,7 @@ Say we start with
     from datetime import date
 
     import polars as pl
-    import polars_business as plb
+    import polars_ts as pts
 
 
     df = pl.DataFrame(
@@ -21,7 +21,7 @@ Let's shift `Date` forwards by 5 days, excluding Saturday and Sunday:
 .. code-block:: python
 
     result = df.with_columns(
-        date_shifted=plb.col("date").bdt.offset_by(
+        date_shifted=pts.col("date").bdt.offset_by(
         '5bd',
         weekend=('Sat', 'Sun'),
         )
@@ -52,7 +52,7 @@ for 2023 and 2024 (note: you'll need to install the
     england_holidays = holidays.country_holidays("UK", subdiv='ENG', years=[2023, 2024])
 
     result = df.with_columns(
-        date_shifted=plb.col("date").bdt.offset_by(
+        date_shifted=pts.col("date").bdt.offset_by(
         by='5bd',
         weekend=('Sat', 'Sun'),
         holidays=england_holidays,
@@ -83,7 +83,7 @@ Count the number of business dates between two columns:
             "end": [date(2023, 2, 8), date(2023, 5, 2), date(2023, 12, 30)],
         }
     )
-    result = df.with_columns(n_business_days=plb.workday_count('start', 'end'))
+    result = df.with_columns(n_business_days=pts.workday_count('start', 'end'))
     print(result)
 
 

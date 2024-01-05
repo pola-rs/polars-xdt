@@ -9,4 +9,5 @@ rust-toolchain.toml
 *.html
 *.bat
 *.js
-polars_business/docs/_build
+polars_ts/docs/_build
+*.so

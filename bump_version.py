@@ -9,17 +9,17 @@ import os
 subprocess.run(['make', 'install'])
 subprocess.run(['make', 'clean'], cwd='docs')
 subprocess.run(['make', 'html'], cwd='docs')
-os.system('cp docs/_build/html/* ../../docs-polars-business/ -r')
-subprocess.run(['git', 'add', '.'], cwd='../../docs-polars-business')
-subprocess.run(['git', 'commit', '-m', '\"new version\"', '--allow-empty'], cwd='../../docs-polars-business')
-subprocess.run(['git', 'push', 'origin', 'HEAD'], cwd='../../docs-polars-business')
+os.system('cp docs/_build/html/* ../../docs-polars-ts/ -r')
+subprocess.run(['git', 'add', '.'], cwd='../../docs-polars-ts')
+subprocess.run(['git', 'commit', '-m', '\"new version\"', '--allow-empty'], cwd='../../docs-polars-ts')
+subprocess.run(['git', 'push', 'origin', 'HEAD'], cwd='../../docs-polars-ts')
 
 how = sys.argv[1]
 
-subprocess.run(["cp", "../README.md", "polars_business/README.md"])
-subprocess.run(["cp", "../LICENSE", "polars_business/LICENSE"])
+subprocess.run(["cp", "../README.md", "polars_ts/README.md"])
+subprocess.run(["cp", "../LICENSE", "polars_ts/LICENSE"])
 
-with open("polars_business/pyproject.toml", "r", encoding="utf-8") as f:
+with open("pyproject.toml", "r", encoding="utf-8") as f:
     content = f.read()
 old_version = re.search(r'version = "(.*)"', content).group(1)
 version = old_version.split(".")
@@ -32,15 +32,15 @@ elif how == "major":
 else:
     sys.exit(1)
 content = content.replace(f'version = "{old_version}"', f'version = "{version}"')
-with open("polars_business/pyproject.toml", "w", encoding="utf-8") as f:
+with open("pyproject.toml", "w", encoding="utf-8") as f:
     f.write(content)
 
-with open("polars_business/polars_business/__init__.py", "r", encoding="utf-8") as f:
+with open("polars_ts/__init__.py", "r", encoding="utf-8") as f:
     content = f.read()
 content = content.replace(
     f'__version__ = "{old_version}"', f'__version__ = "{version}"'
 )
-with open("polars_business/polars_business/__init__.py", "w", encoding="utf-8") as f:
+with open("polars_ts/__init__.py", "w", encoding="utf-8") as f:
     f.write(content)
 
 subprocess.run(["git", "commit", "-a", "-m", f"Bump version to {version}"])
