@@ -33,7 +33,7 @@ Then, if you can run
 from datetime import date
 import polars_xdt as xdt
 
-print(xdt.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))
+print(xdt.date_range(date(2023, 1, 1), date(2023, 1, 10), '1bd', eager=True))
 ```
 it means installation all worked correctly!
 
