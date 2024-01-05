@@ -4,6 +4,6 @@ API
 .. autosummary::
    :toctree: api/
 
-    polars_tsx.date_range
-    polars_tsx.workday_count
-    polars_tsx.ExprBusinessDateTimeNamespace.offset_by
+    polars_xts.date_range
+    polars_xts.workday_count
+    polars_xts.ExprBusinessDateTimeNamespace.offset_by

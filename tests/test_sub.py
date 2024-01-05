@@ -8,7 +8,7 @@ import numpy as np
 from hypothesis import given, assume, reject
 
 import polars as pl
-import polars_tsx  # noqa: F401
+import polars_xts  # noqa: F401
 
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
@@ -23,7 +23,7 @@ def get_result(
 ) -> int:
     return (  # type: ignore[no-any-return]
         pl.DataFrame({"end_date": [end_date]})
-        .select(n=pl.col("end_date").tsx.sub(start_date, weekend=weekend, holidays=holidays))["n"]  # type: ignore[arg-type]
+        .select(n=pl.col("end_date").xts.sub(start_date, weekend=weekend, holidays=holidays))["n"]  # type: ignore[arg-type]
         .item()
     )
 
@@ -112,7 +112,7 @@ def test_empty_weekmask() -> None:
     )
     with pytest.raises(ValueError):
         df.select(
-            pl.col("end").tsx.sub(
+            pl.col("end").xts.sub(
                 "start", weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
             )
         )
@@ -125,7 +125,7 @@ def test_sub_lit() -> None:
         }
     )
     result = df.select(
-        pl.col("end").tsx.sub(
+        pl.col("end").xts.sub(
             pl.lit(dt.date(2020, 1, 1)),
         )
     )

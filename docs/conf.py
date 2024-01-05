@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'polars-tsx'
+project = 'polars-xts'
 copyright = '2023, Marco Gorelli'
 author = 'Marco Gorelli'
 
