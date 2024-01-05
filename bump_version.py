@@ -5,19 +5,16 @@ import subprocess
 import os
 
 # Docs are in a a separate repo cause I couldn't figure out
-# how to deploy from read the docs
+# how to deploy from readthedocs
 subprocess.run(['make', 'install'])
 subprocess.run(['make', 'clean'], cwd='docs')
 subprocess.run(['make', 'html'], cwd='docs')
-os.system('cp docs/_build/html/* ../../docs-polars-ts/ -r')
-subprocess.run(['git', 'add', '.'], cwd='../../docs-polars-ts')
-subprocess.run(['git', 'commit', '-m', '\"new version\"', '--allow-empty'], cwd='../../docs-polars-ts')
-subprocess.run(['git', 'push', 'origin', 'HEAD'], cwd='../../docs-polars-ts')
+os.system('cp docs/_build/html/* ../docs-polars-xdt/ -r')
+subprocess.run(['git', 'add', '.'], cwd='../docs-polars-xdt')
+subprocess.run(['git', 'commit', '-m', '\"new version\"', '--allow-empty'], cwd='../docs-polars-xdt')
+subprocess.run(['git', 'push', 'origin', 'HEAD'], cwd='../docs-polars-xdt')
 
 how = sys.argv[1]
-
-subprocess.run(["cp", "../README.md", "polars_ts/README.md"])
-subprocess.run(["cp", "../LICENSE", "polars_ts/LICENSE"])
 
 with open("pyproject.toml", "r", encoding="utf-8") as f:
     content = f.read()
@@ -35,12 +32,12 @@ content = content.replace(f'version = "{old_version}"', f'version = "{version}"'
 with open("pyproject.toml", "w", encoding="utf-8") as f:
     f.write(content)
 
-with open("polars_ts/__init__.py", "r", encoding="utf-8") as f:
+with open("polars_xdt/__init__.py", "r", encoding="utf-8") as f:
     content = f.read()
 content = content.replace(
     f'__version__ = "{old_version}"', f'__version__ = "{version}"'
 )
-with open("polars_ts/__init__.py", "w", encoding="utf-8") as f:
+with open("polars_xdt/__init__.py", "w", encoding="utf-8") as f:
     f.write(content)
 
 subprocess.run(["git", "commit", "-a", "-m", f"Bump version to {version}"])

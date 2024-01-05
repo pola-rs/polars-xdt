@@ -5,4 +5,4 @@ sphinx_copybutton
 sphinx-design
 sphinx-favicon
 pydata_sphinx_theme
-polars-ts
+polars-xdt
