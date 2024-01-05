@@ -41,7 +41,7 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
     return weekmask
 
 
-@pl.api.register_expr_namespace("tse")
+@pl.api.register_expr_namespace("tsx")
 class ExprTimeSeriesExtrasNamespace:
     """
     Time Series Extras.
@@ -58,7 +58,7 @@ class ExprTimeSeriesExtrasNamespace:
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
         roll: RollStrategy = "raise",
-    ) -> TSEExpr:
+    ) -> TSXExpr:
         """
         Offset this date by a relative time offset.
 
@@ -184,8 +184,8 @@ class ExprTimeSeriesExtrasNamespace:
             },
         )
         if fastpath:
-            return cast(TSEExpr, result)
-        return cast(TSEExpr, result.dt.offset_by(by))
+            return cast(TSXExpr, result)
+        return cast(TSXExpr, result.dt.offset_by(by))
 
     def sub(
         self,
@@ -193,7 +193,7 @@ class ExprTimeSeriesExtrasNamespace:
         *,
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
-    ) -> TSEExpr:
+    ) -> TSXExpr:
         weekmask = get_weekmask(weekend)
         if not holidays:
             holidays_int = []
@@ -217,7 +217,7 @@ class ExprTimeSeriesExtrasNamespace:
                 "holidays": holidays_int,
             },
         )
-        return cast(TSEExpr, result)
+        return cast(TSXExpr, result)
 
     def is_workday(
         self,
@@ -249,18 +249,18 @@ class ExprTimeSeriesExtrasNamespace:
         return result
 
 
-class TSEExpr(pl.Expr):
+class TSXExpr(pl.Expr):
     @property
     def tsx(self) -> ExprTimeSeriesExtrasNamespace:
         return ExprTimeSeriesExtrasNamespace(self)
 
 
-class TSEColumn(Protocol):
+class TSXColumn(Protocol):
     def __call__(
         self,
         name: str | PolarsDataType | Iterable[str] | Iterable[PolarsDataType],
         *more_names: str | PolarsDataType,
-    ) -> TSEExpr:
+    ) -> TSXExpr:
         ...
 
     def __getattr__(self, name: str) -> pl.Expr:
@@ -271,7 +271,7 @@ class TSEColumn(Protocol):
         ...
 
 
-col = cast(TSEColumn, pl.col)
+col = cast(TSXColumn, pl.col)
 
 
 def workday_count(
@@ -279,7 +279,7 @@ def workday_count(
     end: str | pl.Expr | date,
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
-) -> TSEExpr:
+) -> TSXExpr:
     """
     Count the number of workdays between two columns of dates.
 
