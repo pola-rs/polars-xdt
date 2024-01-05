@@ -1,4 +1,4 @@
-# Polars Time Series
+# Polars Time Series eXtras
 
 <h1 align="center">
 	<img
@@ -31,7 +31,7 @@ Then, if you can run
 from datetime import date
 import polars_tsx as tsx
 
-print(tse.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))
+print(tsx.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))
 ```
 it means installation all worked correctly!
 

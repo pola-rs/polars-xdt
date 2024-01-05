@@ -310,7 +310,7 @@ def workday_count(
     ...         "end": [date(2023, 2, 8), date(2023, 5, 2), date(2023, 12, 30)],
     ...     }
     ... )
-    >>> df.with_columns(n_business_days=tse.workday_count("start", "end"))
+    >>> df.with_columns(n_business_days=tsx.workday_count("start", "end"))
     shape: (3, 3)
     ┌────────────┬────────────┬─────────────────┐
     │ start      ┆ end        ┆ n_business_days │
