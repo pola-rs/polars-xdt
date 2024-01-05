@@ -1,16 +1,16 @@
-# Polars Time Series Extras
+# Polars Time Series
 
 <h1 align="center">
 	<img
 		width="400"
-		alt="polars-tse"
+		alt="polars-ts"
 		src="https://github.com/MarcoGorelli/polars-business/assets/33491632/928c68c4-4e71-45a7-bc89-14922c7ce61b">
 </h1>
 
 [![PyPI version](https://badge.fury.io/py/polars-business.svg)](https://badge.fury.io/py/polars-business)
 [![Read the docs!](https://img.shields.io/badge/Read%20the%20docs!-coolgreen?style=flat&link=https://marcogorelli.github.io/polars-business-docs/)](https://marcogorelli.github.io/polars-business-docs/)
 
-Business day utilities for [Polars](https://www.pola.rs/).
+Time Series Extras for [Polars](https://www.pola.rs/).
 
 - ✅ blazingly fast, written in Rust!
 - ✅ seamless Polars integration!
@@ -21,21 +21,21 @@ Installation
 
 First, you need to [install Polars](https://pola-rs.github.io/polars/user-guide/installation/).
 
-Then, you'll need to install `polars-tse`:
+Then, you'll need to install `polars-ts`:
 ```console
-pip install polars-tse
+pip install polars-ts
 ```
 
 Then, if you can run
 ```python
 from datetime import date
-import polars_tse as pts
+import polars_ts as pts
 
 print(pts.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))
 ```
 it means installation all worked correctly!
 
-Read the [documentation](https://marcogorelli.github.io/polars-tse-docs/) for a little tutorial and API reference.
+Read the [documentation](https://marcogorelli.github.io/polars-ts-docs/) for a little tutorial and API reference.
 
 Basic Example
 -------------
@@ -44,7 +44,7 @@ Say we start with
 from datetime import date
 
 import polars as pl
-import polars_tse as pts
+import polars_ts as pts
 
 
 df = pl.DataFrame(
@@ -79,7 +79,7 @@ shape: (3, 2)
 You can also count the number of business days between two given dates, specify a custom
 calendar holiday, and create a date range excluding workdays.
 
-Read the [documentation](https://marcogorelli.github.io/polars-tse-docs/) for more examples!
+Read the [documentation](https://marcogorelli.github.io/polars-ts-docs/) for more examples!
 
 Performance
 -----------

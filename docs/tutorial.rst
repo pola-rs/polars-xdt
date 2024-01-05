@@ -8,7 +8,7 @@ Say we start with
     from datetime import date
 
     import polars as pl
-    import polars_tse as pts
+    import polars_ts as pts
 
 
     df = pl.DataFrame(

@@ -6,7 +6,7 @@ import re
 from datetime import date
 import sys
 
-from polars_tse.ranges import date_range
+from polars_ts.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
 from typing import Iterable, Literal, Protocol, Sequence, cast, get_args
@@ -86,7 +86,7 @@ class ExprBusinessDateTimeNamespace:
         Examples
         --------
         >>> import polars as pl
-        >>> import polars_tse as pts
+        >>> import polars_ts as pts
         >>> df = pl.DataFrame(
         ...     {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
         ... )
@@ -303,7 +303,7 @@ def workday_count(
     --------
     >>> from datetime import date
     >>> import polars as pl
-    >>> import polars_tse as pts
+    >>> import polars_ts as pts
     >>> df = pl.DataFrame(
     ...     {
     ...         "start": [date(2023, 1, 4), date(2023, 5, 1), date(2023, 9, 9)],

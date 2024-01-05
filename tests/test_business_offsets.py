@@ -10,7 +10,7 @@ import numpy as np
 from hypothesis import given, assume, reject
 
 import polars as pl
-import polars_tse as pts
+import polars_ts as pts
 from polars.type_aliases import PolarsDataType
 
 
