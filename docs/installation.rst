@@ -14,7 +14,7 @@ Then, if you can run
 .. code-block::
 
     from datetime import date
-    import polars_tsx as pts
+    import polars_tsx  # noqa: F401
 
     print(pts.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))
 

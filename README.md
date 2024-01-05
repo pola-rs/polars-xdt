@@ -44,7 +44,7 @@ Say we start with
 from datetime import date
 
 import polars as pl
-import polars_tsx as pts
+import polars_tsx  # noqa: F401
 
 
 df = pl.DataFrame(
@@ -56,7 +56,7 @@ Let's shift `Date` forwards by 5 days, excluding Saturday and Sunday:
 
 ```python
 result = df.with_columns(
-    date_shifted=pts.col("date").tsx.offset_by(
+    date_shifted=pl.col("date").tsx.offset_by(
       '5bd',
       weekend=('Sat', 'Sun'),
     )

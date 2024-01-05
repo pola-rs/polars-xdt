@@ -2,7 +2,7 @@ from __future__ import annotations
 import polars as pl
 import pytest
 from datetime import date
-import polars_tsx as pts
+import polars_tsx  # noqa: F401
 from polars.testing import assert_series_equal
 
 

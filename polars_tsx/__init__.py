@@ -86,12 +86,12 @@ class ExprTimeSeriesExtrasNamespace:
         Examples
         --------
         >>> import polars as pl
-        >>> import polars_tsx as pts
+        >>> import polars_tsx  # noqa: F401
         >>> df = pl.DataFrame(
         ...     {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
         ... )
         >>> df.with_columns(
-        ...     date_shifted=pts.col("date").tsx.offset_by("1bd"),
+        ...     date_shifted=pl.col("date").tsx.offset_by("1bd"),
         ... )
         shape: (3, 2)
         ┌────────────┬──────────────┐
@@ -111,7 +111,7 @@ class ExprTimeSeriesExtrasNamespace:
         ...     "UK", subdiv="ENG", years=[2023, 2024]
         ... )
         >>> df.with_columns(
-        ...     date_shifted=pts.col("date").tsx.offset_by(
+        ...     date_shifted=pl.col("date").tsx.offset_by(
         ...         "5bd",
         ...         holidays=holidays_england,
         ...         weekend=["Fri", "Sat"],
