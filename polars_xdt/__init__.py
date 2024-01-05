@@ -42,13 +42,12 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
 
 
 @pl.api.register_expr_namespace("xdt")
-class ExprTimeSeriesExtrasNamespace:
+class ExprXDTNamespace:
     """
-    Time Series Extras.
+    eXtra stuff for DateTimes.
     """
 
     def __init__(self, expr: pl.Expr):
-        """foo"""
         self._expr = expr
 
     def offset_by(
@@ -251,8 +250,8 @@ class ExprTimeSeriesExtrasNamespace:
 
 class xdtExpr(pl.Expr):
     @property
-    def xdt(self) -> ExprTimeSeriesExtrasNamespace:
-        return ExprTimeSeriesExtrasNamespace(self)
+    def xdt(self) -> ExprXDTNamespace:
+        return ExprXDTNamespace(self)
 
 
 class xdtColumn(Protocol):
@@ -267,7 +266,7 @@ class xdtColumn(Protocol):
         ...
 
     @property
-    def xdt(self) -> ExprTimeSeriesExtrasNamespace:
+    def xdt(self) -> ExprXDTNamespace:
         ...
 
 
