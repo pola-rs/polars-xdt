@@ -12,7 +12,7 @@
 [![PyPI version](https://badge.fury.io/py/polars-business.svg)](https://badge.fury.io/py/polars-business)
 [![Read the docs!](https://img.shields.io/badge/Read%20the%20docs!-coolgreen?style=flat&link=https://marcogorelli.github.io/polars-business-docs/)](https://marcogorelli.github.io/polars-business-docs/)
 
-Time Series Extras for [Polars](https://www.pola.rs/).
+eXtra stuff for DateTimes in [Polars](https://www.pola.rs/).
 
 - ✅ blazingly fast, written in Rust!
 - ✅ seamless Polars integration!
@@ -82,13 +82,3 @@ You can also count the number of business days between two given dates, specify 
 calendar holiday, and create a date range excluding workdays.
 
 Read the [documentation](https://marcogorelli.github.io/polars-xdt-docs/) for more examples!
-
-Performance
------------
-
-Single-threaded performance is:
-- about on par with NumPy (it's essentially a Rust reimplementation)
-- about an order of magnitude faster than pandas.
-
-but note that Polars will take care of parallelisation for you, and that this plugin
-will fit in with Polars lazy execution and not require any data conversion.
