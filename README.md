@@ -15,8 +15,9 @@
 eXtra stuff for DateTimes in [Polars](https://www.pola.rs/).
 
 - ✅ blazingly fast, written in Rust!
-- ✅ seamless Polars integration!
-- ✅ define your own custom holidays and weekends!
+- ✅ custom business-day arithmetic!
+- ✅ convert to and from multiple time zones!
+- ✅ format datetime in different locales!
 
 Installation
 ------------
@@ -30,11 +31,12 @@ pip install polars-xdt
 
 Then, if you can run
 ```python
-from datetime import date
-import polars_xdt as xdt
+import polars as pl
+import polars_xdt  # noqa: F401
 
-print(xdt.date_range(date(2023, 1, 1), date(2023, 1, 10), '1bd', eager=True))
+print(pl.col('a').xdt)
 ```
+and see something like `<polars_xdt.ExprXDTNamespace at 0x7f5bc943fc10>`,
 it means installation all worked correctly!
 
 Read the [documentation](https://marcogorelli.github.io/polars-xdt-docs/) for a little tutorial and API reference.
@@ -77,8 +79,5 @@ shape: (3, 2)
 │ 2024-01-04 ┆ 2024-01-11   │
 └────────────┴──────────────┘
 ```
-
-You can also count the number of business days between two given dates, specify a custom
-calendar holiday, and create a date range excluding workdays.
 
 Read the [documentation](https://marcogorelli.github.io/polars-xdt-docs/) for more examples!

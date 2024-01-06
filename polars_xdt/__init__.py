@@ -231,6 +231,46 @@ class ExprXDTNamespace:
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
     ) -> pl.Expr:
+        """Determine whether a day is a workday.
+
+        Parameters
+        ----------
+        weekend
+            The days of the week that are considered weekends. Defaults to ("Sat", "Sun").
+        holidays
+            The holidays to exclude from the calculation. Defaults to None. This should
+            be a list of ``datetime.date`` s.
+
+        Returns
+        -------
+        polars.Expr
+
+        Examples
+        --------
+        >>> from datetime import date
+        >>> import polars as pl
+        >>> import polars_xdt  # noqa: F401
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "date": [
+        ...             date(2023, 1, 4),
+        ...             date(2023, 5, 1),
+        ...             date(2023, 9, 9),
+        ...         ],
+        ...     }
+        ... )
+        >>> df.with_columns(is_workday=pl.col("date").xdt.is_workday())
+        shape: (3, 2)
+        ┌────────────┬────────────┐
+        │ date       ┆ is_workday │
+        │ ---        ┆ ---        │
+        │ date       ┆ bool       │
+        ╞════════════╪════════════╡
+        │ 2023-01-04 ┆ true       │
+        │ 2023-05-01 ┆ true       │
+        │ 2023-09-09 ┆ false      │
+        └────────────┴────────────┘
+        """
         weekmask = get_weekmask(weekend)
         if not holidays:
             holidays_int = []
@@ -489,14 +529,16 @@ def workday_count(
     --------
     >>> from datetime import date
     >>> import polars as pl
-    >>> import polars_xdt as xdt
+    >>> import polars_xdt  # noqa: F401
     >>> df = pl.DataFrame(
     ...     {
     ...         "start": [date(2023, 1, 4), date(2023, 5, 1), date(2023, 9, 9)],
     ...         "end": [date(2023, 2, 8), date(2023, 5, 2), date(2023, 12, 30)],
     ...     }
     ... )
-    >>> df.with_columns(n_business_days=xdt.workday_count("start", "end"))
+    >>> df.with_columns(
+    ...     n_business_days=polars_xdt.workday_count("start", "end")
+    ... )
     shape: (3, 3)
     ┌────────────┬────────────┬─────────────────┐
     │ start      ┆ end        ┆ n_business_days │
