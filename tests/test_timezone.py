@@ -1,11 +1,12 @@
 from __future__ import annotations
 import pytest
 from datetime import datetime, timezone
-import polars as pl
+
 from polars.testing import (
     assert_frame_equal,
 )
-import polars_xdt as xdt  # noqa: F401
+import polars as pl
+import polars_xdt  # noqa: F401
 
 
 @pytest.mark.parametrize(
