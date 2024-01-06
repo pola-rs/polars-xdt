@@ -19,17 +19,38 @@ permissions:
   contents: read
 
 jobs:
-  linux:
+
+  linux_tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        target: [x86_64]
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        target: [x86_64, x86, aarch64, armv7]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Set up Rust
+        run: rustup show
+      - uses: mozilla-actions/sccache-action@v0.0.3
+      - run: make install
+      - run: venv/bin/python -m pytest tests
+      - run: venv/bin/python -m black --check .
+      - run: venv/bin/python -m mypy polars_xdt tests
+      - run: venv/bin/python -m ruff .
+
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64, x86, aarch64, armv7]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -42,15 +63,6 @@ jobs:
         with:
           name: wheels
           path: dist
-      - name: pytest
-        if: ${{ startsWith(matrix.target, 'x86_64') }}
-        shell: bash
-        run: |
-          set -e
-          pip install -r requirements.txt
-          make install
-          pip install pytest
-          pytest
 
   windows:
     runs-on: windows-latest
@@ -74,15 +86,6 @@ jobs:
         with:
           name: wheels
           path: dist
-      - name: pytest
-        if: ${{ !startsWith(matrix.target, 'aarch64') && matrix.target != 'x86' }}
-        shell: bash
-        run: |
-          set -e
-          pip install -r requirements.txt
-          make install
-          pip install pytest
-          pytest
 
   macos:
     runs-on: macos-latest
@@ -105,15 +108,6 @@ jobs:
         with:
           name: wheels
           path: dist
-      - name: pytest
-        if: ${{ !startsWith(matrix.target, 'aarch64') }}
-        shell: bash
-        run: |
-          set -e
-          pip install -r requirements.txt
-          make install
-          pip install pytest
-          pytest
 
   sdist:
     runs-on: ubuntu-latest
