@@ -15,6 +15,10 @@ install-release: venv
 
 pre-commit: venv
 	cargo fmt --all && cargo clippy --all-features
+	source venv/bin/activate
+	ruff check .
+	ruff format
+	mypy polars_xdt
 
 run: install
 	source venv/bin/activate && python run.py
