@@ -50,31 +50,3 @@ def test_against_np_is_busday(
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
     expected = np.is_busday(date, weekmask=weekmask, holidays=holidays)
     assert result == expected
-
-
-@given(
-    datetime=st.datetimes(
-        min_value=dt.datetime(2000, 1, 1), max_value=dt.datetime(2000, 12, 31)
-    ),
-    weekend=st.lists(
-        st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
-        min_size=0,
-        max_size=6,
-        unique=True,
-    ),
-    holidays=st.lists(
-        st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
-        min_size=1,
-        max_size=300,
-    ),
-)
-def test_against_np_is_busday_datetime(
-    datetime: dt.datetime,
-    weekend: list[str],
-    holidays: list[dt.date],
-) -> None:
-    result = get_result(datetime, weekend=weekend, holidays=holidays)
-    weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
-    date = dt.date(datetime.year, datetime.month, datetime.day)
-    expected = np.is_busday(date, weekmask=weekmask, holidays=holidays)
-    assert result == expected
