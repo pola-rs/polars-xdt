@@ -9,7 +9,7 @@ import sys
 from polars_xdt.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
-from typing import Iterable, Literal, Protocol, Sequence, cast, get_args
+from typing import Iterable, Literal, Protocol, Sequence, cast
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
@@ -198,10 +198,7 @@ class ExprXDTNamespace:
             holidays_int = []
         else:
             holidays_int = sorted(
-                {
-                    (holiday - date(1970, 1, 1)).days
-                    for holiday in holidays
-                }
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
             )
         if isinstance(end_dates, str):
             end_dates = pl.col(end_dates)
@@ -228,10 +225,7 @@ class ExprXDTNamespace:
             holidays_int = []
         else:
             holidays_int = sorted(
-                {
-                    (holiday - date(1970, 1, 1)).days
-                    for holiday in holidays
-                }
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
             )
         result = self._expr.register_plugin(
             lib=lib,

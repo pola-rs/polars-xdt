@@ -51,8 +51,11 @@ def test_against_np_is_busday(
     expected = np.is_busday(date, weekmask=weekmask, holidays=holidays)
     assert result == expected
 
+
 @given(
-    datetime=st.datetimes(min_value=dt.datetime(2000, 1, 1), max_value=dt.datetime(2000, 12, 31)),
+    datetime=st.datetimes(
+        min_value=dt.datetime(2000, 1, 1), max_value=dt.datetime(2000, 12, 31)
+    ),
     weekend=st.lists(
         st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
         min_size=0,

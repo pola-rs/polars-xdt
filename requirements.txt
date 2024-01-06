@@ -6,3 +6,5 @@ pandas
 pytest
 holidays
 mypy
+black
+ruff
