@@ -1,9 +1,9 @@
 #![allow(clippy::unit_arg, clippy::unused_unit)]
 use crate::business_days::*;
+use crate::format_localized::*;
 use crate::is_workday::*;
 use crate::sub::*;
 use crate::timezone::*;
-use crate::format_localized::*;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use serde::Deserialize;
@@ -101,5 +101,5 @@ fn format_localized(inputs: &[Series], kwargs: FormatLocalizedKwargs) -> PolarsR
     let s = &inputs[0];
     let locale = kwargs.locale;
     let format = kwargs.format;
-    impl_format_localized(s, &format, &locale)    
+    impl_format_localized(s, &format, &locale)
 }
