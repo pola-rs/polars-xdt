@@ -247,8 +247,7 @@ class ExprXDTNamespace:
         to_tz: str,
         ambiguous: Ambiguous = "raise",
     ) -> xdtExpr:
-        """
-        Converts from local datetime in given time zone to new timezone.
+        """Converts from local datetime in given time zone to new timezone.
 
         Parameters
         ----------
@@ -315,14 +314,13 @@ class ExprXDTNamespace:
 
     def to_local_datetime(
         self,
-        tz: str | Expr,
+        time_zone: str | Expr,
     ) -> xdtExpr:
-        """
-        Convert to local datetime in given time zone.
+        """Convert to local datetime in given time zone.
 
         Parameters
         ----------
-        tz
+        time_zone
             Time zone to convert to.
 
         Returns
@@ -358,12 +356,12 @@ class ExprXDTNamespace:
         │ 2020-10-10 00:00:00 UTC ┆ America/New_York ┆ 2020-10-09 20:00:00 │
         └─────────────────────────┴──────────────────┴─────────────────────┘
         """
-        tz = wrap_expr(parse_as_expression(tz, str_as_lit=True))
+        time_zone = wrap_expr(parse_as_expression(time_zone, str_as_lit=True))
         result = self._expr.register_plugin(
             lib=lib,
             symbol="to_local_datetime",
             is_elementwise=True,
-            args=[tz],
+            args=[time_zone],
         )
         return cast(xdtExpr, result)
 

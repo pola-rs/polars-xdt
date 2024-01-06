@@ -37,9 +37,7 @@ jobs:
       - uses: mozilla-actions/sccache-action@v0.0.3
       - run: make install
       - run: venv/bin/python -m pytest tests
-      - run: venv/bin/python -m black --check .
-      - run: venv/bin/python -m mypy polars_xdt #tests
-      - run: venv/bin/python -m ruff .
+      - run: make pre-commit
 
   linux:
     runs-on: ubuntu-latest
