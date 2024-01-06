@@ -111,10 +111,10 @@ def date_range(
     --------
     >>> from datetime import date
     >>> import polars as pl
-    >>> import polars_xdt  # noqa: F401
+    >>> import polars_xdt
     >>> pl.DataFrame(
     ...     {
-    ...         "date": xdt.date_range(
+    ...         "date": polars_xdt.date_range(
     ...             date(2023, 1, 1), date(2023, 1, 10), "1bd", eager=True
     ...         ),
     ...     }
@@ -142,7 +142,9 @@ def date_range(
         holidays = []
 
     if not (isinstance(interval, str) and re.match(r"^-?\d+bd$", interval)):
-        raise ValueError("Only intervals of the form 'nbd' (where n is an integer) are supported.")
+        raise ValueError(
+            "Only intervals of the form 'nbd' (where n is an integer) are supported."
+        )
     interval = interval.replace("bd", "d")
 
     expr = pl.date_range(

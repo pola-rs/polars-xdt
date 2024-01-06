@@ -1,13 +1,12 @@
 #![allow(clippy::unit_arg, clippy::unused_unit)]
-
 use crate::business_days::*;
+use crate::format_localized::*;
 use crate::is_workday::*;
 use crate::sub::*;
 use crate::timezone::*;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use serde::Deserialize;
-
 #[derive(Deserialize)]
 pub struct BusinessDayKwargs {
     holidays: Vec<i32>,
@@ -19,6 +18,11 @@ pub struct BusinessDayKwargs {
 pub struct FromLocalDatetimeKwargs {
     to_tz: String,
     ambiguous: String,
+}
+#[derive(Deserialize)]
+pub struct FormatLocalizedKwargs {
+    format: String,
+    locale: String,
 }
 
 fn bday_output(input_fields: &[Field]) -> PolarsResult<Field> {
@@ -49,7 +53,6 @@ pub fn from_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field>
 }
 
 #[polars_expr(output_type_func=bday_output)]
-
 fn advance_n_days(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<Series> {
     let s = &inputs[0];
     let n = &inputs[1].cast(&DataType::Int32)?;
@@ -91,4 +94,12 @@ fn from_local_datetime(inputs: &[Series], kwargs: FromLocalDatetimeKwargs) -> Po
     let ca = s1.datetime().unwrap();
     let s2 = &inputs[1].str().unwrap();
     Ok(elementwise_from_local_datetime(ca, s2, &kwargs.to_tz, &kwargs.ambiguous)?.into_series())
+}
+
+#[polars_expr(output_type=String)]
+fn format_localized(inputs: &[Series], kwargs: FormatLocalizedKwargs) -> PolarsResult<Series> {
+    let s = &inputs[0];
+    let locale = kwargs.locale;
+    let format = kwargs.format;
+    impl_format_localized(s, &format, &locale)
 }
