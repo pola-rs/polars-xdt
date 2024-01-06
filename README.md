@@ -81,3 +81,8 @@ shape: (3, 2)
 ```
 
 Read the [documentation](https://marcogorelli.github.io/polars-xdt-docs/) for more examples!
+
+Logo
+----
+
+Thanks to [Olha Urdeichuk](https://www.fiverr.com/olhaurdeichuk) for the illustration.
