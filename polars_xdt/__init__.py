@@ -322,6 +322,7 @@ class ExprXDTNamespace:
         in a single timezone with `from_local_datetime`.
 
         >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
         >>> df = pl.DataFrame(
         ...     {
         ...         "local_dt": [
@@ -387,6 +388,7 @@ class ExprXDTNamespace:
         will be expressed as a local datetime.
 
         >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
         >>> df = pl.DataFrame(
         ...     {
         ...         "date_col": [datetime(2020, 10, 10)] * 3,
@@ -446,6 +448,7 @@ class ExprXDTNamespace:
         Examples
         --------
         >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
         >>> df = pl.DataFrame(
         ...     {
         ...         "date_col": [datetime(2024, 8, 24), datetime(2024, 10, 1)],

@@ -10,11 +10,13 @@ Then, you'll need to install `polars-xdt`:
     pip install polars-xdt
 
 Then, if you can run
-```python
-import polars as pl
-import polars_xdt  # noqa: F401
 
-print(pl.col('a').xdt)
-```
+.. code-block::
+
+    import polars as pl
+    import polars_xdt  # noqa: F401
+
+    print(pl.col('a').xdt)
+
 and see something like `<polars_xdt.ExprXDTNamespace at 0x7f5bc943fc10>`,
 it means installation all worked correctly!
