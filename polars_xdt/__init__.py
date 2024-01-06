@@ -6,6 +6,7 @@ import re
 from datetime import date
 import sys
 from polars.utils._parse_expr_input import parse_as_expression
+from polars.utils._wrap import wrap_expr
 from polars_xdt.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
@@ -302,7 +303,7 @@ class ExprXDTNamespace:
         │ 2020-10-09 20:00:00 ┆ America/New_York ┆ 2020-10-10 00:00:00 UTC │
         └─────────────────────┴──────────────────┴─────────────────────────┘
         """
-        from_tz = parse_as_expression(from_tz, str_as_lit=True)
+        from_tz = wrap_expr(parse_as_expression(from_tz, str_as_lit=True))
         result = self._expr.register_plugin(
             lib=lib,
             symbol="from_local_datetime",
@@ -360,7 +361,7 @@ class ExprXDTNamespace:
         │ 2020-10-10 00:00:00 UTC ┆ America/New_York ┆ 2020-10-09 20:00:00 │
         └─────────────────────────┴──────────────────┴─────────────────────┘
         """
-        tz = parse_as_expression(tz, str_as_lit=True)
+        tz = wrap_expr(parse_as_expression(tz, str_as_lit=True))
         result = self._expr.register_plugin(
             lib=lib,
             symbol="to_local_datetime",

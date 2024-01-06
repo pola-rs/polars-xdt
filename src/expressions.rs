@@ -24,6 +24,28 @@ fn bday_output(input_fields: &[Field]) -> PolarsResult<Field> {
     Ok(field)
 }
 
+pub fn to_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
+    let field = input_fields[0].clone();
+    let dtype = match field.dtype {
+        DataType::Datetime(unit, _) => DataType::Datetime(unit, None),
+        _ => polars_bail!(InvalidOperation:
+            "dtype '{}' not supported", field.dtype
+        ),
+    };
+    Ok(Field::new(&field.name, dtype))
+}
+
+pub fn from_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
+    let field = input_fields[0].clone();
+    let dtype = match field.dtype {
+        DataType::Datetime(unit, _) => DataType::Datetime(unit, None),
+        _ => polars_bail!(InvalidOperation:
+            "dtype '{}' not supported", field.dtype
+        ),
+    };
+    Ok(Field::new(&field.name, dtype))
+}
+
 #[polars_expr(output_type_func=bday_output)]
 fn advance_n_days(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<Series> {
     let s = &inputs[0];
@@ -52,7 +74,7 @@ fn is_workday(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<Seri
     impl_is_workday(dates, &weekmask, &holidays)
 }
 
-#[polars_expr(output_type_func=bday_output)]
+#[polars_expr(output_type_func=to_local_datetime_output)]
 fn to_local_datetime(inputs: &[Series]) -> PolarsResult<Series> {
     let s1 = &inputs[0];
     let ca = s1.datetime()?;
@@ -60,7 +82,7 @@ fn to_local_datetime(inputs: &[Series]) -> PolarsResult<Series> {
     Ok(elementwise_to_local_datetime(ca, s2)?.into_series())
 }
 
-#[polars_expr(output_type_func=bday_output)]
+#[polars_expr(output_type_func=from_local_datetime_output)]
 fn from_local_datetime(inputs: &[Series], kwargs: FromLocalDatetimeKwargs) -> PolarsResult<Series> {
     let s1 = &inputs[0];
     let ca = s1.datetime().unwrap();
