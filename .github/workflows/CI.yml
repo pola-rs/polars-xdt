@@ -15,11 +15,18 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
-jobs:
+# Make sure CI fails on all warnings, including Clippy lints
+env:
+  RUSTFLAGS: "-Dwarnings"
 
+jobs:
   linux_tests:
     runs-on: ubuntu-latest
     strategy:
@@ -35,11 +42,10 @@ jobs:
       - name: Set up Rust
         run: rustup show
       - uses: mozilla-actions/sccache-action@v0.0.3
+      - run: make venv
+      - run: make pre-commit
       - run: make install
       - run: venv/bin/python -m pytest tests
-      - run: venv/bin/python -m black --check .
-      - run: venv/bin/python -m mypy polars_xdt #tests
-      - run: venv/bin/python -m ruff .
 
   linux:
     runs-on: ubuntu-latest
