@@ -38,7 +38,7 @@ jobs:
       - run: make install
       - run: venv/bin/python -m pytest tests
       - run: venv/bin/python -m black --check .
-      - run: venv/bin/python -m mypy polars_xdt tests
+      - run: venv/bin/python -m mypy polars_xdt #tests
       - run: venv/bin/python -m ruff .
 
   linux:

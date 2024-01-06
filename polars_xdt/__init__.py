@@ -9,7 +9,7 @@ import sys
 from polars_xdt.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
-from typing import Iterable, Literal, Protocol, Sequence, cast, get_args
+from typing import Iterable, Literal, Protocol, Sequence, cast
 
 from ._internal import __version__
 
