@@ -34,4 +34,4 @@ with open("Cargo.toml", "w", encoding="utf-8") as f:
 
 subprocess.run(["git", "commit", "-a", "-m", f"Bump version to {version}"])
 subprocess.run(["git", "tag", "-a", version, "-m", version])
-subprocess.run(["git", "push", "--follow-tags"])
+subprocess.run(["git", "push", "origin", "HEAD", "--follow-tags"])
