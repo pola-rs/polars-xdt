@@ -3,6 +3,7 @@ mod expressions;
 mod is_workday;
 mod sub;
 mod timezone;
+mod format_localized;
 
 use pyo3::types::PyModule;
 use pyo3::{pymodule, PyResult, Python};
