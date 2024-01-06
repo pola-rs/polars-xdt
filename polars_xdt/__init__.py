@@ -357,6 +357,58 @@ class ExprXDTNamespace:
         )
         return cast(xdtExpr, result)
 
+    def format_localized(
+        self,
+        format: str,
+    ) -> xdtExpr:
+        """Convert to local datetime in given time zone.
+
+        Parameters
+        ----------
+        time_zone
+            Time zone to convert to.
+
+        Returns
+        -------
+        Expr
+            Expression of data type :class:`DateTime`.
+
+        Examples
+        --------
+        You can use `to_local_datetime` to figure out how a tz-aware datetime
+        will be expressed as a local datetime.
+
+        >>> from datetime import datetime
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "date_col": [datetime(2020, 10, 10)] * 3,
+        ...         "timezone": ["Europe/London", "Africa/Kigali", "America/New_York"],
+        ...     }
+        ... ).with_columns(pl.col("date_col").dt.replace_time_zone("UTC"))
+        >>> df.with_columns(
+        ...     pl.col("date_col")
+        ...     .xdt.to_local_datetime(pl.col("timezone"))
+        ...     .alias("local_dt")
+        ... )
+        shape: (3, 3)
+        ┌─────────────────────────┬──────────────────┬─────────────────────┐
+        │ date_col                ┆ timezone         ┆ local_dt            │
+        │ ---                     ┆ ---              ┆ ---                 │
+        │ datetime[μs, UTC]       ┆ str              ┆ datetime[μs]        │
+        ╞═════════════════════════╪══════════════════╪═════════════════════╡
+        │ 2020-10-10 00:00:00 UTC ┆ Europe/London    ┆ 2020-10-10 01:00:00 │
+        │ 2020-10-10 00:00:00 UTC ┆ Africa/Kigali    ┆ 2020-10-10 02:00:00 │
+        │ 2020-10-10 00:00:00 UTC ┆ America/New_York ┆ 2020-10-09 20:00:00 │
+        └─────────────────────────┴──────────────────┴─────────────────────┘
+        """
+        result = self._expr.register_plugin(
+            lib=lib,
+            symbol="format_localized",
+            is_elementwise=True,
+            args=[],
+        )
+        return cast(xdtExpr, result)
+
 
 class xdtExpr(pl.Expr):
     @property

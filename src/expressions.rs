@@ -1,5 +1,4 @@
 #![allow(clippy::unit_arg, clippy::unused_unit)]
-
 use crate::business_days::*;
 use crate::is_workday::*;
 use crate::sub::*;
@@ -7,7 +6,9 @@ use crate::timezone::*;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use serde::Deserialize;
-
+use chrono::TimeZone;
+use polars_arrow::array::{MutableUtf8Array, MutableArray, Utf8Array};
+use std::fmt::Write;
 #[derive(Deserialize)]
 pub struct BusinessDayKwargs {
     holidays: Vec<i32>,
@@ -49,7 +50,6 @@ pub fn from_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field>
 }
 
 #[polars_expr(output_type_func=bday_output)]
-
 fn advance_n_days(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<Series> {
     let s = &inputs[0];
     let n = &inputs[1].cast(&DataType::Int32)?;
@@ -91,4 +91,39 @@ fn from_local_datetime(inputs: &[Series], kwargs: FromLocalDatetimeKwargs) -> Po
     let ca = s1.datetime().unwrap();
     let s2 = &inputs[1].str().unwrap();
     Ok(elementwise_from_local_datetime(ca, s2, &kwargs.to_tz, &kwargs.ambiguous)?.into_series())
+}
+
+#[polars_expr(output_type=String)]
+fn format_localized(inputs: &[Series]) -> PolarsResult<Series> {
+    let s1 = &inputs[0];
+    let ca = s1.datetime()?;
+    let ndt = chrono::NaiveDateTime::from_timestamp_opt(0, 0).unwrap();
+    let dt = chrono::Utc.from_utc_datetime(&ndt);
+    let fmted = format!("{}", dt.format_localized("%A, %d %B %Y", chrono::Locale::uk_UA));
+    let name = ca.name();
+    let mut ca: StringChunked = ca.apply_kernel_cast(&|arr| {
+        let mut buf = String::new();
+        let mut mutarr =
+            MutableUtf8Array::with_capacities(arr.len(), arr.len() * fmted.len() + 1);
+
+        for opt in arr.into_iter() {
+            match opt {
+                None => mutarr.push_null(),
+                Some(timestamp) => {
+                    buf.clear();
+                    let ndt = chrono::NaiveDateTime::from_timestamp_opt(timestamp / 1_000_000, (timestamp % 1_000_000*1000)as u32).unwrap();
+                    let dt = chrono::Utc.from_utc_datetime(&ndt);
+                    let fmted = dt.format_localized("%A, %d %B %Y", chrono::Locale::uk_UA);
+                    write!(buf, "{fmted}").unwrap();
+                    mutarr.push(Some(&buf))
+                },
+            }
+        }
+
+        let arr: Utf8Array<i64> = mutarr.into();
+        Box::new(arr)
+    });
+
+    ca.rename(name);
+    Ok(ca.into_series())
 }
