@@ -88,4 +88,3 @@ def test_eager_custom_holiday() -> None:
         ],
     )
     assert_series_equal(result, expected)
-
