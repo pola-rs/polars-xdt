@@ -11,9 +11,7 @@ subprocess.run(["make", "clean"], cwd="docs")
 subprocess.run(["make", "html"], cwd="docs")
 os.system("cp docs/_build/html/* ../docs-polars-xdt/ -r")
 subprocess.run(["git", "add", "."], cwd="../docs-polars-xdt")
-subprocess.run(
-    ["git", "commit", "-m", '"new version"', "--allow-empty"], cwd="../docs-polars-xdt"
-)
+subprocess.run(["git", "commit", "-m", '"new version"', "--allow-empty"], cwd="../docs-polars-xdt")
 subprocess.run(["git", "push", "origin", "HEAD"], cwd="../docs-polars-xdt")
 
 how = sys.argv[1]

@@ -36,9 +36,7 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
     if weekend == ("Sat", "Sun"):
         weekmask = [True, True, True, True, True, False, False]
     else:
-        weekmask = [
-            False if reverse_mapping[i] in weekend else True for i in range(1, 8)
-        ]
+        weekmask = [False if reverse_mapping[i] in weekend else True for i in range(1, 8)]
     if sum(weekmask) == 0:
         raise ValueError(
             f"At least one day of the week must be a business day. Got weekend={weekend}"
@@ -168,9 +166,7 @@ class ExprXDTNamespace:
         if not holidays:
             holidays_int = []
         else:
-            holidays_int = sorted(
-                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
-            )
+            holidays_int = sorted({(holiday - date(1970, 1, 1)).days for holiday in holidays})
         weekmask = get_weekmask(weekend)
 
         result = self._expr.register_plugin(
@@ -199,9 +195,7 @@ class ExprXDTNamespace:
         if not holidays:
             holidays_int = []
         else:
-            holidays_int = sorted(
-                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
-            )
+            holidays_int = sorted({(holiday - date(1970, 1, 1)).days for holiday in holidays})
         if isinstance(end_dates, str):
             end_dates = pl.col(end_dates)
         result = self._expr.register_plugin(
@@ -226,9 +220,7 @@ class ExprXDTNamespace:
         if not holidays:
             holidays_int = []
         else:
-            holidays_int = sorted(
-                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
-            )
+            holidays_int = sorted({(holiday - date(1970, 1, 1)).days for holiday in holidays})
         result = self._expr.register_plugin(
             lib=lib,
             symbol="is_workday",

@@ -1,3 +1,5 @@
+#![allow(clippy::unit_arg, clippy::unused_unit)]
+
 use crate::business_days::*;
 use crate::is_workday::*;
 use crate::sub::*;
