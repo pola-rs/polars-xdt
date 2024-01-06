@@ -360,36 +360,33 @@ class ExprXDTNamespace:
     def format_localized(
         self,
         format: str,
+        locale: str = "uk_UA",
     ) -> xdtExpr:
         """Convert to local datetime in given time zone.
 
         Parameters
         ----------
-        time_zone
-            Time zone to convert to.
+        format
+            Format string, see https://docs.rs/chrono/latest/chrono/format/strftime/index.html
+            for what's available. 
+        locale
+            Locale to use for formatting. Defaults to "uk_UA", because that's what the OP
+            requested https://github.com/pola-rs/polars/issues/12341.
 
         Returns
         -------
         Expr
-            Expression of data type :class:`DateTime`.
+            Expression of data type :class:`Utf8`.
 
         Examples
         --------
-        You can use `to_local_datetime` to figure out how a tz-aware datetime
-        will be expressed as a local datetime.
-
         >>> from datetime import datetime
         >>> df = pl.DataFrame(
         ...     {
-        ...         "date_col": [datetime(2020, 10, 10)] * 3,
-        ...         "timezone": ["Europe/London", "Africa/Kigali", "America/New_York"],
+        ...         "date_col": [datetime(2024, 8, 24), datetime(2024, 10, 1)],
         ...     }
-        ... ).with_columns(pl.col("date_col").dt.replace_time_zone("UTC"))
-        >>> df.with_columns(
-        ...     pl.col("date_col")
-        ...     .xdt.to_local_datetime(pl.col("timezone"))
-        ...     .alias("local_dt")
         ... )
+        >>> df.with_columns(result=pl.col("date_col").xdt.format_localized("%A, %d %B %Y"))
         shape: (3, 3)
         ┌─────────────────────────┬──────────────────┬─────────────────────┐
         │ date_col                ┆ timezone         ┆ local_dt            │
@@ -406,6 +403,7 @@ class ExprXDTNamespace:
             symbol="format_localized",
             is_elementwise=True,
             args=[],
+            kwargs={'format': format, 'locale': locale},
         )
         return cast(xdtExpr, result)
 

@@ -21,6 +21,11 @@ pub struct FromLocalDatetimeKwargs {
     to_tz: String,
     ambiguous: String,
 }
+#[derive(Deserialize)]
+pub struct FormatLocalizedKwargs {
+    format: String,
+    locale: String,
+}
 
 fn bday_output(input_fields: &[Field]) -> PolarsResult<Field> {
     let field = input_fields[0].clone();
@@ -94,12 +99,14 @@ fn from_local_datetime(inputs: &[Series], kwargs: FromLocalDatetimeKwargs) -> Po
 }
 
 #[polars_expr(output_type=String)]
-fn format_localized(inputs: &[Series]) -> PolarsResult<Series> {
+fn format_localized(inputs: &[Series], kwargs: FormatLocalizedKwargs) -> PolarsResult<Series> {
     let s1 = &inputs[0];
     let ca = s1.datetime()?;
     let ndt = chrono::NaiveDateTime::from_timestamp_opt(0, 0).unwrap();
     let dt = chrono::Utc.from_utc_datetime(&ndt);
-    let fmted = format!("{}", dt.format_localized("%A, %d %B %Y", chrono::Locale::uk_UA));
+    let format = kwargs.format;
+    let locale = chrono::Locale::try_from(kwargs.locale.as_str()).map_err(|_| polars_err!(ComputeError: format!("given locale {} could not be parsed", kwargs.locale)))?;
+    let fmted = format!("{}", dt.format_localized(&format, locale));
     let name = ca.name();
     let mut ca: StringChunked = ca.apply_kernel_cast(&|arr| {
         let mut buf = String::new();
@@ -113,7 +120,7 @@ fn format_localized(inputs: &[Series]) -> PolarsResult<Series> {
                     buf.clear();
                     let ndt = chrono::NaiveDateTime::from_timestamp_opt(timestamp / 1_000_000, (timestamp % 1_000_000*1000)as u32).unwrap();
                     let dt = chrono::Utc.from_utc_datetime(&ndt);
-                    let fmted = dt.format_localized("%A, %d %B %Y", chrono::Locale::uk_UA);
+                    let fmted = dt.format_localized(&format, locale);
                     write!(buf, "{fmted}").unwrap();
                     mutarr.push(Some(&buf))
                 },
@@ -123,7 +130,6 @@ fn format_localized(inputs: &[Series]) -> PolarsResult<Series> {
         let arr: Utf8Array<i64> = mutarr.into();
         Box::new(arr)
     });
-
     ca.rename(name);
     Ok(ca.into_series())
 }
