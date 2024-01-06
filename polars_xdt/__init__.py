@@ -36,7 +36,10 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
     if weekend == ("Sat", "Sun"):
         weekmask = [True, True, True, True, True, False, False]
     else:
-        weekmask = [False if reverse_mapping[i] in weekend else True for i in range(1, 8)]
+        weekmask = [
+            False if reverse_mapping[i] in weekend else True
+            for i in range(1, 8)
+        ]
     if sum(weekmask) == 0:
         raise ValueError(
             f"At least one day of the week must be a business day. Got weekend={weekend}"
@@ -132,11 +135,17 @@ class ExprXDTNamespace:
 
         >>> df = pl.DataFrame(
         ...     {
-        ...         "date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)],
+        ...         "date": [
+        ...             date(2023, 4, 3),
+        ...             date(2023, 9, 1),
+        ...             date(2024, 1, 4),
+        ...         ],
         ...         "by": ["1bd", "2bd", "-3bd"],
         ...     }
         ... )
-        >>> df.with_columns(date_shifted=pl.col("date").xdt.offset_by(pl.col("by")))
+        >>> df.with_columns(
+        ...     date_shifted=pl.col("date").xdt.offset_by(pl.col("by"))
+        ... )
         shape: (3, 3)
         ┌────────────┬──────┬──────────────┐
         │ date       ┆ by   ┆ date_shifted │
@@ -159,14 +168,18 @@ class ExprXDTNamespace:
         else:
             if not isinstance(by, pl.Expr):
                 by = pl.lit(by)
-            n = (by.str.extract(r"^(-?)") + by.str.extract(r"(\d+)bd")).cast(pl.Int32)
+            n = (by.str.extract(r"^(-?)") + by.str.extract(r"(\d+)bd")).cast(
+                pl.Int32
+            )
             by = by.str.replace(r"(\d+bd)", "")
             fastpath = False
 
         if not holidays:
             holidays_int = []
         else:
-            holidays_int = sorted({(holiday - date(1970, 1, 1)).days for holiday in holidays})
+            holidays_int = sorted(
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
+            )
         weekmask = get_weekmask(weekend)
 
         result = self._expr.register_plugin(
@@ -195,7 +208,9 @@ class ExprXDTNamespace:
         if not holidays:
             holidays_int = []
         else:
-            holidays_int = sorted({(holiday - date(1970, 1, 1)).days for holiday in holidays})
+            holidays_int = sorted(
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
+            )
         if isinstance(end_dates, str):
             end_dates = pl.col(end_dates)
         result = self._expr.register_plugin(
@@ -220,7 +235,9 @@ class ExprXDTNamespace:
         if not holidays:
             holidays_int = []
         else:
-            holidays_int = sorted({(holiday - date(1970, 1, 1)).days for holiday in holidays})
+            holidays_int = sorted(
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
+            )
         result = self._expr.register_plugin(
             lib=lib,
             symbol="is_workday",
@@ -272,7 +289,11 @@ class ExprXDTNamespace:
         ...             datetime(2020, 10, 10, 2),
         ...             datetime(2020, 10, 9, 20),
         ...         ],
-        ...         "timezone": ["Europe/London", "Africa/Kigali", "America/New_York"],
+        ...         "timezone": [
+        ...             "Europe/London",
+        ...             "Africa/Kigali",
+        ...             "America/New_York",
+        ...         ],
         ...     }
         ... )
         >>> df.with_columns(
@@ -329,7 +350,11 @@ class ExprXDTNamespace:
         >>> df = pl.DataFrame(
         ...     {
         ...         "date_col": [datetime(2020, 10, 10)] * 3,
-        ...         "timezone": ["Europe/London", "Africa/Kigali", "America/New_York"],
+        ...         "timezone": [
+        ...             "Europe/London",
+        ...             "Africa/Kigali",
+        ...             "America/New_York",
+        ...         ],
         ...     }
         ... ).with_columns(pl.col("date_col").dt.replace_time_zone("UTC"))
         >>> df.with_columns(
@@ -386,7 +411,11 @@ class ExprXDTNamespace:
         ...         "date_col": [datetime(2024, 8, 24), datetime(2024, 10, 1)],
         ...     }
         ... )
-        >>> df.with_columns(result=pl.col("date_col").xdt.format_localized("%A, %d %B %Y"))
+        >>> df.with_columns(
+        ...     result=pl.col("date_col").xdt.format_localized(
+        ...         "%A, %d %B %Y", "uk_UA"
+        ...     )
+        ... )
         shape: (2, 2)
         ┌─────────────────────┬──────────────────────────┐
         │ date_col            ┆ result                   │
@@ -488,7 +517,9 @@ def workday_count(
     elif not isinstance(end, pl.Expr):
         end = pl.lit(end)
 
-    return end.xdt.sub(start, weekend=weekend, holidays=holidays).alias("workday_count")  # type: ignore[no-any-return, attr-defined]
+    return end.xdt.sub(start, weekend=weekend, holidays=holidays).alias(  # type: ignore[no-any-return, attr-defined]
+        "workday_count"
+    )
 
 
 __all__ = [

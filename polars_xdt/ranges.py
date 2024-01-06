@@ -142,7 +142,9 @@ def date_range(
         holidays = []
 
     if not (isinstance(interval, str) and re.match(r"^-?\d+bd$", interval)):
-        raise ValueError("Only intervals of the form 'nbd' (where n is an integer) are supported.")
+        raise ValueError(
+            "Only intervals of the form 'nbd' (where n is an integer) are supported."
+        )
     interval = interval.replace("bd", "d")
 
     expr = pl.date_range(

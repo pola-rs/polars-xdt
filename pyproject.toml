@@ -27,6 +27,8 @@ requires-python = ">=3.8"
 [tool.maturin]
 module-name = "polars_xdt._internal"
 
+[tool.ruff.format]
+docstring-code-format = true
 
 [tool.ruff]
 select = [
@@ -73,5 +75,4 @@ exclude = [
     ".ipynb",
     "venv",
 ]
-# Same as Black.
-line-length = 100
+line-length = 80

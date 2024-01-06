@@ -11,7 +11,10 @@ subprocess.run(["make", "clean"], cwd="docs")
 subprocess.run(["make", "html"], cwd="docs")
 os.system("cp docs/_build/html/* ../docs-polars-xdt/ -r")
 subprocess.run(["git", "add", "."], cwd="../docs-polars-xdt")
-subprocess.run(["git", "commit", "-m", '"new version"', "--allow-empty"], cwd="../docs-polars-xdt")
+subprocess.run(
+    ["git", "commit", "-m", '"new version"', "--allow-empty"],
+    cwd="../docs-polars-xdt",
+)
 subprocess.run(["git", "push", "origin", "HEAD"], cwd="../docs-polars-xdt")
 
 how = sys.argv[1]
@@ -28,7 +31,9 @@ elif how == "major":
     version = ".".join([str(int(version[0]) + 1), "0", "0"])
 else:
     sys.exit(1)
-content = content.replace(f'version = "{old_version}"', f'version = "{version}"')
+content = content.replace(
+    f'version = "{old_version}"', f'version = "{version}"'
+)
 with open("Cargo.toml", "w", encoding="utf-8") as f:
     f.write(content)
 
