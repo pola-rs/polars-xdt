@@ -5,11 +5,11 @@ from polars.utils.udfs import _get_shared_lib_location
 import re
 from datetime import date
 import sys
-
+from polars.utils._parse_expr_input import parse_as_expression
 from polars_xdt.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
-from typing import Iterable, Literal, Protocol, Sequence, cast, get_args
+from typing import Iterable, Literal, Protocol, Sequence, cast, get_args, TYPE_CHECKING
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
@@ -25,6 +25,10 @@ __version__ = "0.4.3"
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 reverse_mapping = {value: key for key, value in mapping.items()}
+
+if TYPE_CHECKING:
+    from polars import Expr
+    from polars.type_aliases import Ambiguous
 
 
 def get_weekmask(weekend: Sequence[str]) -> list[bool]:
@@ -198,10 +202,7 @@ class ExprXDTNamespace:
             holidays_int = []
         else:
             holidays_int = sorted(
-                {
-                    (holiday - date(1970, 1, 1)).days
-                    for holiday in holidays
-                }
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
             )
         if isinstance(end_dates, str):
             end_dates = pl.col(end_dates)
@@ -228,10 +229,7 @@ class ExprXDTNamespace:
             holidays_int = []
         else:
             holidays_int = sorted(
-                {
-                    (holiday - date(1970, 1, 1)).days
-                    for holiday in holidays
-                }
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
             )
         result = self._expr.register_plugin(
             lib=lib,
@@ -244,6 +242,132 @@ class ExprXDTNamespace:
             },
         )
         return result
+
+    def from_local_datetime(
+        self,
+        from_tz: str | Expr,
+        to_tz: str,
+        ambiguous: Ambiguous = "raise",
+    ) -> xdtExpr:
+        """
+        Converts from local datetime in given time zone to new timezone.
+
+        Parameters
+        ----------
+        from_tz
+            Current timezone of each datetime
+        to_tz
+            Timezone to convert to
+        ambiguous
+            Determine how to deal with ambiguous datetimes:
+
+            - `'raise'` (default): raise
+            - `'earliest'`: use the earliest datetime
+            - `'latest'`: use the latest datetime
+
+        Returns
+        -------
+        Expr
+            Expression of data type :class:`DateTime`.
+
+        Examples
+        --------
+        You can go from a localized datetime back to expressing the datetimes
+        in a single timezone with `from_local_datetime`.
+
+        >>> from datetime import datetime
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "local_dt": [
+        ...             datetime(2020, 10, 10, 1),
+        ...             datetime(2020, 10, 10, 2),
+        ...             datetime(2020, 10, 9, 20),
+        ...         ],
+        ...         "timezone": ["Europe/London", "Africa/Kigali", "America/New_York"],
+        ...     }
+        ... )
+        >>> df.with_columns(
+        ...     pl.col("local_dt")
+        ...     .xdt.from_local_datetime(pl.col("timezone"), "UTC")
+        ...     .alias("date")
+        ... )
+        shape: (3, 3)
+        ┌─────────────────────┬──────────────────┬─────────────────────────┐
+        │ local_dt            ┆ timezone         ┆ date                    │
+        │ ---                 ┆ ---              ┆ ---                     │
+        │ datetime[μs]        ┆ str              ┆ datetime[μs, UTC]       │
+        ╞═════════════════════╪══════════════════╪═════════════════════════╡
+        │ 2020-10-10 01:00:00 ┆ Europe/London    ┆ 2020-10-10 00:00:00 UTC │
+        │ 2020-10-10 02:00:00 ┆ Africa/Kigali    ┆ 2020-10-10 00:00:00 UTC │
+        │ 2020-10-09 20:00:00 ┆ America/New_York ┆ 2020-10-10 00:00:00 UTC │
+        └─────────────────────┴──────────────────┴─────────────────────────┘
+        """
+        from_tz = parse_as_expression(from_tz, str_as_lit=True)
+        result = self._expr.register_plugin(
+            lib=lib,
+            symbol="from_local_datetime",
+            is_elementwise=True,
+            args=[from_tz],
+            kwargs={
+                "to_tz": to_tz,
+                "ambiguous": ambiguous,
+            },
+        )
+        return cast(xdtExpr, result)
+
+    def to_local_datetime(
+        self,
+        tz: str | Expr,
+    ) -> xdtExpr:
+        """
+        Convert to local datetime in given time zone.
+
+        Parameters
+        ----------
+        tz
+            Time zone to convert to.
+
+        Returns
+        -------
+        Expr
+            Expression of data type :class:`DateTime`.
+
+        Examples
+        --------
+        You can use `to_local_datetime` to figure out how a tz-aware datetime
+        will be expressed as a local datetime.
+
+        >>> from datetime import datetime
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "date_col": [datetime(2020, 10, 10)] * 3,
+        ...         "timezone": ["Europe/London", "Africa/Kigali", "America/New_York"],
+        ...     }
+        ... ).with_columns(pl.col("date_col").dt.replace_time_zone("UTC"))
+        >>> df.with_columns(
+        ...     pl.col("date_col")
+        ...     .xdt.to_local_datetime(pl.col("timezone"))
+        ...     .alias("local_dt")
+        ... )
+        shape: (3, 3)
+        ┌─────────────────────────┬──────────────────┬─────────────────────┐
+        │ date_col                ┆ timezone         ┆ local_dt            │
+        │ ---                     ┆ ---              ┆ ---                 │
+        │ datetime[μs, UTC]       ┆ str              ┆ datetime[μs]        │
+        ╞═════════════════════════╪══════════════════╪═════════════════════╡
+        │ 2020-10-10 00:00:00 UTC ┆ Europe/London    ┆ 2020-10-10 01:00:00 │
+        │ 2020-10-10 00:00:00 UTC ┆ Africa/Kigali    ┆ 2020-10-10 02:00:00 │
+        │ 2020-10-10 00:00:00 UTC ┆ America/New_York ┆ 2020-10-09 20:00:00 │
+        └─────────────────────────┴──────────────────┴─────────────────────┘
+        """
+        tz = parse_as_expression(tz, str_as_lit=True)
+        result = self._expr.register_plugin(
+            lib=lib,
+            symbol="to_local_datetime",
+            is_elementwise=True,
+            args=[tz],
+        )
+        return cast(xdtExpr, result)
 
 
 class xdtExpr(pl.Expr):
