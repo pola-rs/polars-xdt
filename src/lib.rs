@@ -2,6 +2,7 @@ mod business_days;
 mod expressions;
 mod is_workday;
 mod sub;
+mod timezone;
 
 use pyo3::types::PyModule;
 use pyo3::{pymodule, PyResult, Python};

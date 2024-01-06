@@ -13,6 +13,7 @@ pyo3 = { version = "0.20.0", features = ["extension-module"] }
 pyo3-polars = { version = "0.10.0", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 chrono = "0.4.31"
+chrono-tz = "0.8.5"
 polars = { version = "0.36.2", features = ["dtype-date"], default-features = false }
 polars-time = { version = "0.36.2", features = ["timezones"], default-features = false }
 polars-ops = { version = "0.36.2", default-features = false }
