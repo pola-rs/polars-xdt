@@ -15,5 +15,14 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-version = "0.4.3"
 requires-python = ">=3.8"
+
+[project.urls]
+"Repository" = "https://github.com/MarcoGorelli/polars-xdt"
+"Documentation" = "https://marcogorelli.github.io/polars-xdt-docs/"
+"Change Log" = "https://github.com/MarcoGorelli/polars-xdt/releases"
+"Issue Tracker" = "https://github.com/MarcoGorelli/polars-xdt/issues"
+
+
+[tool.maturin]
+module-name = "polars_xdt._internal"
