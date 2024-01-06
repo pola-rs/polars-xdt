@@ -10,7 +10,7 @@ from polars.utils._wrap import wrap_expr
 from polars_xdt.ranges import date_range
 
 from polars.type_aliases import PolarsDataType
-from typing import Iterable, Literal, Protocol, Sequence, cast, get_args, TYPE_CHECKING
+from typing import Iterable, Literal, Protocol, Sequence, cast, TYPE_CHECKING
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
