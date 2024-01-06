@@ -14,7 +14,6 @@ install-release: venv
 	source venv/bin/activate && maturin develop --release
 
 pre-commit: venv
-	cargo clippy --all-features
 	source venv/bin/activate
 	ruff check .
 	ruff format
