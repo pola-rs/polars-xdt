@@ -11,7 +11,7 @@ from polars_xdt.ranges import date_range
 from polars.type_aliases import PolarsDataType
 from typing import Iterable, Literal, Protocol, Sequence, cast
 
-from ._internal import __version__
+from ._internal import __version__ as __version__
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
@@ -43,9 +43,7 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
 
 @pl.api.register_expr_namespace("xdt")
 class ExprXDTNamespace:
-    """
-    eXtra stuff for DateTimes.
-    """
+    """eXtra stuff for DateTimes."""
 
     def __init__(self, expr: pl.Expr):
         self._expr = expr
@@ -58,15 +56,14 @@ class ExprXDTNamespace:
         holidays: Sequence[date] | None = None,
         roll: RollStrategy = "raise",
     ) -> xdtExpr:
-        """
-        Offset this date by a relative time offset.
+        """Offset this date by a relative time offset.
 
         Parameters
         ----------
         by
-            The offset to apply. This can be a string of the form "nbd" (where n is an integer),
-            or a polars expression that evaluates to such a string. Additional units are passed
-            to `polars.dt.offset_by`.
+            The offset to apply. This can be a string of the form "nbd" (where n
+            is an integer), or a polars expression that evaluates to such a string.
+            Additional units are passed to `polars.dt.offset_by`.
         weekend
             The days of the week that are considered weekends. Defaults to ("Sat", "Sun").
         holidays
@@ -271,8 +268,7 @@ def workday_count(
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
 ) -> xdtExpr:
-    """
-    Count the number of workdays between two columns of dates.
+    """Count the number of workdays between two columns of dates.
 
     Parameters
     ----------
