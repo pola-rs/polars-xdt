@@ -368,7 +368,7 @@ class ExprXDTNamespace:
         ----------
         format
             Format string, see https://docs.rs/chrono/latest/chrono/format/strftime/index.html
-            for what's available. 
+            for what's available.
         locale
             Locale to use for formatting. Defaults to "uk_UA", because that's what the OP
             requested https://github.com/pola-rs/polars/issues/12341.
@@ -403,7 +403,7 @@ class ExprXDTNamespace:
             symbol="format_localized",
             is_elementwise=True,
             args=[],
-            kwargs={'format': format, 'locale': locale},
+            kwargs={"format": format, "locale": locale},
         )
         return cast(xdtExpr, result)
 

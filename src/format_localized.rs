@@ -1,6 +1,6 @@
 use chrono::format::StrftimeItems;
-use chrono::{self, format::DelayedFormat};
 use chrono::TimeZone;
+use chrono::{self, format::DelayedFormat};
 use polars::prelude::*;
 use polars_arrow::array::{MutableArray, MutableUtf8Array, Utf8Array};
 use std::fmt::Write;
@@ -11,21 +11,23 @@ fn timestamp_ms_to_datetime(timestamp: i64) -> chrono::NaiveDateTime {
     chrono::NaiveDateTime::from_timestamp_opt(
         timestamp / 1_000,
         (timestamp % 1_000 * 1_000_000) as u32,
-    ).unwrap()
+    )
+    .unwrap()
 }
 fn timestamp_us_to_datetime(timestamp: i64) -> chrono::NaiveDateTime {
     chrono::NaiveDateTime::from_timestamp_opt(
         timestamp / 1_000_000,
         (timestamp % 1_000_000 * 1_000) as u32,
-    ).unwrap()
+    )
+    .unwrap()
 }
 fn timestamp_ns_to_datetime(timestamp: i64) -> chrono::NaiveDateTime {
     chrono::NaiveDateTime::from_timestamp_opt(
         timestamp / 1_000_000_000,
         (timestamp % 1_000_000_000) as u32,
-    ).unwrap()
+    )
+    .unwrap()
 }
-
 
 pub(crate) fn impl_format_localized(
     s: &Series,
@@ -38,7 +40,7 @@ pub(crate) fn impl_format_localized(
     let locale = chrono::Locale::try_from(locale).map_err(
         |_| polars_err!(ComputeError: format!("given locale {} could not be parsed", locale)),
     )?;
-    let fmted = format!("{}", dt.format_localized(&format, locale));
+    let fmted = format!("{}", dt.format_localized(format, locale));
     let name = ca.name();
 
     match s.dtype() {
@@ -50,11 +52,16 @@ pub(crate) fn impl_format_localized(
             };
             let tz = match time_zone {
                 None => chrono_tz::UTC,
-                Some(tz) => chrono_tz::Tz::from_str(tz).unwrap()
+                Some(tz) => chrono_tz::Tz::from_str(tz).unwrap(),
             };
-            fn format_ndt<'a>(ndt: chrono::NaiveDateTime, format: &'a str, locale: chrono::prelude::Locale, tz: chrono_tz::Tz) -> DelayedFormat<StrftimeItems<'a>>{
+            fn format_ndt(
+                ndt: chrono::NaiveDateTime,
+                format: &str,
+                locale: chrono::prelude::Locale,
+                tz: chrono_tz::Tz,
+            ) -> DelayedFormat<StrftimeItems<'_>> {
                 let dt = tz.from_utc_datetime(&ndt);
-                dt.format_localized(&format, locale)
+                dt.format_localized(format, locale)
             }
             let mut ca: StringChunked = ca.apply_kernel_cast(&|arr| {
                 let mut buf = String::new();
@@ -67,7 +74,7 @@ pub(crate) fn impl_format_localized(
                         Some(timestamp) => {
                             buf.clear();
                             let ndt = timestamp_to_datetime(*timestamp);
-                            let fmted = format_ndt(ndt, &format, locale, tz);
+                            let fmted = format_ndt(ndt, format, locale, tz);
                             write!(buf, "{fmted}").unwrap();
                             mutarr.push(Some(&buf))
                         }
