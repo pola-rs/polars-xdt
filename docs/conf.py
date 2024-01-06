@@ -35,7 +35,7 @@ numpydoc_show_class_members = False
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "alabaster"
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 
 intersphinx_mapping = {
     "polars": ("https://pola-rs.github.io/polars/py-polars/html/", None),
