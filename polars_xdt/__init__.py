@@ -478,6 +478,71 @@ class ExprXDTNamespace:
         )
         return cast(xdtExpr, result)
 
+    def ceil(
+        self,
+        every: str | pl.Expr,
+    ) -> xdtExpr:
+        """Find "ceiling" of datetime.
+
+        Parameters
+        ----------
+        every
+            Duration string, created with the
+            the following string language:
+
+            - 1ns   (1 nanosecond)
+            - 1us   (1 microsecond)
+            - 1ms   (1 millisecond)
+            - 1s    (1 second)
+            - 1m    (1 minute)
+            - 1h    (1 hour)
+            - 1d    (1 calendar day)
+            - 1w    (1 calendar week)
+            - 1mo   (1 calendar month)
+            - 1q    (1 calendar quarter)
+            - 1y    (1 calendar year)
+
+            These strings can be combined:
+
+            - 3d12h4m25s # 3 days, 12 hours, 4 minutes, and 25 seconds
+
+            By "calendar day", we mean the corresponding time on the next day (which may
+            not be 24 hours, due to daylight savings). Similarly for "calendar week",
+            "calendar month", "calendar quarter", and "calendar year".
+
+        Returns
+        -------
+        Expr
+            Expression of data type :class:`Utf8`.
+
+        Examples
+        --------
+        >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "date_col": [datetime(2024, 8, 24), datetime(2024, 10, 1)],
+        ...     }
+        ... )
+        >>> df.with_columns(result=pl.col("date_col").xdt.ceil("1mo"))
+        shape: (2, 2)
+        ┌─────────────────────┬─────────────────────┐
+        │ date_col            ┆ result              │
+        │ ---                 ┆ ---                 │
+        │ datetime[μs]        ┆ datetime[μs]        │
+        ╞═════════════════════╪═════════════════════╡
+        │ 2024-08-24 00:00:00 ┆ 2024-09-01 00:00:00 │
+        │ 2024-10-01 00:00:00 ┆ 2024-10-01 00:00:00 │
+        └─────────────────────┴─────────────────────┘
+        """
+        truncated = self._expr.dt.truncate(every)
+        result = (
+            pl.when(self._expr == truncated)
+            .then(self._expr)
+            .otherwise(truncated.dt.offset_by(every))
+        )
+        return cast(xdtExpr, result)
+
 
 class xdtExpr(pl.Expr):
     @property
