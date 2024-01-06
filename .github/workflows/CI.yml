@@ -18,11 +18,11 @@ on:
 permissions:
   contents: read
 
-jobs:
 # Make sure CI fails on all warnings, including Clippy lints
 env:
   RUSTFLAGS: "-Dwarnings"
 
+jobs:
   clippy_check:
     runs-on: ubuntu-latest
     steps:
