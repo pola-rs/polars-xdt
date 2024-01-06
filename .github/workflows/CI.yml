@@ -23,13 +23,6 @@ env:
   RUSTFLAGS: "-Dwarnings"
 
 jobs:
-  clippy_check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run Clippy
-        run: cargo fmt --all && cargo clippy --all-targets --all-features
-
   linux_tests:
     runs-on: ubuntu-latest
     strategy:
@@ -45,9 +38,10 @@ jobs:
       - name: Set up Rust
         run: rustup show
       - uses: mozilla-actions/sccache-action@v0.0.3
+      - run: make venv
+      - run: make pre-commit
       - run: make install
       - run: venv/bin/python -m pytest tests
-      - run: make pre-commit
 
   linux:
     runs-on: ubuntu-latest
