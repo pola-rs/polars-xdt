@@ -15,5 +15,63 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-version = "0.4.3"
 requires-python = ">=3.8"
+
+[project.urls]
+"Repository" = "https://github.com/MarcoGorelli/polars-xdt"
+"Documentation" = "https://marcogorelli.github.io/polars-xdt-docs/"
+"Change Log" = "https://github.com/MarcoGorelli/polars-xdt/releases"
+"Issue Tracker" = "https://github.com/MarcoGorelli/polars-xdt/issues"
+
+
+[tool.maturin]
+module-name = "polars_xdt._internal"
+
+
+[tool.ruff]
+select = [
+    "E",
+    "F",
+    "W",
+    "D",
+]
+
+ignore = [
+    "D100",
+    "D104",
+    "D107",
+    "D203",
+    "D205",
+    "D206",
+    "D213",
+    "D400",
+    "D401",
+    "D413",
+    "D415",
+    "E501",
+    "PT011",
+    "ANN002",
+    "ANN003",
+    "ANN101",
+    "ANN102",
+    "ANN204",
+    "C416",
+    "TD003",
+]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    "tests",
+    ".git",
+    ".git-rewrite",
+    ".mypy_cache",
+    ".ruff_cache",
+    "venv",
+    ".ipynb",
+    "venv",
+]
+# Same as Black.
+line-length = 100
