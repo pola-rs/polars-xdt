@@ -1,23 +1,26 @@
 from __future__ import annotations
 
-import polars as pl
-from polars.utils.udfs import _get_shared_lib_location
 import re
-from datetime import date
 import sys
+from datetime import date
+from typing import TYPE_CHECKING, Iterable, Literal, Protocol, Sequence, cast
+
+import polars as pl
 from polars.utils._parse_expr_input import parse_as_expression
 from polars.utils._wrap import wrap_expr
+from polars.utils.udfs import _get_shared_lib_location
+
 from polars_xdt.ranges import date_range
 
-from polars.type_aliases import PolarsDataType
-from typing import Iterable, Literal, Protocol, Sequence, cast, TYPE_CHECKING
-
-from ._internal import __version__ as __version__
+from ._internal import __version__
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
 else:
     from typing_extensions import TypeAlias
+
+if TYPE_CHECKING:
+    from polars.type_aliases import PolarsDataType
 
 RollStrategy: TypeAlias = Literal["raise", "forward", "backward"]
 
@@ -36,14 +39,10 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
     if weekend == ("Sat", "Sun"):
         weekmask = [True, True, True, True, True, False, False]
     else:
-        weekmask = [
-            False if reverse_mapping[i] in weekend else True
-            for i in range(1, 8)
-        ]
+        weekmask = [reverse_mapping[i] not in weekend for i in range(1, 8)]
     if sum(weekmask) == 0:
-        raise ValueError(
-            f"At least one day of the week must be a business day. Got weekend={weekend}"
-        )
+        msg = f"At least one day of the week must be a business day. Got weekend={weekend}"
+        raise ValueError(msg)
     return weekmask
 
 
@@ -51,7 +50,7 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
 class ExprXDTNamespace:
     """eXtra stuff for DateTimes."""
 
-    def __init__(self, expr: pl.Expr):
+    def __init__(self, expr: pl.Expr) -> None:
         self._expr = expr
 
     def offset_by(
@@ -61,7 +60,7 @@ class ExprXDTNamespace:
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
         roll: RollStrategy = "raise",
-    ) -> xdtExpr:
+    ) -> XDTExpr:
         """Offset this date by a relative time offset.
 
         Parameters
@@ -169,7 +168,7 @@ class ExprXDTNamespace:
             if not isinstance(by, pl.Expr):
                 by = pl.lit(by)
             n = (by.str.extract(r"^(-?)") + by.str.extract(r"(\d+)bd")).cast(
-                pl.Int32
+                pl.Int32,
             )
             by = by.str.replace(r"(\d+bd)", "")
             fastpath = False
@@ -178,7 +177,7 @@ class ExprXDTNamespace:
             holidays_int = []
         else:
             holidays_int = sorted(
-                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays},
             )
         weekmask = get_weekmask(weekend)
 
@@ -194,8 +193,8 @@ class ExprXDTNamespace:
             },
         )
         if fastpath:
-            return cast(xdtExpr, result)
-        return cast(xdtExpr, result.dt.offset_by(by))
+            return cast(XDTExpr, result)
+        return cast(XDTExpr, result.dt.offset_by(by))
 
     def sub(
         self,
@@ -203,13 +202,13 @@ class ExprXDTNamespace:
         *,
         weekend: Sequence[str] = ("Sat", "Sun"),
         holidays: Sequence[date] | None = None,
-    ) -> xdtExpr:
+    ) -> XDTExpr:
         weekmask = get_weekmask(weekend)
         if not holidays:
             holidays_int = []
         else:
             holidays_int = sorted(
-                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays},
             )
         if isinstance(end_dates, str):
             end_dates = pl.col(end_dates)
@@ -223,7 +222,7 @@ class ExprXDTNamespace:
                 "holidays": holidays_int,
             },
         )
-        return cast(xdtExpr, result)
+        return cast(XDTExpr, result)
 
     def is_workday(
         self,
@@ -276,9 +275,9 @@ class ExprXDTNamespace:
             holidays_int = []
         else:
             holidays_int = sorted(
-                {(holiday - date(1970, 1, 1)).days for holiday in holidays}
+                {(holiday - date(1970, 1, 1)).days for holiday in holidays},
             )
-        result = self._expr.register_plugin(
+        return self._expr.register_plugin(
             lib=lib,
             symbol="is_workday",
             is_elementwise=True,
@@ -288,14 +287,13 @@ class ExprXDTNamespace:
                 "holidays": holidays_int,
             },
         )
-        return result
 
     def from_local_datetime(
         self,
         from_tz: str | Expr,
         to_tz: str,
         ambiguous: Ambiguous = "raise",
-    ) -> xdtExpr:
+    ) -> XDTExpr:
         """Converts from local datetime in given time zone to new timezone.
 
         Parameters
@@ -364,12 +362,12 @@ class ExprXDTNamespace:
                 "ambiguous": ambiguous,
             },
         )
-        return cast(xdtExpr, result)
+        return cast(XDTExpr, result)
 
     def to_local_datetime(
         self,
         time_zone: str | Expr,
-    ) -> xdtExpr:
+    ) -> XDTExpr:
         """Convert to local datetime in given time zone.
 
         Parameters
@@ -422,13 +420,13 @@ class ExprXDTNamespace:
             is_elementwise=True,
             args=[time_zone],
         )
-        return cast(xdtExpr, result)
+        return cast(XDTExpr, result)
 
     def format_localized(
         self,
-        format: str,
+        format: str,  # noqa: A002
         locale: str = "uk_UA",
-    ) -> xdtExpr:
+    ) -> XDTExpr:
         """Convert to local datetime in given time zone.
 
         Parameters
@@ -476,12 +474,12 @@ class ExprXDTNamespace:
             args=[],
             kwargs={"format": format, "locale": locale},
         )
-        return cast(xdtExpr, result)
+        return cast(XDTExpr, result)
 
     def ceil(
         self,
         every: str | pl.Expr,
-    ) -> xdtExpr:
+    ) -> XDTExpr:
         """Find "ceiling" of datetime.
 
         Parameters
@@ -541,21 +539,21 @@ class ExprXDTNamespace:
             .then(self._expr)
             .otherwise(truncated.dt.offset_by(every))
         )
-        return cast(xdtExpr, result)
+        return cast(XDTExpr, result)
 
 
-class xdtExpr(pl.Expr):
+class XDTExpr(pl.Expr):
     @property
     def xdt(self) -> ExprXDTNamespace:
         return ExprXDTNamespace(self)
 
 
-class xdtColumn(Protocol):
+class XDTColumn(Protocol):
     def __call__(
         self,
         name: str | PolarsDataType | Iterable[str] | Iterable[PolarsDataType],
         *more_names: str | PolarsDataType,
-    ) -> xdtExpr:
+    ) -> XDTExpr:
         ...
 
     def __getattr__(self, name: str) -> pl.Expr:
@@ -566,7 +564,7 @@ class xdtColumn(Protocol):
         ...
 
 
-col = cast(xdtColumn, pl.col)
+col = cast(XDTColumn, pl.col)
 
 
 def workday_count(
@@ -574,7 +572,7 @@ def workday_count(
     end: str | pl.Expr | date,
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
-) -> xdtExpr:
+) -> XDTExpr:
     """Count the number of workdays between two columns of dates.
 
     Parameters
@@ -628,7 +626,7 @@ def workday_count(
         end = pl.lit(end)
 
     return end.xdt.sub(start, weekend=weekend, holidays=holidays).alias(  # type: ignore[no-any-return, attr-defined]
-        "workday_count"
+        "workday_count",
     )
 
 
@@ -636,4 +634,5 @@ __all__ = [
     "col",
     "date_range",
     "workday_count",
+    "__version__",
 ]

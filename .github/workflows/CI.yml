@@ -45,7 +45,7 @@ jobs:
       - run: make venv
       - run: make pre-commit
       - run: make install
-      - run: venv/bin/python -m pytest tests && venv/bin/python -m pytest --doctest-modules polars_xdt
+      - run: make test
 
   linux:
     runs-on: ubuntu-latest

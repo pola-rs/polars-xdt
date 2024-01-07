@@ -23,7 +23,7 @@ def get_result(
 ) -> int:
     return (  # type: ignore[no-any-return]
         pl.DataFrame({"end_date": [end_date]})
-        .select(n=pl.col("end_date").xdt.sub(start_date, weekend=weekend, holidays=holidays))["n"]  # type: ignore[arg-type]
+        .select(n=xdt.col("end_date").xdt.sub(start_date, weekend=weekend, holidays=holidays))["n"]  # type: ignore[arg-type]
         .item()
     )
 
@@ -112,7 +112,7 @@ def test_empty_weekmask() -> None:
     )
     with pytest.raises(ValueError):
         df.select(
-            pl.col("end").xdt.sub(
+            xdt.col("end").xdt.sub(
                 "start", weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
             )
         )
@@ -125,7 +125,7 @@ def test_sub_lit() -> None:
         }
     )
     result = df.select(
-        pl.col("end").xdt.sub(
+        xdt.col("end").xdt.sub(
             pl.lit(dt.date(2020, 1, 1)),
         )
     )

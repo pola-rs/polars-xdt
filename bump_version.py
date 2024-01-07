@@ -1,3 +1,4 @@
+# ruff: noqa
 # type: ignore
 import sys
 import re
