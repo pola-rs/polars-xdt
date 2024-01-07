@@ -4,31 +4,12 @@ use chrono::{self, format::DelayedFormat};
 use polars::prelude::*;
 use polars_arrow::array::{MutableArray, MutableUtf8Array, Utf8Array};
 use polars_arrow::temporal_conversions::MILLISECONDS_IN_DAY;
+use polars_arrow::temporal_conversions::{
+    timestamp_ms_to_datetime, timestamp_ns_to_datetime, timestamp_us_to_datetime,
+};
 use std::fmt::Write;
 use std::str::FromStr;
 
-fn timestamp_ms_to_datetime(timestamp: i64) -> chrono::NaiveDateTime {
-    // Just unwrap because we know that the timestamp is from a valid datetime
-    let mut nsecs = timestamp % 1_000 * 1_000_000;
-    if nsecs < 0 {
-        nsecs += 1_000_000_000;
-    }
-    chrono::NaiveDateTime::from_timestamp_opt(timestamp / 1_000, (nsecs) as u32).unwrap()
-}
-fn timestamp_us_to_datetime(timestamp: i64) -> chrono::NaiveDateTime {
-    let mut nsecs = timestamp % 1_000_000 * 1_000;
-    if nsecs < 0 {
-        nsecs += 1_000_000_000;
-    }
-    chrono::NaiveDateTime::from_timestamp_opt(timestamp / 1_000_000, (nsecs) as u32).unwrap()
-}
-fn timestamp_ns_to_datetime(timestamp: i64) -> chrono::NaiveDateTime {
-    let mut nsecs = timestamp % 1_000_000_000;
-    if nsecs < 0 {
-        nsecs += 1_000_000_000;
-    }
-    chrono::NaiveDateTime::from_timestamp_opt(timestamp / 1_000_000_000, (nsecs) as u32).unwrap()
-}
 fn format_ndt(
     ndt: chrono::NaiveDateTime,
     format: &str,

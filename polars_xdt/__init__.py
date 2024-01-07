@@ -476,6 +476,43 @@ class ExprXDTNamespace:
         )
         return cast(XDTExpr, result)
 
+    def to_julian_date(self) -> XDTExpr:
+        """Return the Julian date corresponding to given datetimes.
+
+        Examples
+        --------
+        >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "date_col": [
+        ...             datetime(2013, 1, 1, 0, 30),
+        ...             datetime(2024, 1, 7, 13, 18, 51),
+        ...         ],
+        ...     }
+        ... )
+        >>> with pl.Config(float_precision=10) as cfg:
+        ...     df.with_columns(
+        ...         julian_date=pl.col("date_col").xdt.to_julian_date()
+        ...     )
+        shape: (2, 2)
+        ┌─────────────────────┬────────────────────┐
+        │ date_col            ┆ julian_date        │
+        │ ---                 ┆ ---                │
+        │ datetime[μs]        ┆ f64                │
+        ╞═════════════════════╪════════════════════╡
+        │ 2013-01-01 00:30:00 ┆ 2456293.5208333335 │
+        │ 2024-01-07 13:18:51 ┆ 2460317.0547569445 │
+        └─────────────────────┴────────────────────┘
+        """
+        result = self._expr.register_plugin(
+            lib=lib,
+            symbol="to_julian_date",
+            is_elementwise=True,
+            args=[],
+        )
+        return cast(XDTExpr, result)
+
     def ceil(
         self,
         every: str | pl.Expr,

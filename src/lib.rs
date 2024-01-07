@@ -4,6 +4,7 @@ mod format_localized;
 mod is_workday;
 mod sub;
 mod timezone;
+mod to_julian;
 
 use pyo3::types::PyModule;
 use pyo3::{pymodule, PyResult, Python};
