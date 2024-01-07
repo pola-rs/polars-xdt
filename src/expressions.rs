@@ -6,10 +6,10 @@ use crate::sub::*;
 use crate::timezone::*;
 use crate::to_julian::*;
 use crate::utc_offsets::*;
+use chrono_tz::Tz;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use serde::Deserialize;
-use chrono_tz::Tz;
 use std::str::FromStr;
 #[derive(Deserialize)]
 pub struct BusinessDayKwargs {
@@ -32,6 +32,12 @@ pub struct FormatLocalizedKwargs {
 fn same_output(input_fields: &[Field]) -> PolarsResult<Field> {
     let field = input_fields[0].clone();
     Ok(field)
+}
+fn duration_ms(input_fields: &[Field]) -> PolarsResult<Field> {
+    Ok(Field::new(
+        input_fields[0].name(),
+        DataType::Duration(TimeUnit::Milliseconds),
+    ))
 }
 
 pub fn to_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
@@ -114,26 +120,26 @@ fn to_julian_date(inputs: &[Series]) -> PolarsResult<Series> {
     impl_to_julian_date(s)
 }
 
-#[polars_expr(output_type=Float64)]
+#[polars_expr(output_type_func=duration_ms)]
 fn base_utc_offset(inputs: &[Series]) -> PolarsResult<Series> {
     let s = &inputs[0];
     match s.dtype() {
         DataType::Datetime(time_unit, Some(time_zone)) => {
-            let time_zone = Tz::from_str(&time_zone).unwrap();
+            let time_zone = Tz::from_str(time_zone).unwrap();
             Ok(impl_base_utc_offset(s.datetime()?, time_unit, &time_zone).into_series())
         }
-        _ => polars_bail!(InvalidOperation: "base_utc_offset only works on Datetime type.")
+        _ => polars_bail!(InvalidOperation: "base_utc_offset only works on Datetime type."),
     }
 }
 
-#[polars_expr(output_type=Float64)]
+#[polars_expr(output_type_func=duration_ms)]
 fn dst_offset(inputs: &[Series]) -> PolarsResult<Series> {
     let s = &inputs[0];
     match s.dtype() {
         DataType::Datetime(time_unit, Some(time_zone)) => {
-            let time_zone = Tz::from_str(&time_zone).unwrap();
+            let time_zone = Tz::from_str(time_zone).unwrap();
             Ok(impl_dst_offset(s.datetime()?, time_unit, &time_zone).into_series())
         }
-        _ => polars_bail!(InvalidOperation: "base_utc_offset only works on Datetime type.")
+        _ => polars_bail!(InvalidOperation: "base_utc_offset only works on Datetime type."),
     }
 }

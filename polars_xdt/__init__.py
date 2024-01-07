@@ -577,7 +577,7 @@ class ExprXDTNamespace:
             .otherwise(truncated.dt.offset_by(every))
         )
         return cast(XDTExpr, result)
-    
+
     def base_utc_offset(self) -> XDTExpr:
         """
         Base offset from UTC.
@@ -598,13 +598,18 @@ class ExprXDTNamespace:
         Examples
         --------
         >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
         >>> df = pl.DataFrame(
         ...     {
         ...         "ts": [datetime(2011, 12, 29), datetime(2012, 1, 1)],
         ...     }
         ... )
-        >>> df = df.with_columns(pl.col("ts").dt.replace_time_zone("Pacific/Apia"))
-        >>> df.with_columns(pl.col("ts").dt.base_utc_offset().alias("base_utc_offset"))
+        >>> df = df.with_columns(
+        ...     pl.col("ts").dt.replace_time_zone("Pacific/Apia")
+        ... )
+        >>> df.with_columns(
+        ...     pl.col("ts").xdt.base_utc_offset().alias("base_utc_offset")
+        ... )
         shape: (2, 2)
         ┌────────────────────────────┬─────────────────┐
         │ ts                         ┆ base_utc_offset │
@@ -639,13 +644,16 @@ class ExprXDTNamespace:
         Examples
         --------
         >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
         >>> df = pl.DataFrame(
         ...     {
         ...         "ts": [datetime(2020, 10, 25), datetime(2020, 10, 26)],
         ...     }
         ... )
-        >>> df = df.with_columns(pl.col("ts").dt.replace_time_zone("Europe/London"))
-        >>> df.with_columns(pl.col("ts").dt.dst_offset().alias("dst_offset"))
+        >>> df = df.with_columns(
+        ...     pl.col("ts").dt.replace_time_zone("Europe/London")
+        ... )
+        >>> df.with_columns(pl.col("ts").xdt.dst_offset().alias("dst_offset"))
         shape: (2, 2)
         ┌─────────────────────────────┬──────────────┐
         │ ts                          ┆ dst_offset   │
@@ -663,6 +671,7 @@ class ExprXDTNamespace:
             args=[],
         )
         return cast(XDTExpr, result)
+
 
 class XDTExpr(pl.Expr):
     @property
