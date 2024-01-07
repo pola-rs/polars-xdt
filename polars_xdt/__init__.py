@@ -12,6 +12,8 @@ from polars.utils.udfs import _get_shared_lib_location
 
 from polars_xdt.ranges import date_range
 
+from ._internal import __version__
+
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
 else:
@@ -632,4 +634,5 @@ __all__ = [
     "col",
     "date_range",
     "workday_count",
+    "__version__",
 ]
