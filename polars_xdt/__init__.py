@@ -578,6 +578,100 @@ class ExprXDTNamespace:
         )
         return cast(XDTExpr, result)
 
+    def base_utc_offset(self) -> XDTExpr:
+        """
+        Base offset from UTC.
+
+        This is usually constant for all datetimes in a given time zone, but
+        may vary in the rare case that a country switches time zone, like
+        Samoa (Apia) did at the end of 2011.
+
+        Returns
+        -------
+        Expr
+            Expression of data type :class:`Duration`.
+
+        See Also
+        --------
+        Expr.dt.dst_offset : Daylight savings offset from UTC.
+
+        Examples
+        --------
+        >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "ts": [datetime(2011, 12, 29), datetime(2012, 1, 1)],
+        ...     }
+        ... )
+        >>> df = df.with_columns(
+        ...     pl.col("ts").dt.replace_time_zone("Pacific/Apia")
+        ... )
+        >>> df.with_columns(
+        ...     pl.col("ts").xdt.base_utc_offset().alias("base_utc_offset")
+        ... )
+        shape: (2, 2)
+        ┌────────────────────────────┬─────────────────┐
+        │ ts                         ┆ base_utc_offset │
+        │ ---                        ┆ ---             │
+        │ datetime[μs, Pacific/Apia] ┆ duration[ms]    │
+        ╞════════════════════════════╪═════════════════╡
+        │ 2011-12-29 00:00:00 -10    ┆ -11h            │
+        │ 2012-01-01 00:00:00 +14    ┆ 13h             │
+        └────────────────────────────┴─────────────────┘
+        """
+        result = self._expr.register_plugin(
+            lib=lib,
+            symbol="base_utc_offset",
+            is_elementwise=True,
+            args=[],
+        )
+        return cast(XDTExpr, result)
+
+    def dst_offset(self) -> XDTExpr:
+        """
+        Additional offset currently in effect (typically due to daylight saving time).
+
+        Returns
+        -------
+        Expr
+            Expression of data type :class:`Duration`.
+
+        See Also
+        --------
+        Expr.dt.base_utc_offset : Base offset from UTC.
+
+        Examples
+        --------
+        >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "ts": [datetime(2020, 10, 25), datetime(2020, 10, 26)],
+        ...     }
+        ... )
+        >>> df = df.with_columns(
+        ...     pl.col("ts").dt.replace_time_zone("Europe/London")
+        ... )
+        >>> df.with_columns(pl.col("ts").xdt.dst_offset().alias("dst_offset"))
+        shape: (2, 2)
+        ┌─────────────────────────────┬──────────────┐
+        │ ts                          ┆ dst_offset   │
+        │ ---                         ┆ ---          │
+        │ datetime[μs, Europe/London] ┆ duration[ms] │
+        ╞═════════════════════════════╪══════════════╡
+        │ 2020-10-25 00:00:00 BST     ┆ 1h           │
+        │ 2020-10-26 00:00:00 GMT     ┆ 0ms          │
+        └─────────────────────────────┴──────────────┘
+        """
+        result = self._expr.register_plugin(
+            lib=lib,
+            symbol="dst_offset",
+            is_elementwise=True,
+            args=[],
+        )
+        return cast(XDTExpr, result)
+
 
 class XDTExpr(pl.Expr):
     @property
