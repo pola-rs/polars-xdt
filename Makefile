@@ -17,7 +17,11 @@ pre-commit: venv
 	cargo fmt --all && cargo clippy --all-features
 	venv/bin/python -m ruff check .
 	venv/bin/python -m ruff format
-	venv/bin/python -m mypy polars_xdt
+	venv/bin/python -m mypy polars_xdt tests
+
+test: venv
+	venv/bin/python -m pytest tests
+	venv/bin/python -m pytest polars_xdt --doctest-modules
 
 run: install
 	source venv/bin/activate && python run.py

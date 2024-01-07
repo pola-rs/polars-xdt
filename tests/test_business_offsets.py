@@ -10,7 +10,7 @@ import numpy as np
 from hypothesis import given, assume, reject
 
 import polars as pl
-import polars_xdt  # noqa: F401
+import polars_xdt as xdt
 from polars.type_aliases import PolarsDataType
 
 
@@ -27,7 +27,7 @@ def get_result(
     if dtype == pl.Date:
         result = (
             pl.DataFrame({"ts": [date]})
-            .select(pl.col("ts").xdt.offset_by(by=by, **kwargs))["ts"]  # type: ignore[arg-type]
+            .select(xdt.col("ts").xdt.offset_by(by=by, **kwargs))["ts"]  # type: ignore[arg-type]
             .item()
         )
     else:
@@ -156,7 +156,7 @@ def test_extra_args(by: str, expected: dt.datetime) -> None:
     df = pl.DataFrame({"dates": [start]})
     result = (
         df.with_columns(
-            dates_shifted=pl.col("dates").xdt.offset_by(by=by)
+            dates_shifted=xdt.col("dates").xdt.offset_by(by=by)
         ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
     )["dates_shifted"].item()
     assert result == expected
@@ -167,7 +167,7 @@ def test_extra_args_w_series() -> None:
     df = pl.DataFrame({"dates": [start] * 2, "by": ["1bd2h", "-1bd1h"]})
     result = (
         df.with_columns(
-            dates_shifted=pl.col("dates").xdt.offset_by(by=pl.col("by"))
+            dates_shifted=xdt.col("dates").xdt.offset_by(by=pl.col("by"))
         ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
     )["dates_shifted"]
     assert result[0] == dt.datetime(2000, 1, 4, 2)
@@ -181,7 +181,7 @@ def test_starting_on_non_business() -> None:
     df = pl.DataFrame({"dates": [start]})
     with pytest.raises(pl.ComputeError):
         df.with_columns(
-            dates_shifted=pl.col("dates").xdt.offset_by(
+            dates_shifted=xdt.col("dates").xdt.offset_by(
                 by=f"{n}bd",
                 weekend=weekend,
             )
@@ -192,7 +192,7 @@ def test_starting_on_non_business() -> None:
     holidays = [start]
     with pytest.raises(pl.ComputeError):
         df.with_columns(
-            dates_shifted=pl.col("dates").xdt.offset_by(
+            dates_shifted=xdt.col("dates").xdt.offset_by(
                 by=f"{n}bd",
                 holidays=holidays,
                 weekend=weekend,
@@ -225,4 +225,4 @@ def test_invalid_roll_strategy() -> None:
         {"date": pl.date_range(dt.date(2023, 12, 1), dt.date(2023, 12, 5), eager=True)}
     )
     with pytest.raises(pl.ComputeError):
-        df.with_columns(pl.col("date").xdt.offset_by("1bd", roll="cabbage"))  # type: ignore[arg-type]
+        df.with_columns(xdt.col("date").xdt.offset_by("1bd", roll="cabbage"))  # type: ignore[arg-type]
