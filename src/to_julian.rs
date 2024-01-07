@@ -66,7 +66,6 @@ pub(crate) fn impl_to_julian_date(s: &Series) -> PolarsResult<Series> {
                 arr.into_iter()
                     .map(|timestamp_opt| {
                         timestamp_opt.map(|timestamp| {
-                            println!("timestamp: {}", *timestamp);
                             let ndt = timestamp_to_datetime(*timestamp);
                             to_julian_date(
                                 ndt.year(),
