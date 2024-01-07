@@ -32,33 +32,34 @@ docstring-code-format = true
 
 [tool.ruff]
 select = [
-    "E",
-    "F",
-    "W",
-    "D",
+  "ALL",
 ]
-
 ignore = [
-    "D100",
-    "D104",
-    "D107",
-    "D203",
-    "D205",
-    "D206",
-    "D213",
-    "D400",
-    "D401",
-    "D413",
-    "D415",
-    "E501",
-    "PT011",
-    "ANN002",
-    "ANN003",
-    "ANN101",
-    "ANN102",
-    "ANN204",
-    "C416",
-    "TD003",
+  'A003',
+  'ANN101',
+  'ANN401',
+  'ARG002',  # todo: enable
+  'ARG003',  # todo: enable
+  'C901',
+  'COM812',
+  'D',
+  'DTZ',
+  'E501',
+  'FBT003',  # todo: enable
+  'FIX',
+  'ISC001',
+  'PD',
+  'PLR0911',
+  'PLR0912',
+  'PLR5501',
+  'PLR2004',
+  'PT011',
+  'PTH',
+  'RET505',
+  'S',
+  'SLF001',
+  'TD',
+  'TRY004'
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
@@ -75,4 +76,5 @@ exclude = [
     ".ipynb",
     "venv",
 ]
+# Same as Black.
 line-length = 80

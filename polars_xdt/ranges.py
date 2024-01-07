@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from typing import overload
 import re
+from typing import TYPE_CHECKING, Literal, Sequence, overload
 
-from datetime import datetime, date, timedelta
-from typing import Literal, Sequence
 import polars as pl
-from polars.type_aliases import IntoExprColumn, ClosedInterval, TimeUnit
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
+
+if TYPE_CHECKING:
+    from datetime import date, datetime, timedelta
+
+    from polars.type_aliases import ClosedInterval, IntoExprColumn, TimeUnit
 
 
 @overload
@@ -59,7 +61,7 @@ def date_range(
     ...
 
 
-def date_range(
+def date_range(  # noqa: PLR0913
     start: date | datetime | IntoExprColumn,
     end: date | datetime | IntoExprColumn,
     interval: str | timedelta = "1bd",
@@ -142,9 +144,8 @@ def date_range(
         holidays = []
 
     if not (isinstance(interval, str) and re.match(r"^-?\d+bd$", interval)):
-        raise ValueError(
-            "Only intervals of the form 'nbd' (where n is an integer) are supported."
-        )
+        msg = "Only intervals of the form 'nbd' (where n is an integer) are supported."
+        raise ValueError(msg)
     interval = interval.replace("bd", "d")
 
     expr = pl.date_range(
