@@ -76,5 +76,4 @@ exclude = [
     ".ipynb",
     "venv",
 ]
-# Same as Black.
 line-length = 80
