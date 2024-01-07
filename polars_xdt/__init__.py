@@ -476,10 +476,10 @@ class ExprXDTNamespace:
         )
         return cast(XDTExpr, result)
 
-    def to_julian(self) -> XDTExpr:
+    def to_julian_date(self) -> XDTExpr:
         result = self._expr.register_plugin(
             lib=lib,
-            symbol="to_julian",
+            symbol="to_julian_date",
             is_elementwise=True,
             args=[],
         )

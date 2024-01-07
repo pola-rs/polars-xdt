@@ -106,7 +106,7 @@ fn format_localized(inputs: &[Series], kwargs: FormatLocalizedKwargs) -> PolarsR
 }
 
 #[polars_expr(output_type=Float64)]
-fn to_julian(inputs: &[Series]) -> PolarsResult<Series> {
+fn to_julian_date(inputs: &[Series]) -> PolarsResult<Series> {
     let s = &inputs[0];
-    impl_to_julian(s)
+    impl_to_julian_date(s)
 }
