@@ -3,6 +3,7 @@ use chrono::TimeZone;
 use chrono::{self, format::DelayedFormat};
 use polars::prelude::*;
 use polars_arrow::array::{MutableArray, MutableUtf8Array, Utf8Array};
+use polars_arrow::temporal_conversions::MILLISECONDS_IN_DAY;
 use std::fmt::Write;
 use std::str::FromStr;
 
@@ -28,6 +29,15 @@ fn timestamp_ns_to_datetime(timestamp: i64) -> chrono::NaiveDateTime {
     )
     .unwrap()
 }
+fn format_ndt(
+    ndt: chrono::NaiveDateTime,
+    format: &str,
+    locale: chrono::prelude::Locale,
+    tz: chrono_tz::Tz,
+) -> DelayedFormat<StrftimeItems<'_>> {
+    let dt = tz.from_utc_datetime(&ndt);
+    dt.format_localized(format, locale)
+}
 
 pub(crate) fn impl_format_localized(
     s: &Series,
@@ -42,19 +52,10 @@ pub(crate) fn impl_format_localized(
     let fmted = format!("{}", dt.format_localized(format, locale));
     let name = s.name();
 
-    match s.dtype() {
+    let mut ca: StringChunked = match s.dtype() {
         DataType::Date => {
             let ca = s.date()?;
-            fn format_ndt(
-                ndt: chrono::NaiveDateTime,
-                format: &str,
-                locale: chrono::prelude::Locale,
-                tz: chrono_tz::Tz,
-            ) -> DelayedFormat<StrftimeItems<'_>> {
-                let dt = tz.from_utc_datetime(&ndt);
-                dt.format_localized(format, locale)
-            }
-            let mut ca: StringChunked = ca.apply_kernel_cast(&|arr| {
+            ca.apply_kernel_cast(&|arr| {
                 let mut buf = String::new();
                 let mut mutarr =
                     MutableUtf8Array::with_capacities(arr.len(), arr.len() * fmted.len() + 1);
@@ -64,9 +65,8 @@ pub(crate) fn impl_format_localized(
                         None => mutarr.push_null(),
                         Some(timestamp) => {
                             buf.clear();
-                            let ndt = timestamp_ms_to_datetime(
-                                (*timestamp as i64) * 1_000 * 60 * 60 * 24,
-                            );
+                            let ndt =
+                                timestamp_ms_to_datetime((*timestamp as i64) * MILLISECONDS_IN_DAY);
                             let fmted = format_ndt(ndt, format, locale, chrono_tz::UTC);
                             write!(buf, "{fmted}").unwrap();
                             mutarr.push(Some(&buf))
@@ -76,9 +76,7 @@ pub(crate) fn impl_format_localized(
 
                 let arr: Utf8Array<i64> = mutarr.into();
                 Box::new(arr)
-            });
-            ca.rename(name);
-            Ok(ca.into_series())
+            })
         }
         DataType::Datetime(time_unit, time_zone) => {
             let ca = s.datetime()?;
@@ -91,16 +89,7 @@ pub(crate) fn impl_format_localized(
                 None => chrono_tz::UTC,
                 Some(tz) => chrono_tz::Tz::from_str(tz).unwrap(),
             };
-            fn format_ndt(
-                ndt: chrono::NaiveDateTime,
-                format: &str,
-                locale: chrono::prelude::Locale,
-                tz: chrono_tz::Tz,
-            ) -> DelayedFormat<StrftimeItems<'_>> {
-                let dt = tz.from_utc_datetime(&ndt);
-                dt.format_localized(format, locale)
-            }
-            let mut ca: StringChunked = ca.apply_kernel_cast(&|arr| {
+            ca.apply_kernel_cast(&|arr| {
                 let mut buf = String::new();
                 let mut mutarr =
                     MutableUtf8Array::with_capacities(arr.len(), arr.len() * fmted.len() + 1);
@@ -120,10 +109,10 @@ pub(crate) fn impl_format_localized(
 
                 let arr: Utf8Array<i64> = mutarr.into();
                 Box::new(arr)
-            });
-            ca.rename(name);
-            Ok(ca.into_series())
+            })
         }
         _ => unreachable!(),
-    }
+    };
+    ca.rename(name);
+    Ok(ca.into_series())
 }
