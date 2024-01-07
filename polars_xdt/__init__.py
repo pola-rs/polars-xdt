@@ -476,6 +476,15 @@ class ExprXDTNamespace:
         )
         return cast(XDTExpr, result)
 
+    def to_julian(self) -> XDTExpr:
+        result = self._expr.register_plugin(
+            lib=lib,
+            symbol="to_julian",
+            is_elementwise=True,
+            args=[],
+        )
+        return cast(XDTExpr, result)
+
     def ceil(
         self,
         every: str | pl.Expr,
@@ -540,6 +549,7 @@ class ExprXDTNamespace:
             .otherwise(truncated.dt.offset_by(every))
         )
         return cast(XDTExpr, result)
+    
 
 
 class XDTExpr(pl.Expr):

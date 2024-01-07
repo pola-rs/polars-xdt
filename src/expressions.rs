@@ -4,6 +4,7 @@ use crate::format_localized::*;
 use crate::is_workday::*;
 use crate::sub::*;
 use crate::timezone::*;
+use crate::to_julian::*;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use serde::Deserialize;
@@ -102,4 +103,10 @@ fn format_localized(inputs: &[Series], kwargs: FormatLocalizedKwargs) -> PolarsR
     let locale = kwargs.locale;
     let format = kwargs.format;
     impl_format_localized(s, &format, &locale)
+}
+
+#[polars_expr(output_type=Float64)]
+fn to_julian(inputs: &[Series]) -> PolarsResult<Series> {
+    let s = &inputs[0];
+    impl_to_julian(s)
 }
