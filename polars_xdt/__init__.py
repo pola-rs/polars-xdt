@@ -593,7 +593,7 @@ class ExprXDTNamespace:
 
         See Also
         --------
-        Expr.dt.dst_offset : Daylight savings offset from UTC.
+        dst_offset : Daylight savings offset from UTC.
 
         Examples
         --------
@@ -639,7 +639,7 @@ class ExprXDTNamespace:
 
         See Also
         --------
-        Expr.dt.base_utc_offset : Base offset from UTC.
+        base_utc_offset : Base offset from UTC.
 
         Examples
         --------
