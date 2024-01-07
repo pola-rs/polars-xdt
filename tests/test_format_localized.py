@@ -48,3 +48,14 @@ def test_tz_aware() -> None:
     result = (df.select(result=xdt.col("date_col").xdt.format_localized("%A, %d %B %Y %z", "uk_UA")))
     assert result['result'][0] == 'субота, 24 серпня 2024 +0100'
     assert result['result'][1] == 'вівторок, 01 жовтня 2024 +0100'
+
+@pytest.mark.parametrize('time_unit', ['ms', 'us', 'ns'])
+def test_pre_epoch(time_unit: TimeUnit) -> None:
+    df = pl.DataFrame(
+        {
+            "date_col": [datetime(1960, 1, 1, 0, 0, 0, 1)],
+        },
+        schema={"date_col": pl.Datetime(time_unit, "Europe/London")},
+    )
+    result = (df.select(result=xdt.col("date_col").xdt.format_localized("%A, %d %B %Y %z", "en_US")))
+    assert result['result'][0] == 'Friday, 01 January 1960 +0000'

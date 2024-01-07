@@ -9,25 +9,25 @@ use std::str::FromStr;
 
 fn timestamp_ms_to_datetime(timestamp: i64) -> chrono::NaiveDateTime {
     // Just unwrap because we know that the timestamp is from a valid datetime
-    chrono::NaiveDateTime::from_timestamp_opt(
-        timestamp / 1_000,
-        (timestamp % 1_000 * 1_000_000) as u32,
-    )
-    .unwrap()
+    let mut nsecs = timestamp % 1_000 * 1_000_000;
+    if nsecs < 0 {
+        nsecs += 1_000_000_000;
+    }
+    chrono::NaiveDateTime::from_timestamp_opt(timestamp / 1_000, (nsecs) as u32).unwrap()
 }
 fn timestamp_us_to_datetime(timestamp: i64) -> chrono::NaiveDateTime {
-    chrono::NaiveDateTime::from_timestamp_opt(
-        timestamp / 1_000_000,
-        (timestamp % 1_000_000 * 1_000) as u32,
-    )
-    .unwrap()
+    let mut nsecs = timestamp % 1_000_000 * 1_000;
+    if nsecs < 0 {
+        nsecs += 1_000_000_000;
+    }
+    chrono::NaiveDateTime::from_timestamp_opt(timestamp / 1_000_000, (nsecs) as u32).unwrap()
 }
 fn timestamp_ns_to_datetime(timestamp: i64) -> chrono::NaiveDateTime {
-    chrono::NaiveDateTime::from_timestamp_opt(
-        timestamp / 1_000_000_000,
-        (timestamp % 1_000_000_000) as u32,
-    )
-    .unwrap()
+    let mut nsecs = timestamp % 1_000_000_000;
+    if nsecs < 0 {
+        nsecs += 1_000_000_000;
+    }
+    chrono::NaiveDateTime::from_timestamp_opt(timestamp / 1_000_000_000, (nsecs) as u32).unwrap()
 }
 fn format_ndt(
     ndt: chrono::NaiveDateTime,
