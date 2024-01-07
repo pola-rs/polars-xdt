@@ -14,10 +14,11 @@
 
 eXtra stuff for DateTimes in [Polars](https://www.pola.rs/).
 
-- ✅ blazingly fast, written in Rust!
-- ✅ custom business-day arithmetic!
-- ✅ convert to and from multiple time zones!
-- ✅ format datetime in different locales!
+- ✅ blazingly fast, written in Rust
+- ✅ custom business-day arithmetic
+- ✅ convert to and from multiple time zones
+- ✅ format datetime in different locales
+- ✅ convert to Julian Dates
 
 Installation
 ------------
