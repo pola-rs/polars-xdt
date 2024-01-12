@@ -672,6 +672,92 @@ class ExprXDTNamespace:
         )
         return cast(XDTExpr, result)
 
+    def day_name(self, locale: str | None = None) -> XDTExpr:
+        """
+        Return day name, in specified locale (if specified).
+
+        Returns
+        -------
+        Expr
+            Expression of data type :class:`Utf8`.
+
+        See Also
+        --------
+        format_localized : Base offset from UTC.
+
+        Examples
+        --------
+        >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "ts": [datetime(2020, 10, 25), datetime(2020, 10, 26)],
+        ...     }
+        ... )
+        >>> df.with_columns(
+        ...     english_day_name=pl.col("ts").xdt.day_name(),
+        ...     french_day_name=pl.col("ts").xdt.day_name("fr_FR"),
+        ...     ukrainian_day_name=pl.col("ts").xdt.day_name("uk_UA"),
+        ... )
+        shape: (2, 4)
+        ┌─────────────────────┬──────────────────┬─────────────────┬────────────────────┐
+        │ ts                  ┆ english_day_name ┆ french_day_name ┆ ukrainian_day_name │
+        │ ---                 ┆ ---              ┆ ---             ┆ ---                │
+        │ datetime[μs]        ┆ str              ┆ str             ┆ str                │
+        ╞═════════════════════╪══════════════════╪═════════════════╪════════════════════╡
+        │ 2020-10-25 00:00:00 ┆ Sunday           ┆ dimanche        ┆ неділя             │
+        │ 2020-10-26 00:00:00 ┆ Monday           ┆ lundi           ┆ понеділок          │
+        └─────────────────────┴──────────────────┴─────────────────┴────────────────────┘
+        """
+        if locale is None:
+            result = self._expr.dt.to_string("%A")
+        else:
+            result = self._expr.xdt.format_localized("%A", locale=locale)  # type: ignore[attr-defined]
+        return cast(XDTExpr, result)
+
+    def month_name(self, locale: str | None = None) -> XDTExpr:
+        """
+        Return month name, in specified locale (if specified).
+
+        Returns
+        -------
+        Expr
+            Expression of data type :class:`Utf8`.
+
+        See Also
+        --------
+        format_localized : Base offset from UTC.
+
+        Examples
+        --------
+        >>> from datetime import datetime
+        >>> import polars_xdt  # noqa: F401
+        >>> df = pl.DataFrame(
+        ...     {
+        ...         "ts": [datetime(2020, 10, 25), datetime(2020, 11, 26)],
+        ...     }
+        ... )
+        >>> df.with_columns(
+        ...     english_month_name=pl.col("ts").xdt.month_name(),
+        ...     french_month_name=pl.col("ts").xdt.month_name("fr_FR"),
+        ...     ukrainian_month_name=pl.col("ts").xdt.month_name("uk_UA"),
+        ... )
+        shape: (2, 4)
+        ┌─────────────────────┬────────────────────┬───────────────────┬──────────────────────┐
+        │ ts                  ┆ english_month_name ┆ french_month_name ┆ ukrainian_month_name │
+        │ ---                 ┆ ---                ┆ ---               ┆ ---                  │
+        │ datetime[μs]        ┆ str                ┆ str               ┆ str                  │
+        ╞═════════════════════╪════════════════════╪═══════════════════╪══════════════════════╡
+        │ 2020-10-25 00:00:00 ┆ October            ┆ octobre           ┆ жовтня               │
+        │ 2020-11-26 00:00:00 ┆ November           ┆ novembre          ┆ листопада            │
+        └─────────────────────┴────────────────────┴───────────────────┴──────────────────────┘
+        """
+        if locale is None:
+            result = self._expr.dt.to_string("%B")
+        else:
+            result = self._expr.xdt.format_localized("%B", locale=locale)  # type: ignore[attr-defined]
+        return cast(XDTExpr, result)
+
 
 class XDTExpr(pl.Expr):
     @property
