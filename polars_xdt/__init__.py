@@ -683,7 +683,7 @@ class ExprXDTNamespace:
 
         See Also
         --------
-        format_localized : Base offset from UTC.
+        format_localized : format according to locale.
 
         Examples
         --------
@@ -726,7 +726,7 @@ class ExprXDTNamespace:
 
         See Also
         --------
-        format_localized : Base offset from UTC.
+        format_localized : format according to locale.
 
         Examples
         --------
