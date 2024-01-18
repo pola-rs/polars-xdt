@@ -1,6 +1,5 @@
 use crate::business_days::weekday;
 use polars::prelude::*;
-use pyo3_polars::export::polars_core::utils::{arrow::array::BooleanArray, CustomIterTools};
 
 fn is_workday_date(date: i32, weekmask: &[bool; 7], holidays: &[i32]) -> bool {
     return unsafe { *weekmask.get_unchecked(weekday(date) as usize - 1) }
@@ -15,12 +14,9 @@ pub(crate) fn impl_is_workday(
     match dates.dtype() {
         DataType::Date => {
             let ca = dates.date()?;
-            let chunks = ca.downcast_iter().map(|arr| -> BooleanArray {
-                arr.into_iter()
-                    .map(|date| date.map(|date| is_workday_date(*date, weekmask, holidays)))
-                    .collect_trusted()
-            });
-            Ok(BooleanChunked::from_chunk_iter(ca.name(), chunks).into_series())
+            let out: BooleanChunked =
+                ca.apply_values_generic(|date| is_workday_date(date, weekmask, holidays));
+            Ok(out.into_series())
         }
         DataType::Datetime(time_unit, _time_zone) => {
             let multiplier = match time_unit {
@@ -33,20 +29,13 @@ pub(crate) fn impl_is_workday(
                 None,
                 &StringChunked::from_iter(std::iter::once("raise")),
             )?;
-            let chunks = ca.downcast_iter().map(|arr| -> BooleanArray {
-                arr.into_iter()
-                    .map(|date| {
-                        date.map(|date| {
-                            is_workday_date((*date / multiplier) as i32, weekmask, holidays)
-                        })
-                    })
-                    .collect_trusted()
+            let out: BooleanChunked = ca.apply_values_generic(|date| {
+                is_workday_date((date / multiplier) as i32, weekmask, holidays)
             });
-            Ok(BooleanChunked::from_chunk_iter(ca.name(), chunks).into_series())
+            Ok(out.into_series())
         }
         _ => {
-            polars_bail!(InvalidOperation: "polars_xdt is_workday currently only works on Date type. \
-            For now, please cast to Date first.")
+            polars_bail!(InvalidOperation: "polars_xdt is_workday only works on Date/Datetime type.")
         }
     }
 }
