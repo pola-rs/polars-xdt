@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import polars_xdt.namespace  # noqa: F401
 from polars_xdt.functions import (
     ceil,
     day_name,
