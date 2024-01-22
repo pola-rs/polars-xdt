@@ -122,8 +122,8 @@ def test_sub_lit() -> None:
     result = df.select(
         xdt.workday_count(pl.lit(dt.date(2020, 1, 1)), "end")
     )
-    assert result["end"][0] == 2
-    assert result["end"][1] == 3
+    assert result["literal"][0] == 2
+    assert result["literal"][1] == 3
 
 
 def test_workday_count() -> None:

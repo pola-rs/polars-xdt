@@ -197,23 +197,7 @@ def sub(
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
 ) -> pl.Expr:
-    weekmask = get_weekmask(weekend)
-    if not holidays:
-        holidays_int = []
-    else:
-        holidays_int = sorted(
-            {(holiday - date(1970, 1, 1)).days for holiday in holidays},
-        )
-    return expr.register_plugin(
-        lib=lib,
-        symbol="sub",
-        is_elementwise=True,
-        args=[end_dates],
-        kwargs={
-            "weekmask": weekmask,
-            "holidays": holidays_int,
-        },
-    )
+    ...
 
 def is_workday(
     expr: str | pl.Expr,
@@ -697,7 +681,7 @@ def workday_count(
     end: str | pl.Expr | date,
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
-) -> XDTExpr:
+) -> pl.Expr:
     """Count the number of workdays between two columns of dates.
 
     Parameters
@@ -750,7 +734,23 @@ def workday_count(
     elif not isinstance(end, pl.Expr):
         end = pl.lit(end)
 
-    return sub(end, start, weekend=weekend, holidays=holidays)  # type: ignore[no-any-return, attr-defined]
+    weekmask = get_weekmask(weekend)
+    if not holidays:
+        holidays_int = []
+    else:
+        holidays_int = sorted(
+            {(holiday - date(1970, 1, 1)).days for holiday in holidays},
+        )
+    return start.register_plugin(
+        lib=lib,
+        symbol="sub",
+        is_elementwise=True,
+        args=[end],
+        kwargs={
+            "weekmask": weekmask,
+            "holidays": holidays_int,
+        },
+    )
 
 
 __all__ = [

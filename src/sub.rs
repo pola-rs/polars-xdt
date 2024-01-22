@@ -49,8 +49,8 @@ fn date_diff(
 }
 
 pub(crate) fn impl_sub(
-    end_dates: &Series,
     start_dates: &Series,
+    end_dates: &Series,
     weekmask: &[bool; 7],
     holidays: Vec<i32>,
 ) -> PolarsResult<Series> {
