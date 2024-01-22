@@ -74,12 +74,12 @@ fn advance_n_days(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<
 }
 
 #[polars_expr(output_type=Int32)]
-fn sub(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<Series> {
+fn workday_count(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<Series> {
     let begin_dates = &inputs[0];
     let end_dates = &inputs[1];
     let weekmask = kwargs.weekmask;
     let holidays = kwargs.holidays;
-    impl_sub(begin_dates, end_dates, &weekmask, holidays)
+    impl_workday_count(begin_dates, end_dates, &weekmask, holidays)
 }
 
 #[polars_expr(output_type=Boolean)]

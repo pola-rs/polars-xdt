@@ -48,7 +48,7 @@ fn date_diff(
     }
 }
 
-pub(crate) fn impl_sub(
+pub(crate) fn impl_workday_count(
     start_dates: &Series,
     end_dates: &Series,
     weekmask: &[bool; 7],

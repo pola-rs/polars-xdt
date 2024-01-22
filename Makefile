@@ -16,7 +16,7 @@ install-release: venv
 pre-commit: venv
 	cargo fmt --all && cargo clippy --all-features
 	venv/bin/python -m ruff check . --fix --exit-non-zero-on-fix
-	venv/bin/python -m ruff format
+	venv/bin/python -m ruff format polars_xdt tests
 	venv/bin/python -m mypy polars_xdt tests
 
 test: venv

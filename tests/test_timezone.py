@@ -39,7 +39,7 @@ def test_convert_tz_to_local_datetime(
     expected = df.with_columns(pl.lit(local_date).alias("local_dt"))
 
     result = df.with_columns(
-        xdt.to_local_datetime('date', pl.col("timezone")).alias("local_dt")
+        xdt.to_local_datetime("date", pl.col("timezone")).alias("local_dt")
     )
 
     assert_frame_equal(result, expected)
@@ -75,8 +75,9 @@ def test_convert_tz_from_local_datetime(
     )
 
     result = df.with_columns(
-        xdt.from_local_datetime('local_date', pl.col("timezone"), "Europe/London")
-        .alias("date")
+        xdt.from_local_datetime(
+            "local_date", pl.col("timezone"), "Europe/London"
+        ).alias("date")
     )
 
     assert_frame_equal(result, expected)
@@ -92,8 +93,9 @@ def test_convert_tz_from_local_datetime_literal() -> None:
     )
 
     result = df.with_columns(
-        xdt.from_local_datetime('local_date', "America/New_York", "Europe/London")
-        .alias("date")
+        xdt.from_local_datetime(
+            "local_date", "America/New_York", "Europe/London"
+        ).alias("date")
     )
     assert_frame_equal(result, expected)
 
@@ -103,7 +105,9 @@ def test_convert_tz_to_local_datetime_literal() -> None:
         {"date": [datetime(2020, 10, 15, tzinfo=timezone.utc)]}
     ).with_columns(pl.col("date").dt.convert_time_zone("Europe/London"))
 
-    expected = df.with_columns(pl.lit(datetime(2020, 10, 14, 20, 0)).alias("local_dt"))
+    expected = df.with_columns(
+        pl.lit(datetime(2020, 10, 14, 20, 0)).alias("local_dt")
+    )
 
     result = df.with_columns(
         xdt.to_local_datetime("date", "America/New_York").alias("local_dt")

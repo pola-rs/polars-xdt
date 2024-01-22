@@ -23,14 +23,22 @@ def get_result(
 ) -> int:
     return (  # type: ignore[no-any-return]
         pl.DataFrame({"end_date": [end_date]})
-        .select(n=xdt.workday_count(start_date, "end_date", weekend=weekend, holidays=holidays))["n"]  # type: ignore[arg-type]
+        .select(
+            n=xdt.workday_count(
+                start_date, "end_date", weekend=weekend, holidays=holidays
+            )
+        )["n"]  # type: ignore[arg-type]
         .item()
     )
 
 
 @given(
-    start_date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
-    end_date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+    start_date=st.dates(
+        min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)
+    ),
+    end_date=st.dates(
+        min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)
+    ),
     function=st.sampled_from([lambda x: x, lambda x: pl.Series([x])]),
     weekend=st.lists(
         st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
@@ -39,7 +47,9 @@ def get_result(
         unique=True,
     ),
     holidays=st.lists(
-        st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+        st.dates(
+            min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)
+        ),
         min_size=1,
         max_size=300,
     ),
@@ -51,9 +61,13 @@ def test_against_np_busday_count(
     holidays: list[dt.date],
     function: Callable[[dt.date], dt.date | pl.Series],
 ) -> None:
-    result = get_result( function(start_date), end_date, weekend=weekend, holidays=holidays)
+    result = get_result(
+        function(start_date), end_date, weekend=weekend, holidays=holidays
+    )
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
-    expected = np.busday_count( start_date, end_date, weekmask=weekmask, holidays=holidays)
+    expected = np.busday_count(
+        start_date, end_date, weekmask=weekmask, holidays=holidays
+    )
     if start_date > end_date and tuple(
         int(v) for v in np.__version__.split(".")[:2]
     ) < (1, 25):
@@ -63,8 +77,12 @@ def test_against_np_busday_count(
 
 
 @given(
-    start_date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
-    end_date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+    start_date=st.dates(
+        min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)
+    ),
+    end_date=st.dates(
+        min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)
+    ),
     weekend=st.lists(
         st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
         min_size=0,
@@ -72,7 +90,9 @@ def test_against_np_busday_count(
         unique=True,
     ),
     holidays=st.lists(
-        st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+        st.dates(
+            min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)
+        ),
         min_size=1,
         max_size=300,
     ),
@@ -84,7 +104,9 @@ def test_against_naive_python(
     holidays: list[dt.date],
 ) -> None:
     assume(end_date > start_date)
-    result = get_result(start_date, end_date, weekend=weekend, holidays=holidays)
+    result = get_result(
+        start_date, end_date, weekend=weekend, holidays=holidays
+    )
     expected = 0
     start_date_copy = start_date
     while start_date_copy < end_date:
@@ -108,7 +130,10 @@ def test_empty_weekmask() -> None:
     )
     with pytest.raises(ValueError):
         df.select(
-            xdt.workday_count("start", "end", weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            xdt.workday_count(
+                "start",
+                "end",
+                weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
             )
         )
 
@@ -119,9 +144,7 @@ def test_sub_lit() -> None:
             "end": [dt.date(2020, 1, 3), dt.date(2020, 1, 5)],
         }
     )
-    result = df.select(
-        xdt.workday_count(pl.lit(dt.date(2020, 1, 1)), "end")
-    )
+    result = df.select(xdt.workday_count(pl.lit(dt.date(2020, 1, 1)), "end"))
     assert result["literal"][0] == 2
     assert result["literal"][1] == 3
 
@@ -136,9 +159,13 @@ def test_workday_count() -> None:
     result = df.with_columns(workday_count=xdt.workday_count("start", "end"))
     assert result["workday_count"][0] == 3
     assert result["workday_count"][1] == 10
-    result = df.with_columns(workday_count=xdt.workday_count("start", dt.date(2020, 1, 8)))
+    result = df.with_columns(
+        workday_count=xdt.workday_count("start", dt.date(2020, 1, 8))
+    )
     assert result["workday_count"][0] == 3
     assert result["workday_count"][1] == 2
-    result = df.with_columns(workday_count=xdt.workday_count(dt.date(2020, 1, 5), pl.col("end")))
+    result = df.with_columns(
+        workday_count=xdt.workday_count(dt.date(2020, 1, 5), pl.col("end"))
+    )
     assert result["workday_count"][0] == 2
     assert result["workday_count"][1] == 10
