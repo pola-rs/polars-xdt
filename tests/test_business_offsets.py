@@ -27,7 +27,7 @@ def get_result(
     if dtype == pl.Date:
         result = (
             pl.DataFrame({"ts": [date]})
-            .select(xdt.col("ts").xdt.offset_by(by=by, **kwargs))["ts"]  # type: ignore[arg-type]
+            .select(xdt.offset_by('ts', by=by, **kwargs))["ts"]  # type: ignore[arg-type]
             .item()
         )
     else:
@@ -35,10 +35,10 @@ def get_result(
             result = (
                 pl.DataFrame({"ts": [dt.datetime(date.year, date.month, date.day)]})
                 .select(
-                    pl.col("ts")
+                    xdt.offset_by(pl.col("ts")
                     .dt.cast_time_unit(dtype.time_unit)  # type: ignore[union-attr]
                     .dt.replace_time_zone(dtype.time_zone)  # type: ignore[union-attr]
-                    .xdt.offset_by(by=by, **kwargs)  # type: ignore[attr-defined]
+                    , by=by, **kwargs)
                     .dt.date()
                 )["ts"]
                 .item()
@@ -156,7 +156,7 @@ def test_extra_args(by: str, expected: dt.datetime) -> None:
     df = pl.DataFrame({"dates": [start]})
     result = (
         df.with_columns(
-            dates_shifted=xdt.col("dates").xdt.offset_by(by=by)
+            dates_shifted=xdt.offset_by('dates', by=by)
         ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
     )["dates_shifted"].item()
     assert result == expected
@@ -167,7 +167,7 @@ def test_extra_args_w_series() -> None:
     df = pl.DataFrame({"dates": [start] * 2, "by": ["1bd2h", "-1bd1h"]})
     result = (
         df.with_columns(
-            dates_shifted=xdt.col("dates").xdt.offset_by(by=pl.col("by"))
+            dates_shifted=xdt.offset_by('dates', by=pl.col("by"))
         ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
     )["dates_shifted"]
     assert result[0] == dt.datetime(2000, 1, 4, 2)
@@ -181,7 +181,7 @@ def test_starting_on_non_business() -> None:
     df = pl.DataFrame({"dates": [start]})
     with pytest.raises(pl.ComputeError):
         df.with_columns(
-            dates_shifted=xdt.col("dates").xdt.offset_by(
+            dates_shifted=xdt.offset_by('dates', 
                 by=f"{n}bd",
                 weekend=weekend,
             )
@@ -192,7 +192,7 @@ def test_starting_on_non_business() -> None:
     holidays = [start]
     with pytest.raises(pl.ComputeError):
         df.with_columns(
-            dates_shifted=xdt.col("dates").xdt.offset_by(
+            dates_shifted=xdt.offset_by('dates',
                 by=f"{n}bd",
                 holidays=holidays,
                 weekend=weekend,
@@ -206,8 +206,8 @@ def test_within_group_by() -> None:
 
     result = (
         df.group_by(["a"]).agg(
-            minDate=pl.col.date.min().xdt.offset_by("-3bd"),  # type: ignore[attr-defined]
-            maxDate=pl.col.date.max().xdt.offset_by("3bd"),  # type: ignore[attr-defined]
+            minDate=xdt.offset_by(pl.col.date.min(), "-3bd"),  # type: ignore[attr-defined]
+            maxDate=xdt.offset_by(pl.col.date.max(), "3bd"),  # type: ignore[attr-defined]
         )
     ).sort("a", descending=True)
     expected = pl.DataFrame(
@@ -225,4 +225,4 @@ def test_invalid_roll_strategy() -> None:
         {"date": pl.date_range(dt.date(2023, 12, 1), dt.date(2023, 12, 5), eager=True)}
     )
     with pytest.raises(pl.ComputeError):
-        df.with_columns(xdt.col("date").xdt.offset_by("1bd", roll="cabbage"))  # type: ignore[arg-type]
+        df.with_columns(xdt.offset_by('date', "1bd", roll="cabbage"))  # type: ignore[arg-type]

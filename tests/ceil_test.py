@@ -1,5 +1,4 @@
 from datetime import datetime
-import pytest
 import polars as pl
 import polars_xdt as xdt
 
@@ -12,6 +11,6 @@ def test_ceil() -> None:
         },
         schema={"date_col": pl.Datetime("ms")},
     )
-    result = df.select(result=xdt.col('date_col').xdt.ceil('1mo'))['result']
+    result = df.select(result=xdt.ceil('date_col', '1mo'))['result']
     assert result[0] == datetime(2024, 9, 1, 0, 0, 0, 0)
     assert result[1] == datetime(2024, 10, 1, 0, 0, 0, 0)

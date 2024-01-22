@@ -23,7 +23,7 @@ def get_result(
 ) -> int:
     return (  # type: ignore[no-any-return]
         pl.DataFrame({"end_date": [end_date]})
-        .select(n=xdt.col("end_date").xdt.sub(start_date, weekend=weekend, holidays=holidays))["n"]  # type: ignore[arg-type]
+        .select(n=xdt.workday_count(start_date, "end_date", weekend=weekend, holidays=holidays))["n"]  # type: ignore[arg-type]
         .item()
     )
 
@@ -51,13 +51,9 @@ def test_against_np_busday_count(
     holidays: list[dt.date],
     function: Callable[[dt.date], dt.date | pl.Series],
 ) -> None:
-    result = get_result(
-        function(start_date), end_date, weekend=weekend, holidays=holidays
-    )
+    result = get_result( function(start_date), end_date, weekend=weekend, holidays=holidays)
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
-    expected = np.busday_count(
-        start_date, end_date, weekmask=weekmask, holidays=holidays
-    )
+    expected = np.busday_count( start_date, end_date, weekmask=weekmask, holidays=holidays)
     if start_date > end_date and tuple(
         int(v) for v in np.__version__.split(".")[:2]
     ) < (1, 25):
@@ -112,8 +108,7 @@ def test_empty_weekmask() -> None:
     )
     with pytest.raises(ValueError):
         df.select(
-            xdt.col("end").xdt.sub(
-                "start", weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            xdt.workday_count("start", "end", weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
             )
         )
 
@@ -125,9 +120,7 @@ def test_sub_lit() -> None:
         }
     )
     result = df.select(
-        xdt.col("end").xdt.sub(
-            pl.lit(dt.date(2020, 1, 1)),
-        )
+        xdt.workday_count(pl.lit(dt.date(2020, 1, 1)), "end")
     )
     assert result["end"][0] == 2
     assert result["end"][1] == 3
@@ -140,12 +133,12 @@ def test_workday_count() -> None:
             "end": [dt.date(2020, 1, 8), dt.date(2020, 1, 20)],
         }
     )
-    result = df.with_columns(xdt.workday_count("start", "end"))
+    result = df.with_columns(workday_count=xdt.workday_count("start", "end"))
     assert result["workday_count"][0] == 3
     assert result["workday_count"][1] == 10
-    result = df.with_columns(xdt.workday_count("start", dt.date(2020, 1, 8)))
+    result = df.with_columns(workday_count=xdt.workday_count("start", dt.date(2020, 1, 8)))
     assert result["workday_count"][0] == 3
     assert result["workday_count"][1] == 2
-    result = df.with_columns(xdt.workday_count(dt.date(2020, 1, 5), pl.col("end")))
+    result = df.with_columns(workday_count=xdt.workday_count(dt.date(2020, 1, 5), pl.col("end")))
     assert result["workday_count"][0] == 2
     assert result["workday_count"][1] == 10

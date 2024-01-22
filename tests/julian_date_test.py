@@ -18,7 +18,7 @@ def test_against_pandas(
     date: dt.date,
 ) -> None:
     df = pl.DataFrame({'a': [date]}, schema={'a': pl.Datetime('ms')})
-    result = df.select(xdt.col('a').xdt.to_julian_date())['a'].item()
+    result = df.select(xdt.to_julian_date('a'))['a'].item()
     expected = pd.Timestamp(df['a'].item()).to_julian_date()
     assert result == expected
 
@@ -29,6 +29,6 @@ def test_against_pandas_date(
     date: dt.date,
 ) -> None:
     df = pl.DataFrame({'a': [date]})
-    result = df.select(xdt.col('a').xdt.to_julian_date())['a'].item()
+    result = df.select(xdt.to_julian_date('a'))['a'].item()
     expected = pd.Timestamp(df['a'].item()).to_julian_date()
     assert result == expected

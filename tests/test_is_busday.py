@@ -20,7 +20,7 @@ def get_result(
 ) -> int:
     return (  # type: ignore[no-any-return]
         pl.DataFrame({"date": [date]})
-        .select(xdt.col("date").xdt.is_workday(weekend=weekend, holidays=holidays))[
+        .select(xdt.is_workday('date', weekend=weekend, holidays=holidays))[
             "date"
         ]
         .item()
