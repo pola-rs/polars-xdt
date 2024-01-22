@@ -73,7 +73,8 @@ def date_range(  # noqa: PLR0913
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
 ) -> pl.Series | pl.Expr:
-    """Create a range of dates with a given interval and filter out weekends and holidays.
+    """
+    Create a range of dates with a given interval and filter out weekends and holidays.
 
     Parameters
     ----------

@@ -30,16 +30,6 @@ Then, you'll need to install `polars-xdt`:
 pip install polars-xdt
 ```
 
-Then, if you can run
-```python
-import polars as pl
-import polars_xdt  # noqa: F401
-
-print(pl.col('a').xdt)
-```
-and see something like `<polars_xdt.ExprXDTNamespace at 0x7f5bc943fc10>`,
-it means installation all worked correctly!
-
 Read the [documentation](https://marcogorelli.github.io/polars-xdt-docs/) for a little tutorial and API reference.
 
 Basic Example
@@ -49,7 +39,7 @@ Say we start with
 from datetime import date
 
 import polars as pl
-import polars_xdt  # noqa: F401
+import polars_xdt as xdt
 
 
 df = pl.DataFrame(
@@ -61,7 +51,8 @@ Let's shift `Date` forwards by 5 days, excluding Saturday and Sunday:
 
 ```python
 result = df.with_columns(
-    date_shifted=pl.col("date").xdt.offset_by(
+    date_shifted=xdt.offset_by(
+      'date',
       '5bd',
       weekend=('Sat', 'Sun'),
     )
@@ -80,6 +71,9 @@ shape: (3, 2)
 │ 2024-01-04 ┆ 2024-01-11   │
 └────────────┴──────────────┘
 ```
+Note that `polars-xdt` also registers a `xdt` namespace in the `Expression` class, so you
+could equivalently write the above using `pl.col('date').xdt.offset_by('5bd')` (but note
+that then type-checking would not recognise the `xdt` attribute).
 
 Read the [documentation](https://marcogorelli.github.io/polars-xdt-docs/) for more examples!
 

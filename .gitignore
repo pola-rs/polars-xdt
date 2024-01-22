@@ -10,4 +10,5 @@ rust-toolchain.toml
 *.bat
 *.js
 docs/_build
+docs/api/*
 *.so

@@ -36,9 +36,9 @@ def test_expr() -> None:
             date(2023, 1, 10),
         ],
     )
-    result = pl.select(xdt.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True))[
-        "literal"
-    ]
+    result = pl.select(
+        xdt.date_range(date(2023, 1, 1), date(2023, 1, 10), eager=True)
+    )["literal"]
     assert_series_equal(result, expected)
 
 

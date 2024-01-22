@@ -20,7 +20,7 @@ def get_result(
 ) -> int:
     return (  # type: ignore[no-any-return]
         pl.DataFrame({"date": [date]})
-        .select(xdt.col("date").xdt.is_workday(weekend=weekend, holidays=holidays))[
+        .select(xdt.is_workday("date", weekend=weekend, holidays=holidays))[
             "date"
         ]
         .item()
@@ -28,7 +28,9 @@ def get_result(
 
 
 @given(
-    date=st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+    date=st.dates(
+        min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)
+    ),
     weekend=st.lists(
         st.sampled_from(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]),
         min_size=0,
@@ -36,7 +38,9 @@ def get_result(
         unique=True,
     ),
     holidays=st.lists(
-        st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+        st.dates(
+            min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)
+        ),
         min_size=1,
         max_size=300,
     ),
@@ -63,7 +67,9 @@ def test_against_np_is_busday(
         unique=True,
     ),
     holidays=st.lists(
-        st.dates(min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)),
+        st.dates(
+            min_value=dt.date(2000, 1, 1), max_value=dt.date(2000, 12, 31)
+        ),
         min_size=1,
         max_size=300,
     ),
