@@ -6,9 +6,8 @@ from datetime import date
 from typing import TYPE_CHECKING, Literal, Sequence
 
 import polars as pl
-from polars.utils._parse_expr_input import parse_as_expression
-from polars.utils._wrap import wrap_expr
 from polars.utils.udfs import _get_shared_lib_location
+from polars_xdt.utils import parse_into_expr
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
@@ -144,7 +143,7 @@ def offset_by(
         │ 2024-01-04 ┆ -3bd ┆ 2024-01-01   │
         └────────────┴──────┴──────────────┘
     """
-    expr = wrap_expr(parse_as_expression(expr))
+    expr = parse_into_expr(expr)
     if (
         isinstance(by, str)
         and (match := re.search(r"(\d+bd)", by)) is not None
@@ -232,7 +231,7 @@ def is_workday(
     │ 2023-09-09 ┆ false      │
     └────────────┴────────────┘
     """
-    expr = wrap_expr(parse_as_expression(expr))
+    expr = parse_into_expr(expr)
     weekmask = get_weekmask(weekend)
     if not holidays:
         holidays_int = []
@@ -315,8 +314,8 @@ def from_local_datetime(
     │ 2020-10-09 20:00:00 ┆ America/New_York ┆ 2020-10-10 00:00:00 UTC │
     └─────────────────────┴──────────────────┴─────────────────────────┘
     """
-    expr = wrap_expr(parse_as_expression(expr))
-    from_tz = wrap_expr(parse_as_expression(from_tz, str_as_lit=True))
+    expr = parse_into_expr(expr)
+    from_tz = parse_into_expr(from_tz, str_as_lit=True)
     return expr.register_plugin(
         lib=lib,
         symbol="from_local_datetime",
@@ -378,8 +377,8 @@ def to_local_datetime(
     │ 2020-10-10 00:00:00 UTC ┆ America/New_York ┆ 2020-10-09 20:00:00 │
     └─────────────────────────┴──────────────────┴─────────────────────┘
     """
-    expr = wrap_expr(parse_as_expression(expr))
-    time_zone = wrap_expr(parse_as_expression(time_zone, str_as_lit=True))
+    expr = parse_into_expr(expr)
+    time_zone = parse_into_expr(time_zone, str_as_lit=True)
     return expr.register_plugin(
         lib=lib,
         symbol="to_local_datetime",
@@ -433,7 +432,7 @@ def format_localized(
     │ 2024-10-01 00:00:00 ┆ вівторок, 01 жовтня 2024 │
     └─────────────────────┴──────────────────────────┘
     """
-    expr = wrap_expr(parse_as_expression(expr))
+    expr = parse_into_expr(expr)
     return expr.register_plugin(
         lib=lib,
         symbol="format_localized",
@@ -470,7 +469,7 @@ def to_julian_date(expr: str | pl.Expr) -> pl.Expr:
     │ 2024-01-07 13:18:51 ┆ 2460317.0547569445 │
     └─────────────────────┴────────────────────┘
     """
-    expr = wrap_expr(parse_as_expression(expr))
+    expr = parse_into_expr(expr)
     return expr.register_plugin(
         lib=lib,
         symbol="to_julian_date",
@@ -536,7 +535,7 @@ def ceil(
     │ 2024-10-01 00:00:00 ┆ 2024-10-01 00:00:00 │
     └─────────────────────┴─────────────────────┘
     """
-    expr = wrap_expr(parse_as_expression(expr))
+    expr = parse_into_expr(expr)
     truncated = expr.dt.truncate(every)
     return (
         pl.when(expr == truncated)
@@ -582,7 +581,7 @@ def day_name(expr: str | pl.Expr, locale: str | None = None) -> pl.Expr:
     │ 2020-10-26 00:00:00 ┆ Monday           ┆ lundi           ┆ понеділок          │
     └─────────────────────┴──────────────────┴─────────────────┴────────────────────┘
     """
-    expr = wrap_expr(parse_as_expression(expr))
+    expr = parse_into_expr(expr)
     if locale is None:
         result = expr.dt.to_string("%A")
     else:
@@ -627,7 +626,7 @@ def month_name(expr: str | pl.Expr, locale: str | None = None) -> pl.Expr:
     │ 2020-11-26 00:00:00 ┆ November           ┆ novembre          ┆ листопада            │
     └─────────────────────┴────────────────────┴───────────────────┴──────────────────────┘
     """
-    expr = wrap_expr(parse_as_expression(expr))
+    expr = parse_into_expr(expr)
     if locale is None:
         result = expr.dt.to_string("%B")
     else:
@@ -682,8 +681,8 @@ def workday_count(
     │ 2023-09-09 ┆ 2023-12-30 ┆ 80              │
     └────────────┴────────────┴─────────────────┘
     """
-    start_dates = wrap_expr(parse_as_expression(start_dates))
-    end_dates = wrap_expr(parse_as_expression(end_dates))
+    start_dates = parse_into_expr(start_dates)
+    end_dates = parse_into_expr(end_dates)
     weekmask = get_weekmask(weekend)
     if not holidays:
         holidays_int = []
