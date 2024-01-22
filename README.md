@@ -71,6 +71,9 @@ shape: (3, 2)
 │ 2024-01-04 ┆ 2024-01-11   │
 └────────────┴──────────────┘
 ```
+Note that `polars-xdt` also registers a `xdt` namespace in the `Expression` class, so you
+could equivalently write the above using `pl.col('date').xdt.offset_by('5bd')` (but note
+that then type-checking would not recognise the `xdt` attribute).
 
 Read the [documentation](https://marcogorelli.github.io/polars-xdt-docs/) for more examples!
 
