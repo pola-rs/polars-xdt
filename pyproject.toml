@@ -42,7 +42,13 @@ ignore = [
   'ARG003',  # todo: enable
   'C901',
   'COM812',
-  'D',
+  'D100',
+  'D103',
+  'D104',
+  'D105',
+  'D107',
+  'D203',
+  'D212',
   'DTZ',
   'E501',
   'FBT003',  # todo: enable

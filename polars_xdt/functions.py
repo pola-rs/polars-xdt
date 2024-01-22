@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Literal, Sequence
 
 import polars as pl
 from polars.utils.udfs import _get_shared_lib_location
+
 from polars_xdt.utils import parse_into_expr
 
 if sys.version_info >= (3, 10):
@@ -49,99 +50,102 @@ def offset_by(
     holidays: Sequence[date] | None = None,
     roll: RollStrategy = "raise",
 ) -> pl.Expr:
-    """Offset this date by a relative time offset.
+    """
+    Offset this date by a relative time offset.
 
     Parameters
     ----------
+    expr
+        Expression to offset by relative time offset.
     by
         The offset to apply. This can be a string of the form "nbd" (where n
         is an integer), or a polars expression that evaluates to such a string.
         Additional units are passed to `polars.dt.offset_by`.
     weekend
         The days of the week that are considered weekends. Defaults to ("Sat", "Sun").
-        holidays
-            The holidays to exclude from the calculation. Defaults to None.
-        roll
-            How to handle dates that fall on a non-workday.
+    holidays
+        The holidays to exclude from the calculation. Defaults to None.
+    roll
+        How to handle dates that fall on a non-workday.
 
-            - "raise" raise an error (default).
-            - "forward" roll forward to the next business day.
-            - "backward" roll backward to the previous business day.
+        - "raise" raise an error (default).
+        - "forward" roll forward to the next business day.
+        - "backward" roll backward to the previous business day.
 
-        Returns
-        -------
-        polars.Expr
+    Returns
+    -------
+    polars.Expr
 
-        Examples
-        --------
-        >>> import polars as pl
-        >>> import polars_xdt as xdt
-        >>> df = pl.DataFrame(
-        ...     {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
-        ... )
-        >>> df.with_columns(
-        ...     date_shifted=xdt.offset_by("date", "1bd"),
-        ... )
-        shape: (3, 2)
-        ┌────────────┬──────────────┐
-        │ date       ┆ date_shifted │
-        │ ---        ┆ ---          │
-        │ date       ┆ date         │
-        ╞════════════╪══════════════╡
-        │ 2023-04-03 ┆ 2023-04-04   │
-        │ 2023-09-01 ┆ 2023-09-04   │
-        │ 2024-01-04 ┆ 2024-01-05   │
-        └────────────┴──────────────┘
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import polars_xdt as xdt
+    >>> df = pl.DataFrame(
+    ...     {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
+    ... )
+    >>> df.with_columns(
+    ...     date_shifted=xdt.offset_by("date", "1bd"),
+    ... )
+    shape: (3, 2)
+    ┌────────────┬──────────────┐
+    │ date       ┆ date_shifted │
+    │ ---        ┆ ---          │
+    │ date       ┆ date         │
+    ╞════════════╪══════════════╡
+    │ 2023-04-03 ┆ 2023-04-04   │
+    │ 2023-09-01 ┆ 2023-09-04   │
+    │ 2024-01-04 ┆ 2024-01-05   │
+    └────────────┴──────────────┘
 
-        You can also specify custom weekends and holidays:
+    You can also specify custom weekends and holidays:
 
-        >>> import holidays
-        >>> holidays_england = holidays.country_holidays(
-        ...     "UK", subdiv="ENG", years=[2023, 2024]
-        ... )
-        >>> df.with_columns(
-        ...     date_shifted=xdt.offset_by(
-        ...         "date",
-        ...         "5bd",
-        ...         holidays=holidays_england,
-        ...         weekend=["Fri", "Sat"],
-        ...         roll="backward",
-        ...     ),
-        ... )
-        shape: (3, 2)
-        ┌────────────┬──────────────┐
-        │ date       ┆ date_shifted │
-        │ ---        ┆ ---          │
-        │ date       ┆ date         │
-        ╞════════════╪══════════════╡
-        │ 2023-04-03 ┆ 2023-04-11   │
-        │ 2023-09-01 ┆ 2023-09-07   │
-        │ 2024-01-04 ┆ 2024-01-11   │
-        └────────────┴──────────────┘
+    >>> import holidays
+    >>> holidays_england = holidays.country_holidays(
+    ...     "UK", subdiv="ENG", years=[2023, 2024]
+    ... )
+    >>> df.with_columns(
+    ...     date_shifted=xdt.offset_by(
+    ...         "date",
+    ...         "5bd",
+    ...         holidays=holidays_england,
+    ...         weekend=["Fri", "Sat"],
+    ...         roll="backward",
+    ...     ),
+    ... )
+    shape: (3, 2)
+    ┌────────────┬──────────────┐
+    │ date       ┆ date_shifted │
+    │ ---        ┆ ---          │
+    │ date       ┆ date         │
+    ╞════════════╪══════════════╡
+    │ 2023-04-03 ┆ 2023-04-11   │
+    │ 2023-09-01 ┆ 2023-09-07   │
+    │ 2024-01-04 ┆ 2024-01-11   │
+    └────────────┴──────────────┘
 
-        You can also pass expressions to `by`:
+    You can also pass expressions to `by`:
 
-        >>> df = pl.DataFrame(
-        ...     {
-        ...         "date": [
-        ...             date(2023, 4, 3),
-        ...             date(2023, 9, 1),
-        ...             date(2024, 1, 4),
-        ...         ],
-        ...         "by": ["1bd", "2bd", "-3bd"],
-        ...     }
-        ... )
-        >>> df.with_columns(date_shifted=xdt.offset_by("date", pl.col("by")))
-        shape: (3, 3)
-        ┌────────────┬──────┬──────────────┐
-        │ date       ┆ by   ┆ date_shifted │
-        │ ---        ┆ ---  ┆ ---          │
-        │ date       ┆ str  ┆ date         │
-        ╞════════════╪══════╪══════════════╡
-        │ 2023-04-03 ┆ 1bd  ┆ 2023-04-04   │
-        │ 2023-09-01 ┆ 2bd  ┆ 2023-09-05   │
-        │ 2024-01-04 ┆ -3bd ┆ 2024-01-01   │
-        └────────────┴──────┴──────────────┘
+    >>> df = pl.DataFrame(
+    ...     {
+    ...         "date": [
+    ...             date(2023, 4, 3),
+    ...             date(2023, 9, 1),
+    ...             date(2024, 1, 4),
+    ...         ],
+    ...         "by": ["1bd", "2bd", "-3bd"],
+    ...     }
+    ... )
+    >>> df.with_columns(date_shifted=xdt.offset_by("date", pl.col("by")))
+    shape: (3, 3)
+    ┌────────────┬──────┬──────────────┐
+    │ date       ┆ by   ┆ date_shifted │
+    │ ---        ┆ ---  ┆ ---          │
+    │ date       ┆ str  ┆ date         │
+    ╞════════════╪══════╪══════════════╡
+    │ 2023-04-03 ┆ 1bd  ┆ 2023-04-04   │
+    │ 2023-09-01 ┆ 2bd  ┆ 2023-09-05   │
+    │ 2024-01-04 ┆ -3bd ┆ 2024-01-01   │
+    └────────────┴──────┴──────────────┘
     """
     expr = parse_into_expr(expr)
     if (
@@ -191,10 +195,13 @@ def is_workday(
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
 ) -> pl.Expr:
-    """Determine whether a day is a workday.
+    """
+    Determine whether a day is a workday.
 
     Parameters
     ----------
+    expr
+        Input expression.
     weekend
         The days of the week that are considered weekends. Defaults to ("Sat", "Sun").
     holidays
@@ -257,10 +264,13 @@ def from_local_datetime(
     to_tz: str,
     ambiguous: Ambiguous = "raise",
 ) -> pl.Expr:
-    """Converts from local datetime in given time zone to new timezone.
+    """
+    Convert from local datetime in given time zone to new timezone.
 
     Parameters
     ----------
+    expr
+        Expression to convert.
     from_tz
         Current timezone of each datetime
     to_tz
@@ -332,10 +342,13 @@ def to_local_datetime(
     expr: IntoExpr,
     time_zone: str | Expr,
 ) -> pl.Expr:
-    """Convert to local datetime in given time zone.
+    """
+    Convert to local datetime in given time zone.
 
     Parameters
     ----------
+    expr
+        Expression to convert.
     time_zone
         Time zone to convert to.
 
@@ -392,10 +405,13 @@ def format_localized(
     format: str,  # noqa: A002
     locale: str = "uk_UA",
 ) -> pl.Expr:
-    """Convert to local datetime in given time zone.
+    """
+    Convert to local datetime in given time zone.
 
     Parameters
     ----------
+    expr
+        Expression to format.
     format
         Format string, see https://docs.rs/chrono/latest/chrono/format/strftime/index.html
         for what's available.
@@ -443,7 +459,8 @@ def format_localized(
 
 
 def to_julian_date(expr: str | pl.Expr) -> pl.Expr:
-    """Return the Julian date corresponding to given datetimes.
+    """
+    Return the Julian date corresponding to given datetimes.
 
     Examples
     --------
@@ -482,10 +499,13 @@ def ceil(
     expr: IntoExpr,
     every: str | pl.Expr,
 ) -> pl.Expr:
-    """Find "ceiling" of datetime.
+    """
+    Find "ceiling" of datetime.
 
     Parameters
     ----------
+    expr
+        Expression to take "ceiling" of.
     every
         Duration string, created with the
         the following string language:
@@ -640,13 +660,14 @@ def workday_count(
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
 ) -> pl.Expr:
-    """Count the number of workdays between two columns of dates.
+    """
+    Count the number of workdays between two columns of dates.
 
     Parameters
     ----------
-    start
+    start_dates
         Start date(s). This can be a string column, a date column, or a single date.
-    end
+    end_dates
         End date(s). This can be a string column, a date column, or a single date.
     weekend
         The days of the week that are considered weekends. Defaults to ("Sat", "Sun").

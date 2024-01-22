@@ -14,7 +14,6 @@ from polars_xdt.functions import (
     workday_count,
 )
 from polars_xdt.ranges import date_range
-from polars_xdt.utils import parse_into_expr
 
 from ._internal import __version__
 
