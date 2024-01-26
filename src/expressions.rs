@@ -51,10 +51,13 @@ pub fn to_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
     Ok(Field::new(&field.name, dtype))
 }
 
-pub fn from_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
+pub fn from_local_datetime_output(
+    input_fields: &[Field],
+    kwargs: FromLocalDatetimeKwargs,
+) -> PolarsResult<Field> {
     let field = input_fields[0].clone();
     let dtype = match field.dtype {
-        DataType::Datetime(unit, _) => DataType::Datetime(unit, None),
+        DataType::Datetime(unit, _) => DataType::Datetime(unit, Some(kwargs.to_tz)),
         _ => polars_bail!(InvalidOperation:
             "dtype '{}' not supported", field.dtype
         ),
@@ -98,7 +101,7 @@ fn to_local_datetime(inputs: &[Series]) -> PolarsResult<Series> {
     Ok(elementwise_to_local_datetime(ca, s2)?.into_series())
 }
 
-#[polars_expr(output_type_func=from_local_datetime_output)]
+#[polars_expr(output_type_func_with_kwargs=from_local_datetime_output)]
 fn from_local_datetime(inputs: &[Series], kwargs: FromLocalDatetimeKwargs) -> PolarsResult<Series> {
     let s1 = &inputs[0];
     let ca = s1.datetime().unwrap();
