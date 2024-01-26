@@ -2,7 +2,7 @@ use chrono::format::StrftimeItems;
 use chrono::TimeZone;
 use chrono::{self, format::DelayedFormat};
 use polars::prelude::*;
-use polars_arrow::array::{MutableArray, MutablePlString, MutableUtf8Array, Utf8Array};
+use polars_arrow::array::MutablePlString;
 use polars_arrow::temporal_conversions::MILLISECONDS_IN_DAY;
 use polars_arrow::temporal_conversions::{
     timestamp_ms_to_datetime, timestamp_ns_to_datetime, timestamp_us_to_datetime,
@@ -25,7 +25,6 @@ pub(crate) fn impl_format_localized(
     format: &str,
     locale: &str,
 ) -> PolarsResult<Series> {
-    let ndt = chrono::NaiveDateTime::from_timestamp_opt(0, 0).unwrap();
     let locale = chrono::Locale::try_from(locale).map_err(
         |_| polars_err!(ComputeError: format!("given locale {} could not be parsed", locale)),
     )?;
@@ -36,8 +35,7 @@ pub(crate) fn impl_format_localized(
             let ca = s.date()?;
             ca.apply_kernel_cast(&|arr| {
                 let mut buf = String::new();
-                let mut mutarr =
-                    MutablePlString::with_capacity(arr.len());
+                let mut mutarr = MutablePlString::with_capacity(arr.len());
 
                 for opt in arr.into_iter() {
                     match opt {
@@ -69,8 +67,7 @@ pub(crate) fn impl_format_localized(
             };
             ca.apply_kernel_cast(&|arr| {
                 let mut buf = String::new();
-                let mut mutarr =
-                    MutablePlString::with_capacity(arr.len());
+                let mut mutarr = MutablePlString::with_capacity(arr.len());
 
                 for opt in arr.into_iter() {
                     match opt {
