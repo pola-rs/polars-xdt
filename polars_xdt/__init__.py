@@ -7,6 +7,7 @@ from polars_xdt.functions import (
     format_localized,
     from_local_datetime,
     is_workday,
+    month_delta,
     month_name,
     offset_by,
     to_julian_date,
@@ -29,5 +30,6 @@ __all__ = [
     "to_julian_date",
     "to_local_datetime",
     "workday_count",
+    "month_delta",
     "__version__",
 ]
