@@ -52,9 +52,8 @@ pub(crate) fn impl_month_delta(start_dates: &Series, end_dates: &Series) -> Pola
 
                 // Determines if the end date is earlier in the month than the start date,
                 // but not an entire month earlier
-                let subtraction_condition: bool = {
-                    expected_days_diff.abs() > actual_days_diff.abs()
-                };
+                let subtraction_condition: bool =
+                    { expected_days_diff.abs() > actual_days_diff.abs() };
 
                 // Check 2: Check if both dates fall on the last days of
                 // their respective months
