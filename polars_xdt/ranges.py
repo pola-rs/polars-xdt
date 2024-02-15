@@ -136,6 +136,7 @@ def date_range(  # noqa: PLR0913
     │ 2023-01-09 │
     │ 2023-01-10 │
     └────────────┘
+
     """
     if weekend == ("Sat", "Sun"):
         weekend_int = [6, 7]

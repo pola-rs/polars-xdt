@@ -35,6 +35,7 @@ def parse_into_expr(
     Returns
     -------
     polars.Expr
+
     """
     if isinstance(expr, pl.Expr):
         pass
