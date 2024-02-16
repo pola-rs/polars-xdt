@@ -1,6 +1,6 @@
 [package]
 name = "polars_xdt"
-version = "0.12.6"
+version = "0.12.7"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -9,7 +9,7 @@ name = "polars_xdt"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.20.0", features = ["extension-module"] }
+pyo3 = { version = "0.20.0", features = ["extension-module", "abi3-py38"] }
 pyo3-polars = { version = "0.11.1", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 chrono = { version = "0.4.31", default-features = false, features = ["std", "unstable-locales"] } 
