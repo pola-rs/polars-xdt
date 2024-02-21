@@ -1,10 +1,10 @@
 [build-system]
-requires = ["maturin>=1.0,<2.0", "polars>=0.26.0"]
+requires = ["maturin>=1.0,<2.0", "polars>=0.20.6"]
 build-backend = "maturin"
 
 [project]
 name = "polars-xdt"
-description = "Time Series Extras (e.g. business day utilities) for Polars"
+description = "eXtra stuff for Dates and Times in Polars"
 readme = "README.md"
 authors = [
   { name="Marco Gorelli", email="33491632+MarcoGorelli@users.noreply.github.com" },
@@ -31,10 +31,10 @@ module-name = "polars_xdt._internal"
 docstring-code-format = true
 
 [tool.ruff]
-select = [
+lint.select = [
   "ALL",
 ]
-ignore = [
+lint.ignore = [
   'A003',
   'ANN101',
   'ANN401',
@@ -69,7 +69,7 @@ ignore = [
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = ["ALL"]
+lint.fixable = ["ALL"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [

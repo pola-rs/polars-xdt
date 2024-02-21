@@ -146,6 +146,7 @@ def offset_by(
     │ 2023-09-01 ┆ 2bd  ┆ 2023-09-05   │
     │ 2024-01-04 ┆ -3bd ┆ 2024-01-01   │
     └────────────┴──────┴──────────────┘
+
     """
     expr = parse_into_expr(expr)
     if (
@@ -237,6 +238,7 @@ def is_workday(
     │ 2023-05-01 ┆ true       │
     │ 2023-09-09 ┆ false      │
     └────────────┴────────────┘
+
     """
     expr = parse_into_expr(expr)
     weekmask = get_weekmask(weekend)
@@ -323,6 +325,7 @@ def from_local_datetime(
     │ 2020-10-10 02:00:00 ┆ Africa/Kigali    ┆ 2020-10-10 00:00:00 UTC │
     │ 2020-10-09 20:00:00 ┆ America/New_York ┆ 2020-10-10 00:00:00 UTC │
     └─────────────────────┴──────────────────┴─────────────────────────┘
+
     """
     expr = parse_into_expr(expr)
     from_tz = parse_into_expr(from_tz, str_as_lit=True)
@@ -389,6 +392,7 @@ def to_local_datetime(
     │ 2020-10-10 00:00:00 UTC ┆ Africa/Kigali    ┆ 2020-10-10 02:00:00 │
     │ 2020-10-10 00:00:00 UTC ┆ America/New_York ┆ 2020-10-09 20:00:00 │
     └─────────────────────────┴──────────────────┴─────────────────────┘
+
     """
     expr = parse_into_expr(expr)
     time_zone = parse_into_expr(time_zone, str_as_lit=True)
@@ -447,6 +451,7 @@ def format_localized(
     │ 2024-08-24 00:00:00 ┆ субота, 24 серпня 2024   │
     │ 2024-10-01 00:00:00 ┆ вівторок, 01 жовтня 2024 │
     └─────────────────────┴──────────────────────────┘
+
     """
     expr = parse_into_expr(expr)
     return expr.register_plugin(
@@ -485,6 +490,7 @@ def to_julian_date(expr: str | pl.Expr) -> pl.Expr:
     │ 2013-01-01 00:30:00 ┆ 2456293.5208333335 │
     │ 2024-01-07 13:18:51 ┆ 2460317.0547569445 │
     └─────────────────────┴────────────────────┘
+
     """
     expr = parse_into_expr(expr)
     return expr.register_plugin(
@@ -554,6 +560,7 @@ def ceil(
     │ 2024-08-24 00:00:00 ┆ 2024-09-01 00:00:00 │
     │ 2024-10-01 00:00:00 ┆ 2024-10-01 00:00:00 │
     └─────────────────────┴─────────────────────┘
+
     """
     expr = parse_into_expr(expr)
     truncated = expr.dt.truncate(every)
@@ -600,6 +607,7 @@ def day_name(expr: str | pl.Expr, locale: str | None = None) -> pl.Expr:
     │ 2020-10-25 00:00:00 ┆ Sunday           ┆ dimanche        ┆ неділя             │
     │ 2020-10-26 00:00:00 ┆ Monday           ┆ lundi           ┆ понеділок          │
     └─────────────────────┴──────────────────┴─────────────────┴────────────────────┘
+
     """
     expr = parse_into_expr(expr)
     if locale is None:
@@ -645,6 +653,7 @@ def month_name(expr: str | pl.Expr, locale: str | None = None) -> pl.Expr:
     │ 2020-10-25 00:00:00 ┆ October            ┆ octobre           ┆ жовтня               │
     │ 2020-11-26 00:00:00 ┆ November           ┆ novembre          ┆ листопада            │
     └─────────────────────┴────────────────────┴───────────────────┴──────────────────────┘
+
     """
     expr = parse_into_expr(expr)
     if locale is None:
@@ -701,6 +710,7 @@ def workday_count(
     │ 2023-05-01 ┆ 2023-05-02 ┆ 1               │
     │ 2023-09-09 ┆ 2023-12-30 ┆ 80              │
     └────────────┴────────────┴─────────────────┘
+
     """
     start_dates = parse_into_expr(start_dates)
     end_dates = parse_into_expr(end_dates)
