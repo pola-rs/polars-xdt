@@ -1,8 +1,10 @@
 use chrono::{Datelike, NaiveDate};
 use polars::prelude::*;
 
+// Function to get the date of the last day of the current month for a given date.
 fn get_last_month_date(date: NaiveDate) -> NaiveDate {
     if date.month() == 12 {
+        // If it is December, move to the next year and set the month to January.
         NaiveDate::from_ymd_opt(date.year() + 1, 1, 1)
             .unwrap()
             .pred_opt()
@@ -17,8 +19,8 @@ fn get_last_month_date(date: NaiveDate) -> NaiveDate {
     }
 }
 
+// Function that checks if both dates fall on the last days of their respective months.
 fn get_last_day_bool(start_date: NaiveDate, end_date: NaiveDate) -> bool {
-    // Check if both dates fall on the last days of their respective months
     let end_date_end = get_last_month_date(end_date);
     let start_date_end = get_last_month_date(start_date);
     {
@@ -31,9 +33,12 @@ fn get_last_day_bool(start_date: NaiveDate, end_date: NaiveDate) -> bool {
     }
 }
 
-fn get_month_span_indicator(start_date: NaiveDate, end_date: NaiveDate) -> i32 {
-    // Check 1: Check if the actual number of days difference matches
-    // assuming both dates start on the first
+// Function to calculate the span of months between two dates as an integer.
+// This function specifically checks if the span between the two dates covers whole months,
+// and under certain conditions, adjusts the count by 1 or -1 to reflect partial months.
+fn get_month_span_int(start_date: NaiveDate, end_date: NaiveDate) -> i32 {
+    // Check if the actual number of days difference matches assuming both 
+    // dates start on the first
     let actual_days_diff = end_date.signed_duration_since(start_date).num_days();
     let expected_days_diff = {
         let start_dt = start_date.with_day(1).unwrap(); // start date at the beginning of the month
@@ -49,8 +54,11 @@ fn get_month_span_indicator(start_date: NaiveDate, end_date: NaiveDate) -> i32 {
     {
         1
     } else if expected_days_diff.abs() > actual_days_diff.abs() {
+        // If the expected difference (in absolute terms) is greater than the actual difference,
+        // it indicates a partial month span, and we return -1 to adjust the month span downwards.
         -1
     } else {
+        // If none of the conditions were met
         0
     }
 }
@@ -75,7 +83,7 @@ pub(crate) fn impl_month_delta(start_dates: &Series, end_dates: &Series) -> Pola
                 // Use absolute value to determine the magnitude of the change
                 let mut abs_month_diff = month_diff.abs();
 
-                abs_month_diff += get_month_span_indicator(start_date, end_date);
+                abs_month_diff += get_month_span_int(start_date, end_date);
 
                 if get_last_day_bool(start_date, end_date) {
                     // Add an extra month for end cases where both dates are at month-end
