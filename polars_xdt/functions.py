@@ -789,6 +789,7 @@ def month_delta(
     │ 2023-01-31 ┆ 2023-01-31 ┆ 0           │
     │ 2019-12-31 ┆ 2023-01-01 ┆ 36          │
     └────────────┴────────────┴─────────────┘
+
     """
     start_dates = parse_into_expr(start_dates)
     end_dates = parse_into_expr(end_dates)
