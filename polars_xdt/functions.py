@@ -731,3 +731,99 @@ def workday_count(
             "holidays": holidays_int,
         },
     )
+
+
+def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
+    """
+    Find the row count of the previous value greater than the current one.
+
+    Parameters
+    ----------
+    expr
+        Expression.
+
+    Returns
+    -------
+    Expr
+        UInt64 or UInt32 type, depending on the platform.
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import polars_xdt as xdt
+    >>> df = pl.DataFrame({"value": [1, 9, 6, 7, 3]})
+    >>> df.with_columns(result=xdt.arg_previous_greater("value"))
+    shape: (5, 2)
+    ┌───────┬────────┐
+    │ value ┆ result │
+    │ ---   ┆ ---    │
+    │ i64   ┆ u32    │
+    ╞═══════╪════════╡
+    │ 1     ┆ null   │
+    │ 9     ┆ 1      │
+    │ 6     ┆ 1      │
+    │ 7     ┆ 1      │
+    │ 3     ┆ 3      │
+    └───────┴────────┘
+
+    This can be useful when working with time series. For example,
+    if you a dataset like this:
+
+    >>> df = pl.DataFrame(
+    ...     {
+    ...         "date": [
+    ...             "2024-02-01",
+    ...             "2024-02-02",
+    ...             "2024-02-03",
+    ...             "2024-02-04",
+    ...             "2024-02-05",
+    ...             "2024-02-06",
+    ...             "2024-02-07",
+    ...             "2024-02-08",
+    ...             "2024-02-09",
+    ...             "2024-02-10",
+    ...         ],
+    ...         "group": ["A", "A", "A", "A", "A", "B", "B", "B", "B", "B"],
+    ...         "value": [1, 9, None, 7, 3, 2, 4, 5, 1, 9],
+    ...     }
+    ... )
+    >>> df = df.with_columns(pl.col("date").str.to_date())
+
+    and want find out, for each day and each item, how many days it's
+    been since `'value'` was higher than it currently is, you could do
+
+    >>> df.with_columns(
+    ...     result=(
+    ...         (
+    ...             pl.col("date")
+    ...             - pl.col("date")
+    ...             .gather(xdt.arg_previous_greater("value"))
+    ...             .over("group")
+    ...         ).dt.total_days()
+    ...     ),
+    ... )
+    shape: (10, 4)
+    ┌────────────┬───────┬───────┬────────┐
+    │ date       ┆ group ┆ value ┆ result │
+    │ ---        ┆ ---   ┆ ---   ┆ ---    │
+    │ date       ┆ str   ┆ i64   ┆ i64    │
+    ╞════════════╪═══════╪═══════╪════════╡
+    │ 2024-02-01 ┆ A     ┆ 1     ┆ null   │
+    │ 2024-02-02 ┆ A     ┆ 9     ┆ 0      │
+    │ 2024-02-03 ┆ A     ┆ null  ┆ null   │
+    │ 2024-02-04 ┆ A     ┆ 7     ┆ 2      │
+    │ 2024-02-05 ┆ A     ┆ 3     ┆ 1      │
+    │ 2024-02-06 ┆ B     ┆ 2     ┆ null   │
+    │ 2024-02-07 ┆ B     ┆ 4     ┆ 0      │
+    │ 2024-02-08 ┆ B     ┆ 5     ┆ 0      │
+    │ 2024-02-09 ┆ B     ┆ 1     ┆ 1      │
+    │ 2024-02-10 ┆ B     ┆ 9     ┆ 0      │
+    └────────────┴───────┴───────┴────────┘
+
+    """
+    expr = parse_into_expr(expr)
+    return expr.register_plugin(
+        lib=lib,
+        symbol="arg_previous_greater",
+        is_elementwise=False,
+    )
