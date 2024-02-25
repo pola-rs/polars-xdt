@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import polars_xdt.namespace  # noqa: F401
 from polars_xdt.functions import (
-    arg_prev_greater_value,
+    arg_previous_greater,
     ceil,
     day_name,
     format_localized,
@@ -30,6 +30,6 @@ __all__ = [
     "to_julian_date",
     "to_local_datetime",
     "workday_count",
-    "arg_prev_greater_value",
+    "arg_previous_greater",
     "__version__",
 ]

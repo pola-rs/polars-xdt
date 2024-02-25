@@ -1,8 +1,8 @@
 #![allow(clippy::unit_arg, clippy::unused_unit)]
+use crate::arg_previous_greater::*;
 use crate::business_days::*;
 use crate::format_localized::*;
 use crate::is_workday::*;
-use crate::arg_prev_greater_value::*;
 use crate::sub::*;
 use crate::timezone::*;
 use crate::to_julian::*;
@@ -154,19 +154,15 @@ fn list_idx_dtype(input_fields: &[Field]) -> PolarsResult<Field> {
 }
 
 #[polars_expr(output_type_func=list_idx_dtype)]
-fn arg_prev_greater_value(inputs: &[Series]) -> PolarsResult<Series> {
+fn arg_previous_greater(inputs: &[Series]) -> PolarsResult<Series> {
     let ser = &inputs[0];
-    // steps:
-    // 1. make generic on inputs[0]
-    // 2. optionally accept second argument?
-    //    or at least, take-based solution
     match ser.dtype() {
-        DataType::Int64 => Ok(impl_arg_prev_greater_value(ser.i64().unwrap()).into_series()),
-        DataType::Int32 => Ok(impl_arg_prev_greater_value(ser.i32().unwrap()).into_series()),
-        DataType::UInt64 => Ok(impl_arg_prev_greater_value(ser.u64().unwrap()).into_series()),
-        DataType::UInt32 => Ok(impl_arg_prev_greater_value(ser.u32().unwrap()).into_series()),
-        DataType::Float64 => Ok(impl_arg_prev_greater_value(ser.f64().unwrap()).into_series()),
-        DataType::Float32 => Ok(impl_arg_prev_greater_value(ser.f32().unwrap()).into_series()),
-        dt => polars_bail!(ComputeError:"Expected numeric data type, got: {}", dt)
+        DataType::Int64 => Ok(impl_arg_previous_greater(ser.i64().unwrap()).into_series()),
+        DataType::Int32 => Ok(impl_arg_previous_greater(ser.i32().unwrap()).into_series()),
+        DataType::UInt64 => Ok(impl_arg_previous_greater(ser.u64().unwrap()).into_series()),
+        DataType::UInt32 => Ok(impl_arg_previous_greater(ser.u32().unwrap()).into_series()),
+        DataType::Float64 => Ok(impl_arg_previous_greater(ser.f64().unwrap()).into_series()),
+        DataType::Float32 => Ok(impl_arg_previous_greater(ser.f32().unwrap()).into_series()),
+        dt => polars_bail!(ComputeError:"Expected numeric data type, got: {}", dt),
     }
 }

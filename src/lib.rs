@@ -1,3 +1,4 @@
+mod arg_previous_greater;
 mod business_days;
 mod expressions;
 mod format_localized;
@@ -6,7 +7,6 @@ mod sub;
 mod timezone;
 mod to_julian;
 mod utc_offsets;
-mod arg_prev_greater_value;
 
 use pyo3::types::PyModule;
 use pyo3::{pymodule, PyResult, Python};
