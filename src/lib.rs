@@ -6,7 +6,7 @@ mod sub;
 mod timezone;
 mod to_julian;
 mod utc_offsets;
-mod previous_higher;
+mod arg_prev_greater_value;
 
 use pyo3::types::PyModule;
 use pyo3::{pymodule, PyResult, Python};

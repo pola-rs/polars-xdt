@@ -2,7 +2,7 @@
 use crate::business_days::*;
 use crate::format_localized::*;
 use crate::is_workday::*;
-use crate::previous_higher::*;
+use crate::arg_prev_greater_value::*;
 use crate::sub::*;
 use crate::timezone::*;
 use crate::to_julian::*;
@@ -154,12 +154,19 @@ fn list_idx_dtype(input_fields: &[Field]) -> PolarsResult<Field> {
 }
 
 #[polars_expr(output_type_func=list_idx_dtype)]
-fn previous_higher(inputs: &[Series]) -> PolarsResult<Series> {
-    let ca = inputs[0].i64()?;
+fn arg_prev_greater_value(inputs: &[Series]) -> PolarsResult<Series> {
+    let ser = &inputs[0];
     // steps:
     // 1. make generic on inputs[0]
     // 2. optionally accept second argument?
     //    or at least, take-based solution
-    let out = impl_previous_higher(ca);
-    Ok(out.into_series())
+    match ser.dtype() {
+        DataType::Int64 => Ok(impl_arg_prev_greater_value(ser.i64().unwrap()).into_series()),
+        DataType::Int32 => Ok(impl_arg_prev_greater_value(ser.i32().unwrap()).into_series()),
+        DataType::UInt64 => Ok(impl_arg_prev_greater_value(ser.u64().unwrap()).into_series()),
+        DataType::UInt32 => Ok(impl_arg_prev_greater_value(ser.u32().unwrap()).into_series()),
+        DataType::Float64 => Ok(impl_arg_prev_greater_value(ser.f64().unwrap()).into_series()),
+        DataType::Float32 => Ok(impl_arg_prev_greater_value(ser.f32().unwrap()).into_series()),
+        dt => polars_bail!(ComputeError:"Expected numeric data type, got: {}", dt)
+    }
 }

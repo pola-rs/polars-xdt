@@ -732,12 +732,44 @@ def workday_count(
         },
     )
 
-def previous_higher(
+def arg_prev_greater_value(
     expr: IntoExpr
 ) -> pl.Expr:
+    """
+    Find the row count of the previous value greater than the current one.
+
+    Parameters
+    ----------
+    expr
+        Expression.
+    
+    Returns
+    -------
+    Expr
+        UInt64 or UInt32 type, depending on the platform.
+    
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import polars_xdt as xdt
+    >>> df = pl.DataFrame({'value': [1, 9, 6, 7, 3]})
+    >>> df.with_columns(result=xdt.arg_prev_greater_value('value'))
+    shape: (5, 2)
+    ┌───────┬────────┐
+    │ value ┆ result │
+    │ ---   ┆ ---    │
+    │ i64   ┆ u32    │
+    ╞═══════╪════════╡
+    │ 1     ┆ null   │
+    │ 9     ┆ 0      │
+    │ 6     ┆ 1      │
+    │ 7     ┆ 2      │
+    │ 3     ┆ 1      │
+    └───────┴────────┘
+    """
     expr = parse_into_expr(expr)
     return expr.register_plugin(
         lib=lib,
-        symbol="previous_higher",
+        symbol="arg_prev_greater_value",
         is_elementwise=False,
     )
