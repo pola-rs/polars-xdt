@@ -2,6 +2,7 @@
 use crate::business_days::*;
 use crate::format_localized::*;
 use crate::is_workday::*;
+use crate::previous_higher::*;
 use crate::sub::*;
 use crate::timezone::*;
 use crate::to_julian::*;
@@ -145,4 +146,20 @@ fn dst_offset(inputs: &[Series]) -> PolarsResult<Series> {
         }
         _ => polars_bail!(InvalidOperation: "base_utc_offset only works on Datetime type."),
     }
+}
+
+fn list_idx_dtype(input_fields: &[Field]) -> PolarsResult<Field> {
+    let field = Field::new(input_fields[0].name(), DataType::List(Box::new(IDX_DTYPE)));
+    Ok(field.clone())
+}
+
+#[polars_expr(output_type_func=list_idx_dtype)]
+fn previous_higher(inputs: &[Series]) -> PolarsResult<Series> {
+    let ca = inputs[0].i64()?;
+    // steps:
+    // 1. make generic on inputs[0]
+    // 2. optionally accept second argument?
+    //    or at least, take-based solution
+    let out = impl_previous_higher(ca);
+    Ok(out.into_series())
 }

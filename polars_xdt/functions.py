@@ -731,3 +731,13 @@ def workday_count(
             "holidays": holidays_int,
         },
     )
+
+def previous_higher(
+    expr: IntoExpr
+) -> pl.Expr:
+    expr = parse_into_expr(expr)
+    return expr.register_plugin(
+        lib=lib,
+        symbol="previous_higher",
+        is_elementwise=False,
+    )
