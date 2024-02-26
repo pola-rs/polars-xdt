@@ -37,7 +37,7 @@ fn get_last_day_bool(start_date: NaiveDate, end_date: NaiveDate) -> bool {
 // This function specifically checks if the span between the two dates covers whole months,
 // and under certain conditions, adjusts the count by 1 or -1 to reflect partial months.
 fn get_month_span_int(start_date: NaiveDate, end_date: NaiveDate) -> i32 {
-    // Check if the actual number of days difference matches assuming both 
+    // Check if the actual number of days difference matches assuming both
     // dates start on the first
     let actual_days_diff = end_date.signed_duration_since(start_date).num_days();
     let expected_days_diff = {
@@ -46,21 +46,21 @@ fn get_month_span_int(start_date: NaiveDate, end_date: NaiveDate) -> i32 {
         end_dt.signed_duration_since(start_dt).num_days() // expected day difference as full months
     };
 
+    let mut n = 0;
     // Calculates if the date difference spans entire months
     // If do then add additional month to the calculation
     if actual_days_diff == expected_days_diff
         && end_date.month() != start_date.month()
         && end_date.day() != start_date.day()
     {
-        1
+        n += 1
     } else if expected_days_diff.abs() > actual_days_diff.abs() {
         // If the expected difference (in absolute terms) is greater than the actual difference,
         // it indicates a partial month span, and we return -1 to adjust the month span downwards.
-        -1
-    } else {
-        // If none of the conditions were met
-        0
-    }
+        n -= 1
+    } 
+
+    n
 }
 
 pub(crate) fn impl_month_delta(start_dates: &Series, end_dates: &Series) -> PolarsResult<Series> {

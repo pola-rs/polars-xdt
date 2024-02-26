@@ -799,6 +799,8 @@ def month_delta(
         symbol="month_delta",
         is_elementwise=True,
         args=[end_dates],
+    )
+
 
 def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
     """
