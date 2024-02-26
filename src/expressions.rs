@@ -1,4 +1,5 @@
 #![allow(clippy::unit_arg, clippy::unused_unit)]
+use crate::arg_previous_greater::*;
 use crate::business_days::*;
 use crate::format_localized::*;
 use crate::is_workday::*;
@@ -152,5 +153,24 @@ fn dst_offset(inputs: &[Series]) -> PolarsResult<Series> {
             Ok(impl_dst_offset(s.datetime()?, time_unit, &time_zone).into_series())
         }
         _ => polars_bail!(InvalidOperation: "base_utc_offset only works on Datetime type."),
+    }
+}
+
+fn list_idx_dtype(input_fields: &[Field]) -> PolarsResult<Field> {
+    let field = Field::new(input_fields[0].name(), DataType::List(Box::new(IDX_DTYPE)));
+    Ok(field.clone())
+}
+
+#[polars_expr(output_type_func=list_idx_dtype)]
+fn arg_previous_greater(inputs: &[Series]) -> PolarsResult<Series> {
+    let ser = &inputs[0];
+    match ser.dtype() {
+        DataType::Int64 => Ok(impl_arg_previous_greater(ser.i64().unwrap()).into_series()),
+        DataType::Int32 => Ok(impl_arg_previous_greater(ser.i32().unwrap()).into_series()),
+        DataType::UInt64 => Ok(impl_arg_previous_greater(ser.u64().unwrap()).into_series()),
+        DataType::UInt32 => Ok(impl_arg_previous_greater(ser.u32().unwrap()).into_series()),
+        DataType::Float64 => Ok(impl_arg_previous_greater(ser.f64().unwrap()).into_series()),
+        DataType::Float32 => Ok(impl_arg_previous_greater(ser.f32().unwrap()).into_series()),
+        dt => polars_bail!(ComputeError:"Expected numeric data type, got: {}", dt),
     }
 }
