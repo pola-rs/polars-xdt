@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 import sys
-from datetime import date
+from datetime import date, timedelta
 from typing import TYPE_CHECKING, Literal, Sequence
 
 import polars as pl
@@ -826,4 +826,17 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
         lib=lib,
         symbol="arg_previous_greater",
         is_elementwise=False,
+    )
+
+
+def ewm_time(expr: IntoExpr, values: IntoExpr, *, halflife: timedelta) -> pl.Expr:
+    expr = parse_into_expr(expr)
+    halflife_us = int(halflife.total_seconds() * 1_000_000) + halflife.microseconds
+    breakpoint()
+    return expr.register_plugin(
+        lib=lib,
+        symbol="ewm_time",
+        is_elementwise=False,
+        args=[values],
+        kwargs={"halflife": halflife_us},
     )

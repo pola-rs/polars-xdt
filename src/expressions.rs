@@ -7,6 +7,7 @@ use crate::sub::*;
 use crate::timezone::*;
 use crate::to_julian::*;
 use crate::utc_offsets::*;
+use crate::ewm_time::*;
 use chrono_tz::Tz;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
@@ -165,4 +166,17 @@ fn arg_previous_greater(inputs: &[Series]) -> PolarsResult<Series> {
         DataType::Float32 => Ok(impl_arg_previous_greater(ser.f32().unwrap()).into_series()),
         dt => polars_bail!(ComputeError:"Expected numeric data type, got: {}", dt),
     }
+}
+
+#[derive(Deserialize)]
+struct EwmTimeKwargs {
+    halflife: i64,
+}
+
+#[polars_expr(output_type_func=list_idx_dtype)]
+fn ewm_time(inputs: &[Series], kwargs: EwmTimeKwargs) -> PolarsResult<Series> {
+    let time = &inputs[0].datetime()?.0;
+    let values = &inputs[1].f64()?;
+    let out = impl_ewm_time(time, values, kwargs.halflife);
+    Ok(out.into_series())
 }
