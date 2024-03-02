@@ -24,7 +24,7 @@ pub(crate) fn impl_ewm_time(
                 }
                 prev_time = time;
                 prev_result = result;
-                Some(value)
+                Some(result)
             }
             _ => None,
         }
