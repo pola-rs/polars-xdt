@@ -832,7 +832,6 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
 def ewm_time(expr: IntoExpr, values: IntoExpr, *, halflife: timedelta) -> pl.Expr:
     expr = parse_into_expr(expr)
     halflife_us = int(halflife.total_seconds() * 1_000_000) + halflife.microseconds
-    breakpoint()
     return expr.register_plugin(
         lib=lib,
         symbol="ewm_time",
