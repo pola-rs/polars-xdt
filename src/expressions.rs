@@ -180,13 +180,27 @@ fn ewma_by_time(inputs: &[Series], kwargs: EwmTimeKwargs) -> PolarsResult<Series
     match &inputs[0].dtype() {
         DataType::Datetime(_, _) => {
             let time = &inputs[0].datetime().unwrap();
-            Ok(impl_ewma_by_time(&time.0, values, kwargs.halflife, kwargs.adjust, time.time_unit()).into_series())
+            Ok(impl_ewma_by_time(
+                &time.0,
+                values,
+                kwargs.halflife,
+                kwargs.adjust,
+                time.time_unit(),
+            )
+            .into_series())
         }
         DataType::Date => {
             let binding = &inputs[0].cast(&DataType::Datetime(TimeUnit::Milliseconds, None))?;
             let time = binding.datetime().unwrap();
-            Ok(impl_ewma_by_time(&time.0, values, kwargs.halflife, kwargs.adjust, time.time_unit()).into_series())
+            Ok(impl_ewma_by_time(
+                &time.0,
+                values,
+                kwargs.halflife,
+                kwargs.adjust,
+                time.time_unit(),
+            )
+            .into_series())
         }
-        _ => polars_bail!(InvalidOperation: "First argument should be a date or datetime type.")
+        _ => polars_bail!(InvalidOperation: "First argument should be a date or datetime type."),
     }
 }

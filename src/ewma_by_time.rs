@@ -1,6 +1,6 @@
 use polars::prelude::*;
 use polars_arrow::array::PrimitiveArray;
-use pyo3_polars::export::polars_core::export::num::{Float, Pow};
+use pyo3_polars::export::polars_core::export::num::Pow;
 
 pub(crate) fn impl_ewma_by_time_float(
     times: &Int64Chunked,
@@ -8,10 +8,9 @@ pub(crate) fn impl_ewma_by_time_float(
     halflife: i64,
     adjust: bool,
     time_unit: TimeUnit,
-) -> Float64Chunked
-{
+) -> Float64Chunked {
     let mut out = Vec::with_capacity(times.len());
-    if values.len() == 0 {
+    if values.is_empty() {
         return Float64Chunked::full_null("", times.len());
     }
 
@@ -36,7 +35,7 @@ pub(crate) fn impl_ewma_by_time_float(
                     let result: f64;
                     if adjust {
                         alpha *= Pow::pow(0.5, delta_time as f64 / halflife as f64);
-                        result = (value + alpha * prev_result) / ((1. + alpha));
+                        result = (value + alpha * prev_result) / (1. + alpha);
                         alpha += 1.;
                     } else {
                         // equivalent to:
@@ -56,7 +55,6 @@ pub(crate) fn impl_ewma_by_time_float(
     Float64Chunked::from(arr)
 }
 
-
 pub(crate) fn impl_ewma_by_time(
     times: &Int64Chunked,
     values: &Series,
@@ -72,13 +70,13 @@ pub(crate) fn impl_ewma_by_time(
         DataType::Int64 | DataType::Int32 => {
             let values = values.cast(&DataType::Float64).unwrap();
             let values = values.f64().unwrap();
-            impl_ewma_by_time_float(times, &values, halflife, adjust, time_unit).into_series()
+            impl_ewma_by_time_float(times, values, halflife, adjust, time_unit).into_series()
         }
         DataType::Float32 => {
             // todo: preserve Float32 in this case
             let values = values.cast(&DataType::Float64).unwrap();
             let values = values.f64().unwrap();
-            impl_ewma_by_time_float(times, &values, halflife, adjust, time_unit).into_series()
+            impl_ewma_by_time_float(times, values, halflife, adjust, time_unit).into_series()
         }
         dt => panic!("Expected values to be signed numeric, got {:?}", dt),
     }
