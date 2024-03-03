@@ -174,7 +174,14 @@ struct EwmTimeKwargs {
     adjust: bool,
 }
 
-#[polars_expr(output_type=Float64)]
+fn float32_else_float64(input_fields: &[Field]) -> PolarsResult<Field> {
+    match input_fields[0].dtype {
+        DataType::Float32 => Ok(Field::new(input_fields[0].name(), DataType::Float32)),
+        _ => Ok(Field::new(input_fields[0].name(), DataType::Float64)),
+    }
+}
+
+#[polars_expr(output_type_func=float32_else_float64)]
 fn ewma_by_time(inputs: &[Series], kwargs: EwmTimeKwargs) -> PolarsResult<Series> {
     let values = &inputs[1];
     match &inputs[0].dtype() {
