@@ -846,11 +846,22 @@ def ewma_by_time(
 
             y_0 &= x_0
 
-            \alpha_i &= exp(-\lambda(t_i - t_{i-1}))
+            \alpha_i &= \exp(-\lambda(t_i - t_{i-1}))
 
             y_i &= \alpha_i x_i + (1 - \alpha_i) y_{i-1}; \quad i > 0
 
     where :math:`\lambda` equals :math:`\ln(2) / \text{halflife}`.
+
+    The **adjusted** version is
+
+
+        .. math::
+
+            y_0 &= x_0
+
+            \alpha_i &= (\alpha_{i-1} + 1) * \exp(-\lambda(t_i - t_{i-1}))
+
+            y_i &= (x_i + \alpha_i y_{i-1}) / (1. + \alpha_i);
 
     Parameters
     ----------

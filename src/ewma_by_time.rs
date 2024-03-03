@@ -22,7 +22,7 @@ pub(crate) fn impl_ewma_by_time_float(
 
     let mut prev_time: i64 = times.get(0).unwrap();
     let mut prev_result = values.get(0).unwrap();
-    let mut alpha = 1.0;
+    let mut prev_alpha = 0.0;
     out.push(Some(prev_result));
     let _ = values
         .iter()
@@ -34,14 +34,14 @@ pub(crate) fn impl_ewma_by_time_float(
                     let delta_time = time - prev_time;
                     let result: f64;
                     if adjust {
-                        alpha *= Pow::pow(0.5, delta_time as f64 / halflife as f64);
+                        let alpha = (prev_alpha+1.) * Pow::pow(0.5, delta_time as f64 / halflife as f64);
                         result = (value + alpha * prev_result) / (1. + alpha);
-                        alpha += 1.;
+                        prev_alpha = alpha;
                     } else {
                         // equivalent to:
                         // alpha = exp(-delta_time*ln(2) / halflife)
-                        alpha = (0.5_f64).powf(delta_time as f64 / halflife as f64);
-                        result = (1. - alpha) * value + alpha * prev_result;
+                        prev_alpha = (0.5_f64).powf(delta_time as f64 / halflife as f64);
+                        result = (1. - prev_alpha) * value + prev_alpha * prev_result;
                     }
                     prev_time = time;
                     prev_result = result;
