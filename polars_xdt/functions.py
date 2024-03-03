@@ -854,7 +854,6 @@ def ewma_by_time(
 
     The **adjusted** version is
 
-
         .. math::
 
             y_0 &= x_0

@@ -34,7 +34,8 @@ pub(crate) fn impl_ewma_by_time_float(
                     let delta_time = time - prev_time;
                     let result: f64;
                     if adjust {
-                        let alpha = (prev_alpha+1.) * Pow::pow(0.5, delta_time as f64 / halflife as f64);
+                        let alpha =
+                            (prev_alpha + 1.) * Pow::pow(0.5, delta_time as f64 / halflife as f64);
                         result = (value + alpha * prev_result) / (1. + alpha);
                         prev_alpha = alpha;
                     } else {
