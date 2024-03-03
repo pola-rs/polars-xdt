@@ -24,7 +24,7 @@ pub(crate) fn impl_ewma_by_time_float(
     let mut prev_result = values.get(0).unwrap();
     let mut prev_alpha = 0.0;
     out.push(Some(prev_result));
-    let _ = values
+    values
         .iter()
         .zip(times.iter())
         .skip(1)
