@@ -174,9 +174,9 @@ struct EwmTimeKwargs {
     adjust: bool,
 }
 
-#[polars_expr(output_type_func=list_idx_dtype)]
+#[polars_expr(output_type=Float64)]
 fn ewma_by_time(inputs: &[Series], kwargs: EwmTimeKwargs) -> PolarsResult<Series> {
-    let values = &inputs[1].f64()?;
+    let values = &inputs[1];
     match &inputs[0].dtype() {
         DataType::Datetime(_, _) => {
             let time = &inputs[0].datetime().unwrap();

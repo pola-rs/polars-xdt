@@ -867,7 +867,7 @@ def ewma_by_time(
     Returns
     -------
     pl.Expr
-        Float32 if the input was Float32, else Float64.
+        Float64
     
     Examples
     --------
@@ -881,6 +881,18 @@ def ewma_by_time(
     >>> df.with_columns(
     ...     ewma = xdt.ewma_by_time("values", times="times", halflife=timedelta(days=4)),
     ... )
+    shape: (5, 3)
+    ┌────────┬────────────┬──────────┐
+    │ values ┆ times      ┆ ewma     │
+    │ ---    ┆ ---        ┆ ---      │
+    │ i64    ┆ date       ┆ f64      │
+    ╞════════╪════════════╪══════════╡
+    │ 0      ┆ 2020-01-01 ┆ 0.0      │
+    │ 1      ┆ 2020-01-03 ┆ 0.585786 │
+    │ 2      ┆ 2020-01-10 ┆ 1.523889 │
+    │ null   ┆ 2020-01-15 ┆ null     │
+    │ 4      ┆ 2020-01-17 ┆ 3.233686 │
+    └────────┴────────────┴──────────┘
     """
     times = parse_into_expr(times)
     halflife_us = (
