@@ -1,13 +1,13 @@
 #![allow(clippy::unit_arg, clippy::unused_unit)]
 use crate::arg_previous_greater::*;
 use crate::business_days::*;
+use crate::ewma_by_time::*;
 use crate::format_localized::*;
 use crate::is_workday::*;
 use crate::sub::*;
 use crate::timezone::*;
 use crate::to_julian::*;
 use crate::utc_offsets::*;
-use crate::ewma_by_time::*;
 use chrono_tz::Tz;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
@@ -176,8 +176,17 @@ struct EwmTimeKwargs {
 
 #[polars_expr(output_type_func=list_idx_dtype)]
 fn ewma_by_time(inputs: &[Series], kwargs: EwmTimeKwargs) -> PolarsResult<Series> {
-    let time = &inputs[0].datetime()?.0;
     let values = &inputs[1].f64()?;
-    let out = impl_ewma_by_time(time, values, kwargs.halflife, kwargs.adjust);
-    Ok(out.into_series())
+    match &inputs[0].dtype() {
+        DataType::Datetime(_, _) => {
+            let time = &inputs[0].datetime().unwrap();
+            Ok(impl_ewma_by_time(&time.0, values, kwargs.halflife, kwargs.adjust, time.time_unit()).into_series())
+        }
+        DataType::Date => {
+            let binding = &inputs[0].cast(&DataType::Datetime(TimeUnit::Milliseconds, None))?;
+            let time = binding.datetime().unwrap();
+            Ok(impl_ewma_by_time(&time.0, values, kwargs.halflife, kwargs.adjust, time.time_unit()).into_series())
+        }
+        _ => polars_bail!(InvalidOperation: "First argument should be a date or datetime type.")
+    }
 }

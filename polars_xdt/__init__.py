@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import polars_xdt.namespace  # noqa: F401
 from polars_xdt.functions import (
-    ewma_by_time,
     arg_previous_greater,
     ceil,
     day_name,
+    ewma_by_time,
     format_localized,
     from_local_datetime,
     is_workday,
