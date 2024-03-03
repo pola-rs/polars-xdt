@@ -5,6 +5,7 @@ from polars_xdt.functions import (
     arg_previous_greater,
     ceil,
     day_name,
+    ewma_by_time,
     format_localized,
     from_local_datetime,
     is_workday,
@@ -31,5 +32,6 @@ __all__ = [
     "to_local_datetime",
     "workday_count",
     "arg_previous_greater",
+    "ewma_by_time",
     "__version__",
 ]
