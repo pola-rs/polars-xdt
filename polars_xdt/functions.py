@@ -833,7 +833,7 @@ def ewma_by_time(
     values: IntoExpr,
     *,
     times: IntoExpr,
-    halflife: timedelta,
+    half_life: timedelta,
     adjust: bool = True,
 ) -> pl.Expr:
     r"""
@@ -850,7 +850,7 @@ def ewma_by_time(
 
             y_i &= \alpha_i x_i + (1 - \alpha_i) y_{i-1}; \quad i > 0
 
-    where :math:`\lambda` equals :math:`\ln(2) / \text{halflife}`.
+    where :math:`\lambda` equals :math:`\ln(2) / \text{half_life}`.
 
     The **adjusted** version is
 
@@ -868,7 +868,7 @@ def ewma_by_time(
         Values to calculate EWMA for. Should be signed numeric.
     times
         Times corresponding to `values`. Should be ``DateTime`` or ``Date``.
-    halflife
+    half_life
         Unit over which observation decays to half its value.
     adjust
         Whether to adjust the result to account for the bias towards the
@@ -898,7 +898,7 @@ def ewma_by_time(
     ... )
     >>> df.with_columns(
     ...     ewma=xdt.ewma_by_time(
-    ...         "values", times="times", halflife=timedelta(days=4)
+    ...         "values", times="times", half_life=timedelta(days=4)
     ...     ),
     ... )
     shape: (5, 3)
@@ -916,13 +916,13 @@ def ewma_by_time(
 
     """
     times = parse_into_expr(times)
-    halflife_us = (
-        int(halflife.total_seconds()) * 1_000_000 + halflife.microseconds
+    half_life_us = (
+        int(half_life.total_seconds()) * 1_000_000 + half_life.microseconds
     )
     return times.register_plugin(
         lib=lib,
         symbol="ewma_by_time",
         is_elementwise=False,
         args=[values],
-        kwargs={"halflife": halflife_us, "adjust": adjust},
+        kwargs={"half_life": half_life_us, "adjust": adjust},
     )

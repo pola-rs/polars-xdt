@@ -170,7 +170,7 @@ fn arg_previous_greater(inputs: &[Series]) -> PolarsResult<Series> {
 
 #[derive(Deserialize)]
 struct EwmTimeKwargs {
-    halflife: i64,
+    half_life: i64,
     adjust: bool,
 }
 
@@ -183,7 +183,7 @@ fn ewma_by_time(inputs: &[Series], kwargs: EwmTimeKwargs) -> PolarsResult<Series
             Ok(impl_ewma_by_time(
                 &time.0,
                 values,
-                kwargs.halflife,
+                kwargs.half_life,
                 kwargs.adjust,
                 time.time_unit(),
             )
@@ -195,7 +195,7 @@ fn ewma_by_time(inputs: &[Series], kwargs: EwmTimeKwargs) -> PolarsResult<Series
             Ok(impl_ewma_by_time(
                 &time.0,
                 values,
-                kwargs.halflife,
+                kwargs.half_life,
                 kwargs.adjust,
                 time.time_unit(),
             )
