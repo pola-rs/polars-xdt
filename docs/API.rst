@@ -5,6 +5,7 @@ API
    :toctree: api/
 
     polars_xdt.date_range
+    polars_xdt.ewma_by_time
     polars_xdt.workday_count
     polars_xdt.ceil
     polars_xdt.day_name

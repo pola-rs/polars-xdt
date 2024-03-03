@@ -830,17 +830,63 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
 
 
 def ewma_by_time(
-    expr: IntoExpr,
     values: IntoExpr,
     *,
+    times: IntoExpr,
     halflife: timedelta,
     adjust: bool = True,
 ) -> pl.Expr:
-    expr = parse_into_expr(expr)
+    """
+    Calculated time-based exponentially weighted moving average.
+
+    Given observations :math:`x_1, x_2, \ldots, x_n` at times
+    :math:`t_1, t_2, \ldots, t_n`, the **unadjusted** EWMA is calculated as
+
+        .. math::
+
+            y_0 &= x_0
+
+            \\alpha_i &= exp(-\\lambda(t_i - t_{i-1}))
+
+            y_i &= \\alpha_i x_i + (1 - \\alpha_i) y_{i-1}; \\quad i > 0
+    
+    where :math:`\\lambda` equals :math:`\\ln(2) / \\text{halflife}`.
+
+    Parameters
+    ----------
+    values
+        Values to calculate EWMA for. Should be signed numeric.
+    times
+        Times corresponding to `values`. Should be ``DateTime`` or ``Date``.
+    halflife
+        Unit over which observation decays to half its value.
+    adjust
+        Whether to adjust the result to account for the bias towards the
+        initial value. Defaults to True.
+    
+    Returns
+    -------
+    pl.Expr
+        Float32 if the input was Float32, else Float64.
+    
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import polars_xdt as xdt
+    >>> from datetime import date, timedelta
+    >>> df = pl.DataFrame(
+    ...     {
+    ...      'values': [0, 1, 2, None, 4],
+    ...       'times': [date(2020, 1, 1), date(2020, 1, 3), date(2020, 1, 10), date(2020, 1, 15), date(2020, 1, 17)]})
+    >>> df.with_columns(
+    ...     ewma = xdt.ewma_by_time("values", times="times", halflife=timedelta(days=4)),
+    ... )
+    """
+    times = parse_into_expr(times)
     halflife_us = (
         int(halflife.total_seconds()) * 1_000_000 + halflife.microseconds
     )
-    return expr.register_plugin(
+    return times.register_plugin(
         lib=lib,
         symbol="ewma_by_time",
         is_elementwise=False,
