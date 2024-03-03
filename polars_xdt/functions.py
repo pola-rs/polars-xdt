@@ -858,7 +858,7 @@ def ewma_by_time(
 
             y_0 &= x_0
 
-            \alpha_i &= (\alpha_{i-1} + 1) * \exp(-\lambda(t_i - t_{i-1}))
+            \alpha_i &= (\alpha_{i-1} + 1) \exp(-\lambda(t_i - t_{i-1}))
 
             y_i &= (x_i + \alpha_i y_{i-1}) / (1. + \alpha_i);
 

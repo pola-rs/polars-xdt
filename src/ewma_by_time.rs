@@ -28,7 +28,7 @@ pub(crate) fn impl_ewma_by_time_float(
         .iter()
         .zip(times.iter())
         .skip(1)
-        .map(|(value, time)| {
+        .for_each(|(value, time)| {
             match (time, value) {
                 (Some(time), Some(value)) => {
                     let delta_time = time - prev_time;
@@ -50,8 +50,7 @@ pub(crate) fn impl_ewma_by_time_float(
                 }
                 _ => out.push(None),
             }
-        })
-        .collect::<Vec<_>>();
+        });
     let arr = PrimitiveArray::<f64>::from(out);
     Float64Chunked::from(arr)
 }
