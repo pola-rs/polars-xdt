@@ -7,7 +7,7 @@ import os
 
 # Docs are in a a separate repo cause I couldn't figure out
 # how to deploy from readthedocs
-subprocess.run(["make", "install", "--release"])
+subprocess.run(["make", "install-release"])
 subprocess.run(["make", "clean"], cwd="docs")
 subprocess.run(["make", "html"], cwd="docs")
 os.system("cp docs/_build/html/* ../docs-polars-xdt/ -r")

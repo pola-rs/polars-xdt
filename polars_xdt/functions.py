@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 import sys
-from datetime import date
+from datetime import date, timedelta
 from typing import TYPE_CHECKING, Literal, Sequence
 
 import polars as pl
@@ -895,4 +895,103 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
         lib=lib,
         symbol="arg_previous_greater",
         is_elementwise=False,
+    )
+
+
+def ewma_by_time(
+    values: IntoExpr,
+    *,
+    times: IntoExpr,
+    half_life: timedelta,
+    adjust: bool = True,
+) -> pl.Expr:
+    r"""
+    Calculate time-based exponentially weighted moving average.
+
+    Given observations :math:`x_1, x_2, \ldots, x_n` at times
+    :math:`t_1, t_2, \ldots, t_n`, the **unadjusted** EWMA is calculated as
+
+        .. math::
+
+            y_0 &= x_0
+
+            \alpha_i &= \exp(-\lambda(t_i - t_{i-1}))
+
+            y_i &= \alpha_i x_i + (1 - \alpha_i) y_{i-1}; \quad i > 0
+
+    where :math:`\lambda` equals :math:`\ln(2) / \text{half_life}`.
+
+    The **adjusted** version is
+
+        .. math::
+
+            y_0 &= x_0
+
+            \alpha_i &= (\alpha_{i-1} + 1) \exp(-\lambda(t_i - t_{i-1}))
+
+            y_i &= (x_i + \alpha_i y_{i-1}) / (1. + \alpha_i);
+
+    Parameters
+    ----------
+    values
+        Values to calculate EWMA for. Should be signed numeric.
+    times
+        Times corresponding to `values`. Should be ``DateTime`` or ``Date``.
+    half_life
+        Unit over which observation decays to half its value.
+    adjust
+        Whether to adjust the result to account for the bias towards the
+        initial value. Defaults to True.
+
+    Returns
+    -------
+    pl.Expr
+        Float64
+
+    Examples
+    --------
+    >>> import polars as pl
+    >>> import polars_xdt as xdt
+    >>> from datetime import date, timedelta
+    >>> df = pl.DataFrame(
+    ...     {
+    ...         "values": [0, 1, 2, None, 4],
+    ...         "times": [
+    ...             date(2020, 1, 1),
+    ...             date(2020, 1, 3),
+    ...             date(2020, 1, 10),
+    ...             date(2020, 1, 15),
+    ...             date(2020, 1, 17),
+    ...         ],
+    ...     }
+    ... )
+    >>> df.with_columns(
+    ...     ewma=xdt.ewma_by_time(
+    ...         "values", times="times", half_life=timedelta(days=4)
+    ...     ),
+    ... )
+    shape: (5, 3)
+    ┌────────┬────────────┬──────────┐
+    │ values ┆ times      ┆ ewma     │
+    │ ---    ┆ ---        ┆ ---      │
+    │ i64    ┆ date       ┆ f64      │
+    ╞════════╪════════════╪══════════╡
+    │ 0      ┆ 2020-01-01 ┆ 0.0      │
+    │ 1      ┆ 2020-01-03 ┆ 0.585786 │
+    │ 2      ┆ 2020-01-10 ┆ 1.523889 │
+    │ null   ┆ 2020-01-15 ┆ null     │
+    │ 4      ┆ 2020-01-17 ┆ 3.233686 │
+    └────────┴────────────┴──────────┘
+
+    """
+    times = parse_into_expr(times)
+    half_life_us = (
+        int(half_life.total_seconds()) * 1_000_000 + half_life.microseconds
+    )
+    return times.register_plugin(
+        lib=lib,
+        symbol="ewma_by_time",
+        is_elementwise=False,
+        args=[values],
+        kwargs={"half_life": half_life_us, "adjust": adjust},
     )

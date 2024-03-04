@@ -1,6 +1,7 @@
 #![allow(clippy::unit_arg, clippy::unused_unit)]
 use crate::arg_previous_greater::*;
 use crate::business_days::*;
+use crate::ewma_by_time::*;
 use crate::format_localized::*;
 use crate::is_workday::*;
 use crate::month_delta::*;
@@ -172,5 +173,42 @@ fn arg_previous_greater(inputs: &[Series]) -> PolarsResult<Series> {
         DataType::Float64 => Ok(impl_arg_previous_greater(ser.f64().unwrap()).into_series()),
         DataType::Float32 => Ok(impl_arg_previous_greater(ser.f32().unwrap()).into_series()),
         dt => polars_bail!(ComputeError:"Expected numeric data type, got: {}", dt),
+    }
+}
+
+#[derive(Deserialize)]
+struct EwmTimeKwargs {
+    half_life: i64,
+    adjust: bool,
+}
+
+#[polars_expr(output_type=Float64)]
+fn ewma_by_time(inputs: &[Series], kwargs: EwmTimeKwargs) -> PolarsResult<Series> {
+    let values = &inputs[1];
+    match &inputs[0].dtype() {
+        DataType::Datetime(_, _) => {
+            let time = &inputs[0].datetime().unwrap();
+            Ok(impl_ewma_by_time(
+                &time.0,
+                values,
+                kwargs.half_life,
+                kwargs.adjust,
+                time.time_unit(),
+            )
+            .into_series())
+        }
+        DataType::Date => {
+            let binding = &inputs[0].cast(&DataType::Datetime(TimeUnit::Milliseconds, None))?;
+            let time = binding.datetime().unwrap();
+            Ok(impl_ewma_by_time(
+                &time.0,
+                values,
+                kwargs.half_life,
+                kwargs.adjust,
+                time.time_unit(),
+            )
+            .into_series())
+        }
+        _ => polars_bail!(InvalidOperation: "First argument should be a date or datetime type."),
     }
 }

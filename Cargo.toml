@@ -1,6 +1,6 @@
 [package]
 name = "polars_xdt"
-version = "0.13.0"
+version = "0.14.3"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -10,14 +10,14 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.20.0", features = ["extension-module", "abi3-py38"] }
-pyo3-polars = { version = "0.11.1", features = ["derive"] }
+pyo3-polars = { version = "0.12.0", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 chrono = { version = "0.4.31", default-features = false, features = ["std", "unstable-locales"] } 
 chrono-tz = "0.8.5"
-polars = { version = "0.37.0", features = ["strings", "dtype-date"], default-features = false }
-polars-time = { version = "0.37.0", features = ["timezones"], default-features = false }
-polars-ops = { version = "0.37.0", default-features = false }
-polars-arrow = { version = "0.37.0", default-features = false }
+polars = { version = "0.38.1", features = ["strings", "dtype-date"], default-features = false }
+polars-time = { version = "0.38.1", features = ["timezones"], default-features = false }
+polars-ops = { version = "0.38.1", default-features = false }
+polars-arrow = { version = "0.38.1", default-features = false }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }
