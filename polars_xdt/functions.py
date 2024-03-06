@@ -1,4 +1,5 @@
 from __future__ import annotations
+from pathlib import Path
 
 import re
 import sys
@@ -172,7 +173,7 @@ def offset_by(
     weekmask = get_weekmask(weekend)
 
     result = register_plugin(
-        plugin_location=__file__,
+        plugin_location=Path(__file__).parent,
         function_name="advance_n_days",
         inputs=[expr, n],
         is_elementwise=True,
@@ -245,7 +246,7 @@ def is_workday(
             {(holiday - date(1970, 1, 1)).days for holiday in holidays},
         )
     return register_plugin(
-        plugin_location=__file__,
+        plugin_location=Path(__file__).parent,
         function_name="is_workday",
         inputs=expr,
         is_elementwise=True,
@@ -326,7 +327,7 @@ def from_local_datetime(
     if isinstance(from_tz, str):
         from_tz = pl.lit(from_tz)
     return register_plugin(
-        plugin_location=__file__,
+        plugin_location=Path(__file__).parent,
         function_name="from_local_datetime",
         inputs=[expr, from_tz],
         is_elementwise=True,
@@ -393,7 +394,7 @@ def to_local_datetime(
     if isinstance(time_zone, str):
         time_zone = pl.lit(time_zone)
     return register_plugin(
-        plugin_location=__file__,
+        plugin_location=Path(__file__).parent,
         function_name="to_local_datetime",
         inputs=[expr, time_zone],
         is_elementwise=True,
@@ -450,7 +451,7 @@ def format_localized(
 
     """
     return register_plugin(
-        plugin_location=__file__,
+        plugin_location=Path(__file__).parent,
         function_name="format_localized",
         inputs=expr,
         is_elementwise=True,
@@ -488,7 +489,7 @@ def to_julian_date(expr: str | pl.Expr) -> pl.Expr:
 
     """
     return register_plugin(
-        plugin_location=__file__,
+        plugin_location=Path(__file__).parent,
         function_name="to_julian_date",
         inputs=expr,
         is_elementwise=True,
@@ -714,7 +715,7 @@ def workday_count(
             {(holiday - date(1970, 1, 1)).days for holiday in holidays},
         )
     return register_plugin(
-        plugin_location=__file__,
+        plugin_location=Path(__file__).parent,
         function_name="workday_count",
         inputs=[start_dates, end_dates],
         is_elementwise=True,
@@ -814,7 +815,7 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
 
     """
     return register_plugin(
-        plugin_location=__file__,
+        plugin_location=Path(__file__).parent,
         function_name="arg_previous_greater",
         inputs=expr,
         is_elementwise=False,
@@ -897,7 +898,7 @@ def ewma_by_time(
         int(half_life.total_seconds()) * 1_000_000 + half_life.microseconds
     )
     return register_plugin(
-        plugin_location=__file__,
+        plugin_location=Path(__file__).parent,
         function_name="ewma_by_time",
         inputs=[times, values],
         is_elementwise=False,
