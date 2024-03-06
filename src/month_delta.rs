@@ -1,65 +1,56 @@
-use chrono::{Datelike, NaiveDate};
+use chrono::Datelike;
+use chrono::NaiveDate;
 use polars::prelude::*;
 
-// Function to get the date of the last day of the current month for a given date.
-fn get_last_month_date(date: NaiveDate) -> NaiveDate {
-    if date.month() == 12 {
-        // If it is December, move to the next year and set the month to January.
-        NaiveDate::from_ymd_opt(date.year() + 1, 1, 1)
-            .unwrap()
-            .pred_opt()
-            .unwrap()
-    } else {
-        date.with_day(1)
-            .unwrap()
-            .with_month(date.month() + 1)
-            .unwrap()
-            .pred_opt()
-            .unwrap()
+fn add_month(ts: NaiveDate, n_months: i64) -> NaiveDate {
+    // Have to define, because it is hidden
+    const DAYS_PER_MONTH: [[i64; 12]; 2] = [
+        //J   F   M   A   M   J   J   A   S   O   N   D
+        [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31], // non-leap year
+        [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31], // leap year
+    ];
+    let months = n_months;
+
+    // Retrieve the current date and increment the values
+    // based on the number of months
+
+    let mut year = ts.year();
+    let mut month = ts.month() as i32;
+    let mut day = ts.day();
+    year += (months / 12) as i32;
+    month += (months % 12) as i32;
+
+    // if the month overflowed or underflowed, adjust the year
+    // accordingly. Because we add the modulo for the months
+    // the year will only adjust by one
+    if month > 12 {
+        year += 1;
+        month -= 12;
+    } else if month <= 0 {
+        year -= 1;
+        month += 12;
     }
+
+    // Adding this not to import copy pasta again
+    let leap_year = year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
+    // Normalize the day if we are past the end of the month.
+    let last_day_of_month = DAYS_PER_MONTH[leap_year as usize][(month - 1) as usize] as u32;
+
+    if day > last_day_of_month {
+        day = last_day_of_month
+    }
+
+    NaiveDate::from_ymd_opt(year, month as u32, day).unwrap()
 }
 
-// Function that checks if both dates fall on the last days of their respective months.
-fn get_last_day_bool(start_date: NaiveDate, end_date: NaiveDate) -> bool {
-    let end_date_end = get_last_month_date(end_date);
-    let start_date_end = get_last_month_date(start_date);
-    {
-        // End date is the last day of its month
-        end_date.day() == end_date_end.day() &&
-            // Start date is the last day of its month
-            start_date.day() == start_date_end.day() &&
-            end_date.day() != start_date.day() &&
-            start_date.month() != end_date.month()
-    }
-}
-
-// Function to calculate the span of months between two dates as an integer.
-// This function specifically checks if the span between the two dates covers whole months,
-// and under certain conditions, adjusts the count by 1 or -1 to reflect partial months.
-fn get_month_span_int(start_date: NaiveDate, end_date: NaiveDate) -> i32 {
-    // Check if the actual number of days difference matches assuming both
-    // dates start on the first
-    let actual_days_diff = end_date.signed_duration_since(start_date).num_days();
-    let expected_days_diff = {
-        let start_dt = start_date.with_day(1).unwrap(); // start date at the beginning of the month
-        let end_dt = end_date.with_day(1).unwrap(); // end date at the beginning of a month
-        end_dt.signed_duration_since(start_dt).num_days() // expected day difference as full months
-    };
-
+fn get_m_diff(mut left: NaiveDate, right: NaiveDate) -> i32 {
     let mut n = 0;
-    // Calculates if the date difference spans entire months
-    // If do then add additional month to the calculation
-    if actual_days_diff == expected_days_diff
-        && end_date.month() != start_date.month()
-        && end_date.day() != start_date.day()
-    {
-        n += 1
-    } else if expected_days_diff.abs() > actual_days_diff.abs() {
-        // If the expected difference (in absolute terms) is greater than the actual difference,
-        // it indicates a partial month span, and we return -1 to adjust the month span downwards.
-        n -= 1
-    } 
-
+    while left < right {
+        left = add_month(left, 1);
+        if left <= right {
+            n += 1;
+        }
+    }
     n
 }
 
@@ -75,27 +66,10 @@ pub(crate) fn impl_month_delta(start_dates: &Series, end_dates: &Series) -> Pola
         .zip(end_dates.as_date_iter())
         .map(|(s_arr, e_arr)| {
             s_arr.zip(e_arr).map(|(start_date, end_date)| {
-                let year_diff = end_date.year() - start_date.year();
-                let mut month_diff = end_date.month() as i32 - start_date.month() as i32;
-                month_diff += year_diff * 12;
-
-                // Apply corrections based on the conditions checked earlier
-                // Use absolute value to determine the magnitude of the change
-                let mut abs_month_diff = month_diff.abs();
-
-                abs_month_diff += get_month_span_int(start_date, end_date);
-
-                if get_last_day_bool(start_date, end_date) {
-                    // Add an extra month for end cases where both dates are at month-end
-                    abs_month_diff += 1
-                }
-
-                // Return the final month difference
-                // if start date is after the end date then return negative
-                if month_diff < 0 {
-                    -abs_month_diff
+                if start_date > end_date {
+                    -get_m_diff(end_date, start_date)
                 } else {
-                    abs_month_diff
+                    get_m_diff(start_date, end_date)
                 }
             })
         })

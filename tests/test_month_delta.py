@@ -45,33 +45,33 @@ def test_month_delta():
         },
     )
 
-    expected_month_diff = [
-        0,
-        0,
-        2,
-        -12,
-        -5,
-        0,
-        -12,
-        1,
-        13,
-        -12,
-        -14,
-        12,
-        -12,
-        36,
-        3,
-        11,
+    assert_month_diff = [
+        0,  # 2024-01-01 to 2024-01-04
+        0,  # 2024-01-01 to 2024-01-31
+        2,  # 2023-09-01 to 2023-11-01
+        -12,  # 2023-01-04 to 2022-01-04
+        -5,  # 2022-06-04 to 2022-01-04
+        0,  # 2023-01-01 to 2022-12-31
+        -12,  # 2023-01-01 to 2021-12-31
+        1,  # 2022-02-01 to 2022-03-01
+        13,  # 2022-02-01 to 2023-03-01
+        -12,  # 2024-03-01 to 2023-02-28
+        -13,  # 2024-03-31 to 2023-02-28
+        11,  # 2022-02-28 to 2023-01-31
+        -11,  # 2023-01-31 to 2022-02-28
+        36,  # 2019-12-31 to 2023-01-01
+        3,  # 2024-01-31 to 2024-04-30
+        11,  # 1970-01-02 to 1971-01-01
     ]
     df = df.with_columns(
         # For easier visual debugging purposes
-        pl.Series(name="out_month_delta", values=expected_month_diff),
+        pl.Series(name="assert_month_delta", values=assert_month_diff),
         month_delta=xdt.month_delta("start_date", "end_date"),
     )
-
+    # pl.Config.set_tbl_rows(50)
+    # print(df)
     month_diff_list = df.get_column("month_delta").to_list()
-
-    assert expected_month_diff == month_diff_list, (
+    assert assert_month_diff == month_diff_list, (
         "The month difference list did not match the expected values.\n"
         "Please check the function: 'month_diff.rs' for discrepancies."
     )

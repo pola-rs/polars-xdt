@@ -19,6 +19,7 @@ eXtra stuff for DateTimes in [Polars](https://www.pola.rs/).
 - ✅ convert to and from multiple time zones
 - ✅ format datetime in different locales
 - ✅ convert to Julian Dates
+- ✅ time-based EWMA
 
 Installation
 ------------
