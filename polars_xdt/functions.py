@@ -172,10 +172,9 @@ def offset_by(
     weekmask = get_weekmask(weekend)
 
     result = register_plugin(
-        expr,
-        n,
         plugin_location=__file__,
-        symbol="advance_n_days",
+        function_name="advance_n_days",
+        inputs=[expr, n],
         is_elementwise=True,
         kwargs={
             "holidays": holidays_int,
@@ -246,9 +245,9 @@ def is_workday(
             {(holiday - date(1970, 1, 1)).days for holiday in holidays},
         )
     return register_plugin(
-        expr,
         plugin_location=__file__,
-        symbol="is_workday",
+        function_name="is_workday",
+        inputs=expr,
         is_elementwise=True,
         kwargs={
             "weekmask": weekmask,
@@ -327,10 +326,9 @@ def from_local_datetime(
     if isinstance(from_tz, str):
         from_tz = pl.lit(from_tz)
     return register_plugin(
-        expr,
-        from_tz,
         plugin_location=__file__,
-        symbol="from_local_datetime",
+        function_name="from_local_datetime",
+        inputs=[expr, from_tz],
         is_elementwise=True,
         kwargs={
             "to_tz": to_tz,
@@ -395,10 +393,9 @@ def to_local_datetime(
     if isinstance(time_zone, str):
         time_zone = pl.lit(time_zone)
     return register_plugin(
-        expr,
-        time_zone,
         plugin_location=__file__,
-        symbol="to_local_datetime",
+        function_name="to_local_datetime",
+        inputs=[expr, time_zone],
         is_elementwise=True,
     )
 
@@ -453,9 +450,9 @@ def format_localized(
 
     """
     return register_plugin(
-        expr,
         plugin_location=__file__,
-        symbol="format_localized",
+        function_name="format_localized",
+        inputs=expr,
         is_elementwise=True,
         kwargs={"format": format, "locale": locale},
     )
@@ -491,9 +488,9 @@ def to_julian_date(expr: str | pl.Expr) -> pl.Expr:
 
     """
     return register_plugin(
-        expr,
         plugin_location=__file__,
-        symbol="to_julian_date",
+        function_name="to_julian_date",
+        inputs=expr,
         is_elementwise=True,
     )
 
@@ -717,10 +714,9 @@ def workday_count(
             {(holiday - date(1970, 1, 1)).days for holiday in holidays},
         )
     return register_plugin(
-        start_dates,
-        end_dates,
         plugin_location=__file__,
-        symbol="workday_count",
+        function_name="workday_count",
+        inputs=[start_dates, end_dates],
         is_elementwise=True,
         kwargs={
             "weekmask": weekmask,
@@ -818,9 +814,9 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
 
     """
     return register_plugin(
-        expr,
         plugin_location=__file__,
-        symbol="arg_previous_greater",
+        function_name="arg_previous_greater",
+        inputs=expr,
         is_elementwise=False,
     )
 
@@ -830,13 +826,12 @@ def ewma_by_time(
     *,
     times: IntoExpr,
     half_life: timedelta,
-    adjust: bool = True,
 ) -> pl.Expr:
     r"""
     Calculate time-based exponentially weighted moving average.
 
     Given observations :math:`x_1, x_2, \ldots, x_n` at times
-    :math:`t_1, t_2, \ldots, t_n`, the **unadjusted** EWMA is calculated as
+    :math:`t_1, t_2, \ldots, t_n`, the EWMA is calculated as
 
         .. math::
 
@@ -848,16 +843,6 @@ def ewma_by_time(
 
     where :math:`\lambda` equals :math:`\ln(2) / \text{half_life}`.
 
-    The **adjusted** version is
-
-        .. math::
-
-            y_0 &= x_0
-
-            \alpha_i &= (\alpha_{i-1} + 1) \exp(-\lambda(t_i - t_{i-1}))
-
-            y_i &= (x_i + \alpha_i y_{i-1}) / (1. + \alpha_i);
-
     Parameters
     ----------
     values
@@ -866,9 +851,6 @@ def ewma_by_time(
         Times corresponding to `values`. Should be ``DateTime`` or ``Date``.
     half_life
         Unit over which observation decays to half its value.
-    adjust
-        Whether to adjust the result to account for the bias towards the
-        initial value. Defaults to True.
 
     Returns
     -------
@@ -904,10 +886,10 @@ def ewma_by_time(
     │ i64    ┆ date       ┆ f64      │
     ╞════════╪════════════╪══════════╡
     │ 0      ┆ 2020-01-01 ┆ 0.0      │
-    │ 1      ┆ 2020-01-03 ┆ 0.585786 │
-    │ 2      ┆ 2020-01-10 ┆ 1.523889 │
+    │ 1      ┆ 2020-01-03 ┆ 0.292893 │
+    │ 2      ┆ 2020-01-10 ┆ 1.492474 │
     │ null   ┆ 2020-01-15 ┆ null     │
-    │ 4      ┆ 2020-01-17 ┆ 3.233686 │
+    │ 4      ┆ 2020-01-17 ┆ 3.254508 │
     └────────┴────────────┴──────────┘
 
     """
@@ -915,10 +897,9 @@ def ewma_by_time(
         int(half_life.total_seconds()) * 1_000_000 + half_life.microseconds
     )
     return register_plugin(
-        times,
-        values,
         plugin_location=__file__,
-        symbol="ewma_by_time",
+        function_name="ewma_by_time",
+        inputs=[times, values],
         is_elementwise=False,
-        kwargs={"half_life": half_life_us, "adjust": adjust},
+        kwargs={"half_life": half_life_us},
     )

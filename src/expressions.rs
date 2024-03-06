@@ -171,7 +171,6 @@ fn arg_previous_greater(inputs: &[Series]) -> PolarsResult<Series> {
 #[derive(Deserialize)]
 struct EwmTimeKwargs {
     half_life: i64,
-    adjust: bool,
 }
 
 #[polars_expr(output_type=Float64)]
@@ -180,26 +179,18 @@ fn ewma_by_time(inputs: &[Series], kwargs: EwmTimeKwargs) -> PolarsResult<Series
     match &inputs[0].dtype() {
         DataType::Datetime(_, _) => {
             let time = &inputs[0].datetime().unwrap();
-            Ok(impl_ewma_by_time(
-                &time.0,
-                values,
-                kwargs.half_life,
-                kwargs.adjust,
-                time.time_unit(),
+            Ok(
+                impl_ewma_by_time(&time.0, values, kwargs.half_life, time.time_unit())
+                    .into_series(),
             )
-            .into_series())
         }
         DataType::Date => {
             let binding = &inputs[0].cast(&DataType::Datetime(TimeUnit::Milliseconds, None))?;
             let time = binding.datetime().unwrap();
-            Ok(impl_ewma_by_time(
-                &time.0,
-                values,
-                kwargs.half_life,
-                kwargs.adjust,
-                time.time_unit(),
+            Ok(
+                impl_ewma_by_time(&time.0, values, kwargs.half_life, time.time_unit())
+                    .into_series(),
             )
-            .into_series())
         }
         _ => polars_bail!(InvalidOperation: "First argument should be a date or datetime type."),
     }
