@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::DateTime;
 use polars::prelude::arity::try_binary_elementwise;
 use polars::prelude::*;
 
@@ -22,7 +22,7 @@ pub(crate) fn calculate_advance(
             if holidays.contains(&date)
                 | unsafe { !*weekmask.get_unchecked(day_of_week as usize - 1) }
             {
-                let date = NaiveDateTime::from_timestamp_opt(date as i64 * 24 * 60 * 60, 0)
+                let date = DateTime::from_timestamp(date as i64 * 24 * 60 * 60, 0)
                     .unwrap()
                     .format("%Y-%m-%d");
                 polars_bail!(ComputeError:
