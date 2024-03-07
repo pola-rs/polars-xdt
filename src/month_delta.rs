@@ -2,6 +2,8 @@ use chrono::Datelike;
 use chrono::NaiveDate;
 use polars::prelude::*;
 
+// Copied from https://docs.pola.rs/docs/rust/dev/src/polars_time/windows/duration.rs.html#398
+// `add_month` is a private function.
 fn add_month(ts: NaiveDate, n_months: i64) -> NaiveDate {
     // Have to define, because it is hidden
     const DAYS_PER_MONTH: [[i64; 12]; 2] = [
@@ -43,6 +45,27 @@ fn add_month(ts: NaiveDate, n_months: i64) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month as u32, day).unwrap()
 }
 
+/// Calculates the difference in months between two dates.
+///
+/// The difference is expressed as the number of whole months between the two dates.
+/// If `right` is before `left`, the return value will be negative.
+///
+/// # Arguments
+///
+/// * `left`: `NaiveDate` - The start date.
+/// * `right`: `NaiveDate` - The end date.
+///
+/// # Returns
+///
+/// * `i32` - The number of whole months between `left` and `right`.
+///
+/// # Examples
+///
+/// ```
+/// let start_date = NaiveDate::from_ymd(2023, 1, 1);
+/// let end_date = NaiveDate::from_ymd(2023, 4, 1);
+/// assert_eq!(get_m_diff(start_date, end_date), 3);
+/// ```
 fn get_m_diff(mut left: NaiveDate, right: NaiveDate) -> i32 {
     let mut n = 0;
     while left < right {
@@ -54,6 +77,37 @@ fn get_m_diff(mut left: NaiveDate, right: NaiveDate) -> i32 {
     n
 }
 
+/// Implements the month delta operation for Polars series containing dates.
+///
+/// This function calculates the difference in months between two series of dates.
+/// The operation is pairwise: it computes the month difference for each pair
+/// of start and end dates in the input series.
+///
+/// # Arguments
+///
+/// * `start_dates`: `&Series` - A series of start dates.
+/// * `end_dates`: `&Series` - A series of end dates.
+///
+/// # Returns
+///
+/// * `PolarsResult<Series>` - A new series containing the month differences as `i32` values.
+///
+/// # Errors
+///
+/// Returns an error if the input series are not of the `Date` type.
+///
+/// # Examples
+///
+/// ```
+/// use polars::prelude::*;
+/// let date1 = NaiveDate::from_ymd(2023, 1, 1); // January 1, 2023
+/// let date2 = NaiveDate::from_ymd(2023, 3, 1); // March 1, 2023
+/// let date3 = NaiveDate::from_ymd(2023, 4, 1); // April 1, 2023
+/// let date4 = NaiveDate::from_ymd(2023, 6, 1); // June 1, 2023
+/// let start_dates = Series::new("start_dates", &[date1, date2]);
+/// let end_dates = Series::new("end_dates", &[date3, date4]);
+/// let month_deltas = impl_month_delta(&start_dates, &end_dates).unwrap();
+/// ```
 pub(crate) fn impl_month_delta(start_dates: &Series, end_dates: &Series) -> PolarsResult<Series> {
     if (start_dates.dtype() != &DataType::Date) || (end_dates.dtype() != &DataType::Date) {
         polars_bail!(InvalidOperation: "polars_xdt.month_delta only works on Date type. Please cast to Date first.");
