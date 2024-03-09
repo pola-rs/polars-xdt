@@ -68,6 +68,10 @@ fn add_month(ts: NaiveDate, n_months: i64) -> NaiveDate {
 /// ```
 fn get_m_diff(mut left: NaiveDate, right: NaiveDate) -> i32 {
     let mut n = 0;
+    if left.year() + 2 < right.year() {
+        n = (right.year() - left.year() - 1) * 12;
+        left = add_month(left, n.into());
+    }
     while left < right {
         left = add_month(left, 1);
         if left <= right {
