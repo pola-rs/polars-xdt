@@ -4,6 +4,7 @@ mod ewma_by_time;
 mod expressions;
 mod format_localized;
 mod is_workday;
+mod month_delta;
 mod sub;
 mod timezone;
 mod to_julian;

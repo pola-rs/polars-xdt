@@ -4,6 +4,7 @@ use crate::business_days::*;
 use crate::ewma_by_time::*;
 use crate::format_localized::*;
 use crate::is_workday::*;
+use crate::month_delta::*;
 use crate::sub::*;
 use crate::timezone::*;
 use crate::to_julian::*;
@@ -85,6 +86,13 @@ fn workday_count(inputs: &[Series], kwargs: BusinessDayKwargs) -> PolarsResult<S
     let weekmask = kwargs.weekmask;
     let holidays = kwargs.holidays;
     impl_workday_count(begin_dates, end_dates, &weekmask, holidays)
+}
+
+#[polars_expr(output_type=Int32)]
+fn month_delta(inputs: &[Series]) -> PolarsResult<Series> {
+    let start_dates = &inputs[0];
+    let end_dates = &inputs[1];
+    impl_month_delta(start_dates, end_dates)
 }
 
 #[polars_expr(output_type=Boolean)]

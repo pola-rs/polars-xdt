@@ -733,6 +733,75 @@ def workday_count(
     )
 
 
+def month_delta(
+    start_dates: IntoExpr,
+    end_dates: IntoExpr,
+) -> pl.Expr:
+    """
+    Calculate the number of months between two Series.
+
+    Parameters
+    ----------
+    start_dates
+        A Series object containing the start dates.
+    end_dates
+        A Series object containing the end dates.
+
+    Returns
+    -------
+    polars.Expr
+
+    Examples
+    --------
+    >>> from datetime import date
+    >>> import polars as pl
+    >>> import polars_xdt as xdt
+    >>> df = pl.DataFrame(
+    ...     {
+    ...         "start_date": [
+    ...             date(2024, 3, 1),
+    ...             date(2024, 3, 31),
+    ...             date(2022, 2, 28),
+    ...             date(2023, 1, 31),
+    ...             date(2019, 12, 31),
+    ...         ],
+    ...         "end_date": [
+    ...             date(2023, 2, 28),
+    ...             date(2023, 2, 28),
+    ...             date(2023, 2, 28),
+    ...             date(2023, 1, 31),
+    ...             date(2023, 1, 1),
+    ...         ],
+    ...     },
+    ... )
+    >>> df.with_columns(
+    ...     xdt.month_delta("start_date", "end_date").alias("month_delta")
+    ... )
+    shape: (5, 3)
+    ┌────────────┬────────────┬─────────────┐
+    │ start_date ┆ end_date   ┆ month_delta │
+    │ ---        ┆ ---        ┆ ---         │
+    │ date       ┆ date       ┆ i32         │
+    ╞════════════╪════════════╪═════════════╡
+    │ 2024-03-01 ┆ 2023-02-28 ┆ -12         │
+    │ 2024-03-31 ┆ 2023-02-28 ┆ -13         │
+    │ 2022-02-28 ┆ 2023-02-28 ┆ 12          │
+    │ 2023-01-31 ┆ 2023-01-31 ┆ 0           │
+    │ 2019-12-31 ┆ 2023-01-01 ┆ 36          │
+    └────────────┴────────────┴─────────────┘
+
+    """
+    start_dates = parse_into_expr(start_dates)
+    end_dates = parse_into_expr(end_dates)
+
+    return start_dates.register_plugin(
+        lib=lib,
+        symbol="month_delta",
+        is_elementwise=True,
+        args=[end_dates],
+    )
+
+
 def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
     """
     Find the row count of the previous value greater than the current one.
