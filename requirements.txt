@@ -1,4 +1,5 @@
 maturin
+python-dateutil
 polars
 hypothesis
 numpy

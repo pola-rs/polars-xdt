@@ -1,6 +1,9 @@
 import polars as pl
 import polars_xdt as xdt
 from datetime import date
+from dateutil.relativedelta import relativedelta
+
+from hypothesis import given, strategies as st, assume
 
 
 def test_month_delta():
@@ -75,3 +78,37 @@ def test_month_delta():
         "The month difference list did not match the expected values.\n"
         "Please check the function: 'month_diff.rs' for discrepancies."
     )
+
+
+@given(
+    start_date=st.dates(
+        min_value=date(1960, 1, 1), max_value=date(2024, 12, 31)
+    ),
+    end_date=st.dates(min_value=date(1960, 1, 1), max_value=date(2024, 12, 31)),
+)
+def test_month_delta_hypothesis(start_date: date, end_date: date) -> None:
+    df = pl.DataFrame(
+        {
+            "start_date": [start_date],
+            "end_date": [end_date],
+        }
+    )
+    result = df.select(result=xdt.month_delta("start_date", "end_date"))[
+        "result"
+    ].item()
+
+    expected = 0
+    if start_date <= end_date:
+        while True:
+            start_date = start_date + relativedelta(months=1)
+            if start_date > end_date:
+                break
+            expected += 1
+    else:
+        while True:
+            end_date = end_date + relativedelta(months=1)
+            if end_date > start_date:
+                break
+            expected -= 1
+
+    assert result == expected

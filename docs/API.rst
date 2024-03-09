@@ -13,6 +13,7 @@ API
     polars_xdt.from_local_datetime
     polars_xdt.is_workday
     polars_xdt.month_name
+    polars_xdt.month_delta
     polars_xdt.offset_by
     polars_xdt.to_local_datetime
     polars_xdt.to_julian_date

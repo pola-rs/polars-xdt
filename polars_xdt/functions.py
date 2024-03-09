@@ -751,8 +751,8 @@ def month_delta(
     -------
     polars.Expr
 
-    Example
-    -------
+    Examples
+    --------
     >>> from datetime import date
     >>> import polars as pl
     >>> import polars_xdt as xdt

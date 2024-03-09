@@ -86,6 +86,7 @@ line-length = 80
 
 [[tool.mypy.overrides]]
 module = [
-  "pandas"
+  "pandas",
+  "dateutil.*",
 ]
 ignore_missing_imports = true
