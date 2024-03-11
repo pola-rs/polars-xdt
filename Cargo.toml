@@ -14,10 +14,10 @@ pyo3-polars = { version = "0.12.0", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 chrono = { version = "0.4.31", default-features = false, features = ["std", "unstable-locales"] } 
 chrono-tz = "0.8.5"
-polars = { version = "0.38.1", features = ["strings", "dtype-date"], default-features = false }
-polars-time = { version = "0.38.1", features = ["timezones"], default-features = false }
-polars-ops = { version = "0.38.1", default-features = false }
-polars-arrow = { version = "0.38.1", default-features = false }
+polars = { version = "0.38.2", features = ["strings", "dtype-date"], default-features = false }
+polars-time = { version = "0.38.2", features = ["timezones"], default-features = false }
+polars-ops = { version = "0.38.2", default-features = false }
+polars-arrow = { version = "0.38.2", default-features = false }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }
