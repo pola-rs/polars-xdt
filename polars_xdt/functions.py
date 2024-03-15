@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from typing import TYPE_CHECKING, Literal, Sequence
 
 import polars as pl
-from polars.plugins import register_plugin
+from polars.plugins import register_plugin_function
 
 from polars_xdt.utils import parse_into_expr
 
@@ -172,10 +172,10 @@ def offset_by(
         )
     weekmask = get_weekmask(weekend)
 
-    result = register_plugin(
-        plugin_location=Path(__file__).parent,
+    result = register_plugin_function(
+        plugin_path=Path(__file__).parent,
         function_name="advance_n_days",
-        inputs=[expr, n],
+        args=[expr, n],
         is_elementwise=True,
         kwargs={
             "holidays": holidays_int,
@@ -245,10 +245,10 @@ def is_workday(
         holidays_int = sorted(
             {(holiday - date(1970, 1, 1)).days for holiday in holidays},
         )
-    return register_plugin(
-        plugin_location=Path(__file__).parent,
+    return register_plugin_function(
+        plugin_path=Path(__file__).parent,
         function_name="is_workday",
-        inputs=expr,
+        args=expr,
         is_elementwise=True,
         kwargs={
             "weekmask": weekmask,
@@ -326,10 +326,10 @@ def from_local_datetime(
     """
     if isinstance(from_tz, str):
         from_tz = pl.lit(from_tz)
-    return register_plugin(
-        plugin_location=Path(__file__).parent,
+    return register_plugin_function(
+        plugin_path=Path(__file__).parent,
         function_name="from_local_datetime",
-        inputs=[expr, from_tz],
+        args=[expr, from_tz],
         is_elementwise=True,
         kwargs={
             "to_tz": to_tz,
@@ -393,10 +393,10 @@ def to_local_datetime(
     """
     if isinstance(time_zone, str):
         time_zone = pl.lit(time_zone)
-    return register_plugin(
-        plugin_location=Path(__file__).parent,
+    return register_plugin_function(
+        plugin_path=Path(__file__).parent,
         function_name="to_local_datetime",
-        inputs=[expr, time_zone],
+        args=[expr, time_zone],
         is_elementwise=True,
     )
 
@@ -450,10 +450,10 @@ def format_localized(
     └─────────────────────┴──────────────────────────┘
 
     """
-    return register_plugin(
-        plugin_location=Path(__file__).parent,
+    return register_plugin_function(
+        plugin_path=Path(__file__).parent,
         function_name="format_localized",
-        inputs=expr,
+        args=expr,
         is_elementwise=True,
         kwargs={"format": format, "locale": locale},
     )
@@ -488,10 +488,10 @@ def to_julian_date(expr: str | pl.Expr) -> pl.Expr:
     └─────────────────────┴────────────────────┘
 
     """
-    return register_plugin(
-        plugin_location=Path(__file__).parent,
+    return register_plugin_function(
+        plugin_path=Path(__file__).parent,
         function_name="to_julian_date",
-        inputs=expr,
+        args=expr,
         is_elementwise=True,
     )
 
@@ -714,10 +714,10 @@ def workday_count(
         holidays_int = sorted(
             {(holiday - date(1970, 1, 1)).days for holiday in holidays},
         )
-    return register_plugin(
-        plugin_location=Path(__file__).parent,
+    return register_plugin_function(
+        plugin_path=Path(__file__).parent,
         function_name="workday_count",
-        inputs=[start_dates, end_dates],
+        args=[start_dates, end_dates],
         is_elementwise=True,
         kwargs={
             "weekmask": weekmask,
@@ -814,10 +814,10 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
     └────────────┴───────┴───────┴────────┘
 
     """
-    return register_plugin(
-        plugin_location=Path(__file__).parent,
+    return register_plugin_function(
+        plugin_path=Path(__file__).parent,
         function_name="arg_previous_greater",
-        inputs=expr,
+        args=expr,
         is_elementwise=False,
     )
 
@@ -897,10 +897,10 @@ def ewma_by_time(
     half_life_us = (
         int(half_life.total_seconds()) * 1_000_000 + half_life.microseconds
     )
-    return register_plugin(
-        plugin_location=Path(__file__).parent,
+    return register_plugin_function(
+        plugin_path=Path(__file__).parent,
         function_name="ewma_by_time",
-        inputs=[times, values],
+        args=[times, values],
         is_elementwise=False,
         kwargs={"half_life": half_life_us},
     )
