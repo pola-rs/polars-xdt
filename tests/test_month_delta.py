@@ -31,8 +31,6 @@ def test_month_delta_hypothesis(start_date: date, end_date: date) -> None:
         "result"
     ].item()
 
-    print(result)
-
     expected = 0
     if start_date <= end_date:
         while True:
@@ -48,6 +46,3 @@ def test_month_delta_hypothesis(start_date: date, end_date: date) -> None:
             expected -= 1
 
     assert result == expected
-
-
-test_month_delta_hypothesis()
