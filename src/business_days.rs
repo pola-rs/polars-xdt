@@ -183,6 +183,7 @@ pub(crate) fn impl_advance_n_days(
                 s.datetime()?,
                 None,
                 &StringChunked::from_iter(std::iter::once("raise")),
+                NonExistent::Raise,
             )?;
             let out = match n.len() {
                 1 => {
@@ -217,6 +218,7 @@ pub(crate) fn impl_advance_n_days(
                 &out?.into_datetime(*time_unit, None),
                 time_zone.as_deref(),
                 &StringChunked::from_iter(std::iter::once("raise")),
+                NonExistent::Raise,
             )?;
             out.cast(original_dtype)
         }
