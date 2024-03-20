@@ -44,5 +44,4 @@ def test_month_delta_hypothesis(start_date: date, end_date: date) -> None:
             if end_date > start_date:
                 break
             expected -= 1
-
     assert result == expected
