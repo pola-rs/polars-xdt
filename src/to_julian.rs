@@ -61,6 +61,7 @@ pub(crate) fn impl_to_julian_date(s: &Series) -> PolarsResult<Series> {
                 s.datetime()?,
                 None,
                 &StringChunked::from_iter(std::iter::once("raise")),
+                NonExistent::Raise,
             )?;
             let chunks = ca.downcast_iter().map(|arr| -> Float64Array {
                 arr.into_iter()
