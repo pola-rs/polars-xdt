@@ -66,17 +66,13 @@ fn add_month(ts: NaiveDate, n_months: i64) -> NaiveDate {
 /// let end_date = NaiveDate::from_ymd(2023, 4, 1);
 /// assert_eq!(get_m_diff(start_date, end_date), 3);
 /// ```
-fn get_m_diff(mut left: NaiveDate, right: NaiveDate) -> i32 {
+fn get_m_diff(left: NaiveDate, right: NaiveDate) -> i32 {
     let mut n = 0;
-    if left.year() + 2 < right.year() {
+    if right.year() + 1 > left.year() {
         n = (right.year() - left.year() - 1) * 12;
-        left = add_month(left, n.into());
     }
-    while left < right {
-        left = add_month(left, 1);
-        if left <= right {
-            n += 1;
-        }
+    while add_month(left, (n+1).into()) <= right {
+        n += 1;
     }
     n
 }

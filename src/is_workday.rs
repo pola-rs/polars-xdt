@@ -28,6 +28,7 @@ pub(crate) fn impl_is_workday(
                 dates.datetime()?,
                 None,
                 &StringChunked::from_iter(std::iter::once("raise")),
+                NonExistent::Raise,
             )?;
             let out: BooleanChunked = ca.apply_values_generic(|date| {
                 is_workday_date((date / multiplier) as i32, weekmask, holidays)

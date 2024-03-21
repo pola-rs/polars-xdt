@@ -35,6 +35,9 @@ fn naive_local_to_naive_utc_in_new_time_zone(
             Ambiguous::Raise => {
                 polars_bail!(ComputeError: "datetime '{}' is ambiguous in time zone '{}'. Please use `ambiguous` to tell how it should be localized.", ndt, to_tz)
             }
+            Ambiguous::Null => {
+                unimplemented!("Ambiguous::Null is not yet supported");
+            }
         },
         LocalResult::None => polars_bail!(ComputeError:
             "datetime '{}' is non-existent in time zone '{}'. Non-existent datetimes are not yet supported",
