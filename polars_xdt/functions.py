@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Literal, Sequence
 
 import polars as pl
 
-from polars_xdt.utils import parse_into_expr, register_plugin, parse_version
+from polars_xdt.utils import parse_into_expr, parse_version, register_plugin
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
