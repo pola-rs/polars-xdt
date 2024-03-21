@@ -64,7 +64,6 @@ jobs:
       - uses: mozilla-actions/sccache-action@v0.0.3
       - run: make venv
       - run: venv/bin/python -m pip install polars==0.20.6  # min version
-      - run: make pre-commit
       - run: make install
       - run: make test
 
