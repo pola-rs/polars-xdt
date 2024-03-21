@@ -7,9 +7,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Sequence
 
 import polars as pl
-from packaging.version import parse
 
-from polars_xdt.utils import parse_into_expr, register_plugin
+from polars_xdt.utils import parse_into_expr, register_plugin, parse_version
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
@@ -22,7 +21,7 @@ if TYPE_CHECKING:
 RollStrategy: TypeAlias = Literal["raise", "forward", "backward"]
 
 
-if parse(pl.__version__) < parse("0.20.16"):
+if parse_version(pl.__version__) < parse_version("0.20.16"):
     from polars.utils.udfs import _get_shared_lib_location
 
     lib: str | Path = _get_shared_lib_location(__file__)
