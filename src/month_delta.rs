@@ -68,11 +68,20 @@ fn add_month(ts: NaiveDate, n_months: i64) -> NaiveDate {
 /// ```
 fn get_m_diff(left: NaiveDate, right: NaiveDate) -> i32 {
     let mut n = 0;
-    if right.year() + 1 > left.year() {
-        n = (right.year() - left.year() - 1) * 12;
-    }
-    while add_month(left, (n+1).into()) <= right {
-        n += 1;
+    if right >= left {
+        if right.year() + 1 > left.year() {
+            n = (right.year() - left.year() - 1) * 12;
+        }
+        while add_month(left, (n + 1).into()) <= right {
+            n += 1;
+        }
+    } else {
+        if left.year() + 1 > right.year() {
+            n = -(left.year() - right.year() - 1) * 12;
+        }
+        while add_month(left, (n - 1).into()) >= right {
+            n -= 1;
+        }
     }
     n
 }
@@ -119,13 +128,9 @@ pub(crate) fn impl_month_delta(start_dates: &Series, end_dates: &Series) -> Pola
         .as_date_iter()
         .zip(end_dates.as_date_iter())
         .map(|(s_arr, e_arr)| {
-            s_arr.zip(e_arr).map(|(start_date, end_date)| {
-                if start_date > end_date {
-                    -get_m_diff(end_date, start_date)
-                } else {
-                    get_m_diff(start_date, end_date)
-                }
-            })
+            s_arr
+                .zip(e_arr)
+                .map(|(start_date, end_date)| get_m_diff(start_date, end_date))
         })
         .collect();
 
