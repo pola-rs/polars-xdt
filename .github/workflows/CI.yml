@@ -32,7 +32,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64]
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -43,6 +43,27 @@ jobs:
         run: rustup show
       - uses: mozilla-actions/sccache-action@v0.0.3
       - run: make venv
+      - run: make pre-commit
+      - run: make install
+      - run: make test
+
+  linux_min_version_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64]
+        python-version: ["3.8"]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up Rust
+        run: rustup show
+      - uses: mozilla-actions/sccache-action@v0.0.3
+      - run: make venv
+      - run: venv/bin/python -m pip install polars==0.20.6  # min version
       - run: make pre-commit
       - run: make install
       - run: make test
