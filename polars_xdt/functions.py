@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 import sys
 from datetime import date, timedelta
+from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Sequence
 
 import polars as pl
-from polars.utils.udfs import _get_shared_lib_location
 
-from polars_xdt.utils import parse_into_expr
+from polars_xdt.utils import parse_into_expr, parse_version, register_plugin
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
@@ -21,7 +21,12 @@ if TYPE_CHECKING:
 RollStrategy: TypeAlias = Literal["raise", "forward", "backward"]
 
 
-lib = _get_shared_lib_location(__file__)
+if parse_version(pl.__version__) < parse_version("0.20.16"):
+    from polars.utils.udfs import _get_shared_lib_location
+
+    lib: str | Path = _get_shared_lib_location(__file__)
+else:
+    lib = Path(__file__).parent
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 reverse_mapping = {value: key for key, value in mapping.items()}
@@ -174,11 +179,11 @@ def offset_by(
         )
     weekmask = get_weekmask(weekend)
 
-    result = expr.register_plugin(
+    result = register_plugin(
+        args=[expr, n],
         lib=lib,
         symbol="advance_n_days",
         is_elementwise=True,
-        args=[n],
         kwargs={
             "holidays": holidays_int,
             "weekmask": weekmask,
@@ -248,11 +253,11 @@ def is_workday(
         holidays_int = sorted(
             {(holiday - date(1970, 1, 1)).days for holiday in holidays},
         )
-    return expr.register_plugin(
+    return register_plugin(
         lib=lib,
         symbol="is_workday",
         is_elementwise=True,
-        args=[],
+        args=[expr],
         kwargs={
             "weekmask": weekmask,
             "holidays": holidays_int,
@@ -329,11 +334,11 @@ def from_local_datetime(
     """
     expr = parse_into_expr(expr)
     from_tz = parse_into_expr(from_tz, str_as_lit=True)
-    return expr.register_plugin(
+    return register_plugin(
         lib=lib,
         symbol="from_local_datetime",
         is_elementwise=True,
-        args=[from_tz],
+        args=[expr, from_tz],
         kwargs={
             "to_tz": to_tz,
             "ambiguous": ambiguous,
@@ -396,11 +401,11 @@ def to_local_datetime(
     """
     expr = parse_into_expr(expr)
     time_zone = parse_into_expr(time_zone, str_as_lit=True)
-    return expr.register_plugin(
+    return register_plugin(
         lib=lib,
         symbol="to_local_datetime",
         is_elementwise=True,
-        args=[time_zone],
+        args=[expr, time_zone],
     )
 
 
@@ -454,11 +459,11 @@ def format_localized(
 
     """
     expr = parse_into_expr(expr)
-    return expr.register_plugin(
+    return register_plugin(
         lib=lib,
         symbol="format_localized",
         is_elementwise=True,
-        args=[],
+        args=[expr],
         kwargs={"format": format, "locale": locale},
     )
 
@@ -493,11 +498,11 @@ def to_julian_date(expr: str | pl.Expr) -> pl.Expr:
 
     """
     expr = parse_into_expr(expr)
-    return expr.register_plugin(
+    return register_plugin(
         lib=lib,
         symbol="to_julian_date",
         is_elementwise=True,
-        args=[],
+        args=[expr],
     )
 
 
@@ -721,11 +726,11 @@ def workday_count(
         holidays_int = sorted(
             {(holiday - date(1970, 1, 1)).days for holiday in holidays},
         )
-    return start_dates.register_plugin(
+    return register_plugin(
         lib=lib,
         symbol="workday_count",
         is_elementwise=True,
-        args=[end_dates],
+        args=[start_dates, end_dates],
         kwargs={
             "weekmask": weekmask,
             "holidays": holidays_int,
@@ -794,11 +799,11 @@ def month_delta(
     start_dates = parse_into_expr(start_dates)
     end_dates = parse_into_expr(end_dates)
 
-    return start_dates.register_plugin(
+    return register_plugin(
         lib=lib,
         symbol="month_delta",
         is_elementwise=True,
-        args=[end_dates],
+        args=[start_dates, end_dates],
     )
 
 
@@ -891,10 +896,11 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
 
     """
     expr = parse_into_expr(expr)
-    return expr.register_plugin(
+    return register_plugin(
         lib=lib,
         symbol="arg_previous_greater",
         is_elementwise=False,
+        args=[expr],
     )
 
 
@@ -974,10 +980,10 @@ def ewma_by_time(
     half_life_us = (
         int(half_life.total_seconds()) * 1_000_000 + half_life.microseconds
     )
-    return times.register_plugin(
+    return register_plugin(
         lib=lib,
         symbol="ewma_by_time",
         is_elementwise=False,
-        args=[values],
+        args=[times, values],
         kwargs={"half_life": half_life_us},
     )
