@@ -36,33 +36,56 @@ def test_ewma_by_time():
     assert_frame_equal(result, expected)
 
 
-@pytest.mark.parametrize("ignore_nulls", [
-    True,
-    False
-])
-def test_ewma_with_nan(ignore_nulls):
+@pytest.mark.parametrize("ignore_nulls", [True, False])
+@pytest.mark.parametrize("start_null", [True, False])
+def test_ewma_with_nan(ignore_nulls, start_null):
     n = 6
 
     df = pl.DataFrame({
         "values": list(range(n)),
         "times": [datetime(2020, 1, 1) + timedelta(days=i) for i in range(n)]
     })
+    
+    when = pl.col("values") > n//2
+    
+    if start_null:
+        when = when.or_(pl.col("values") == 0)
 
     result = df.select(xdt.ewma_by_time(
-        pl.when(pl.col("values") > n//2).then(float("NaN")).otherwise(pl.col("values")), times="times", half_life=timedelta(days=1), ignore_nulls=ignore_nulls
+        pl.when(when).then(float("NaN")).otherwise(pl.col("values")), times="times", half_life=timedelta(days=1), ignore_nulls=ignore_nulls
     ))
     
     if ignore_nulls:
+        if start_null:
+            expected = pl.DataFrame(
+                {
+                    "literal": [
+                        float("NaN"),
+                        1,
+                        1.5,
+                        2.25,
+                        2.25,
+                        2.25,
+                    ]
+                }
+            )
+        else:
+            expected = pl.DataFrame(
+                {
+                    "literal": [
+                        0.,
+                        0.5,
+                        1.25,
+                        2.125,
+                        2.125,
+                        2.125,
+                    ]
+                }
+            )
+    elif start_null:
         expected = pl.DataFrame(
             {
-                "literal": [
-                    0.0,
-                    0.5,
-                    1.25,
-                    2.125,
-                    2.125,
-                    2.125,
-                ]
+                "literal": n*[float("NaN")]
             }
         )
     else:
