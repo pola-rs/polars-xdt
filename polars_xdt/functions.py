@@ -976,7 +976,7 @@ def ewma_by_time(
     └────────┴────────────┴──────────┘
 
     """
-    times = parse_into_expr(times)
+    values = parse_into_expr(values)
     half_life_us = (
         int(half_life.total_seconds()) * 1_000_000 + half_life.microseconds
     )
