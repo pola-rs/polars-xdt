@@ -18,9 +18,7 @@ def test_ewma_by_time():
         }
     )
     result = df.select(
-        xdt.ewma_by_time(
-            "values", times="times", half_life=timedelta(days=4)
-        ),
+        xdt.ewma_by_time("values", times="times", half_life=timedelta(days=4)),
     )
     expected = pl.DataFrame(
         {

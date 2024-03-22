@@ -20,9 +20,7 @@ import polars_xdt as xdt
 @example(start_date=date(2019, 12, 31), end_date=date(2020, 1, 1))  # Border
 @example(start_date=date(2018, 12, 1), end_date=date(2020, 1, 1))  # End of year
 @example(start_date=date(2022, 12, 1), end_date=date(2020, 1, 1))  # Negative
-@example(
-    start_date=date(2000, 3, 29), end_date=date(2003, 1, 28)
-)
+@example(start_date=date(2000, 3, 29), end_date=date(2003, 1, 28))
 @settings(max_examples=500)
 def test_month_delta_hypothesis(start_date: date, end_date: date) -> None:
     df = pl.DataFrame(
