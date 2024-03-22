@@ -984,6 +984,6 @@ def ewma_by_time(
         lib=lib,
         symbol="ewma_by_time",
         is_elementwise=False,
-        args=[times, values],
+        args=[values, times],
         kwargs={"half_life": half_life_us},
     )

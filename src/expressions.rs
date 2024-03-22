@@ -183,17 +183,17 @@ struct EwmTimeKwargs {
 
 #[polars_expr(output_type=Float64)]
 fn ewma_by_time(inputs: &[Series], kwargs: EwmTimeKwargs) -> PolarsResult<Series> {
-    let values = &inputs[1];
-    match &inputs[0].dtype() {
+    let values = &inputs[0];
+    match &inputs[1].dtype() {
         DataType::Datetime(_, _) => {
-            let time = &inputs[0].datetime().unwrap();
+            let time = &inputs[1].datetime().unwrap();
             Ok(
                 impl_ewma_by_time(&time.0, values, kwargs.half_life, time.time_unit())
                     .into_series(),
             )
         }
         DataType::Date => {
-            let binding = &inputs[0].cast(&DataType::Datetime(TimeUnit::Milliseconds, None))?;
+            let binding = &inputs[1].cast(&DataType::Datetime(TimeUnit::Milliseconds, None))?;
             let time = binding.datetime().unwrap();
             Ok(
                 impl_ewma_by_time(&time.0, values, kwargs.half_life, time.time_unit())
