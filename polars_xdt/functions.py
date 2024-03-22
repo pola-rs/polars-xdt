@@ -909,6 +909,7 @@ def ewma_by_time(
     *,
     times: IntoExpr,
     half_life: timedelta,
+    ignore_nulls: bool = True
 ) -> pl.Expr:
     r"""
     Calculate time-based exponentially weighted moving average.
@@ -934,6 +935,8 @@ def ewma_by_time(
         Times corresponding to `values`. Should be ``DateTime`` or ``Date``.
     half_life
         Unit over which observation decays to half its value.
+    ignore_nulls
+        Ignore missing values when calculating weights.
 
     Returns
     -------
@@ -985,5 +988,5 @@ def ewma_by_time(
         symbol="ewma_by_time",
         is_elementwise=False,
         args=[values, times],
-        kwargs={"half_life": half_life_us},
+        kwargs={"half_life": half_life_us, "ignore_nulls": ignore_nulls},
     )

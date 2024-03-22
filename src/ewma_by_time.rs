@@ -6,6 +6,7 @@ pub(crate) fn impl_ewma_by_time_float(
     values: &Float64Chunked,
     half_life: i64,
     time_unit: TimeUnit,
+    ignore_nulls: bool
 ) -> Float64Chunked {
     let mut out = Vec::with_capacity(times.len());
     if values.is_empty() {
@@ -29,13 +30,25 @@ pub(crate) fn impl_ewma_by_time_float(
             match (time, value) {
                 (Some(time), Some(value)) => {
                     let delta_time = time - prev_time;
-                    // equivalent to:
-                    // alpha = exp(-delta_time*ln(2) / half_life)
-                    let alpha = (0.5_f64).powf(delta_time as f64 / half_life as f64);
-                    let result = (1. - alpha) * value + alpha * prev_result;
-                    prev_time = time;
-                    prev_result = result;
-                    out.push(Some(result));
+                    if ignore_nulls && (prev_result.is_nan() || value.is_nan()) {
+                        if prev_result.is_nan() {
+                            let result = value;
+                            prev_time = time;
+                            prev_result = result;
+                            out.push(Some(result));
+                        } else {
+                            out.push(Some(prev_result));
+                        }
+                    } else {
+                        // equivalent to:
+                        // alpha = exp(-delta_time*ln(2) / half_life)
+                        let alpha = (0.5_f64).powf(delta_time as f64 / half_life as f64);
+                        let result = (1. - alpha) * value + alpha * prev_result;
+                        prev_time = time;
+                        prev_result = result;
+                        out.push(Some(result));
+                    }
+
                 }
                 _ => out.push(None),
             }
@@ -49,22 +62,23 @@ pub(crate) fn impl_ewma_by_time(
     values: &Series,
     half_life: i64,
     time_unit: TimeUnit,
+    ignore_nulls: bool
 ) -> Series {
     match values.dtype() {
         DataType::Float64 => {
             let values = values.f64().unwrap();
-            impl_ewma_by_time_float(times, values, half_life, time_unit).into_series()
+            impl_ewma_by_time_float(times, values, half_life, time_unit, ignore_nulls).into_series()
         }
         DataType::Int64 | DataType::Int32 => {
             let values = values.cast(&DataType::Float64).unwrap();
             let values = values.f64().unwrap();
-            impl_ewma_by_time_float(times, values, half_life, time_unit).into_series()
+            impl_ewma_by_time_float(times, values, half_life, time_unit, ignore_nulls).into_series()
         }
         DataType::Float32 => {
             // todo: preserve Float32 in this case
             let values = values.cast(&DataType::Float64).unwrap();
             let values = values.f64().unwrap();
-            impl_ewma_by_time_float(times, values, half_life, time_unit).into_series()
+            impl_ewma_by_time_float(times, values, half_life, time_unit, ignore_nulls).into_series()
         }
         dt => panic!("Expected values to be signed numeric, got {:?}", dt),
     }
