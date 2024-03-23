@@ -4,6 +4,9 @@ import polars_xdt as xdt
 import pytest
 from datetime import datetime, timedelta
 
+import os
+
+os.environ["POLARS_VERBOSE"] = "1"
 
 def test_ewma_by_time():
     df = pl.DataFrame(
@@ -19,7 +22,7 @@ def test_ewma_by_time():
         }
     )
     result = df.select(
-        xdt.ewma_by_time("values", times="times", half_life=timedelta(days=4)),
+        xdt.ewma_by_time("values", times="times", half_life=timedelta(days=4), ignore_nulls=False),
     )
     expected = pl.DataFrame(
         {
@@ -52,15 +55,14 @@ def test_ewma_with_nan(ignore_nulls, start_null):
         when = when.or_(pl.col("values") == 0)
 
     result = df.select(xdt.ewma_by_time(
-        pl.when(when).then(float("NaN")).otherwise(pl.col("values")), times="times", half_life=timedelta(days=1), ignore_nulls=ignore_nulls
+        pl.when(when).then(None).otherwise(pl.col("values")), times="times", half_life=timedelta(days=1), ignore_nulls=ignore_nulls
     ))
     
-    if ignore_nulls:
-        if start_null:
+    if ignore_nulls & start_null:
             expected = pl.DataFrame(
                 {
                     "literal": [
-                        float("NaN"),
+                        None,
                         1,
                         1.5,
                         2.25,
@@ -69,25 +71,32 @@ def test_ewma_with_nan(ignore_nulls, start_null):
                     ]
                 }
             )
-        else:
-            expected = pl.DataFrame(
-                {
-                    "literal": [
-                        0.,
-                        0.5,
-                        1.25,
-                        2.125,
-                        2.125,
-                        2.125,
-                    ]
-                }
-            )
-    elif start_null:
+    elif ignore_nulls & ~start_null:
         expected = pl.DataFrame(
             {
-                "literal": n*[float("NaN")]
+                "literal": [
+                    0.,
+                    0.5,
+                    1.25,
+                    2.125,
+                    2.125,
+                    2.125,
+                ]
             }
         )
+    elif ~ignore_nulls & start_null:
+        expected = pl.DataFrame(
+            {
+                "literal": [
+                    None, 
+                    1,
+                    1.5,
+                    2.25,
+                    None,
+                    None
+                ]
+            }
+        ).with_columns(pl.col("literal").cast(pl.Float64))
     else:
         expected = pl.DataFrame(
             {
@@ -96,8 +105,8 @@ def test_ewma_with_nan(ignore_nulls, start_null):
                     0.5,
                     1.25,
                     2.125,
-                    float("NaN"),
-                    float("NaN")
+                    None,
+                    None
                 ]
             }
         )

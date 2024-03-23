@@ -962,7 +962,24 @@ def ewma_by_time(
     ... )
     >>> df.with_columns(
     ...     ewma=xdt.ewma_by_time(
-    ...         "values", times="times", half_life=timedelta(days=4)
+    ...         "values", times="times", half_life=timedelta(days=4),
+    ...     ),
+    ... )
+    shape: (5, 3)
+    ┌────────┬────────────┬──────────┐
+    │ values ┆ times      ┆ ewma     │
+    │ ---    ┆ ---        ┆ ---      │
+    │ i64    ┆ date       ┆ f64      │
+    ╞════════╪════════════╪══════════╡
+    │ 0      ┆ 2020-01-01 ┆ 0.0      │
+    │ 1      ┆ 2020-01-03 ┆ 0.292893 │
+    │ 2      ┆ 2020-01-10 ┆ 1.492474 │
+    │ null   ┆ 2020-01-15 ┆ 1.492474 │
+    │ 4      ┆ 2020-01-17 ┆ 3.254508 │
+    └────────┴────────────┴──────────┘
+    >>> df.with_columns(
+    ...     ewma=xdt.ewma_by_time(
+    ...         "values", times="times", half_life=timedelta(days=4), ignore_nulls=False
     ...     ),
     ... )
     shape: (5, 3)

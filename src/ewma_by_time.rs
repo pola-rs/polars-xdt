@@ -19,37 +19,46 @@ pub(crate) fn impl_ewma_by_time_float(
         TimeUnit::Nanoseconds => half_life * 1_000,
     };
 
-    let mut prev_time: i64 = times.get(0).unwrap();
-    let mut prev_result = values.get(0).unwrap();
-    out.push(Some(prev_result));
+    let mut skip_rows: usize = 0;
+    let mut prev_time: i64 = 0;
+    let mut prev_result: f64 = 0.;
+    for (idx, value) in values.iter().enumerate() {
+        match value {
+            Some(value) => {
+                prev_time = times.get(idx).unwrap();
+                prev_result = value;
+                out.push(Some(prev_result));
+                skip_rows = idx + 1;
+                break;
+            },
+            None => {
+                out.push(None);
+            }
+        };
+    }
     values
         .iter()
         .zip(times.iter())
-        .skip(1)
+        .skip(skip_rows)
         .for_each(|(value, time)| {
             match (time, value) {
                 (Some(time), Some(value)) => {
                     let delta_time = time - prev_time;
-                    if ignore_nulls && (prev_result.is_nan() || value.is_nan()) {
-                        if prev_result.is_nan() {
-                            let result = value;
-                            prev_time = time;
-                            prev_result = result;
-                            out.push(Some(result));
-                        } else {
-                            out.push(Some(prev_result));
-                        }
+                    // equivalent to:
+                    // alpha = exp(-delta_time*ln(2) / half_life)
+                    let alpha = (0.5_f64).powf(delta_time as f64 / half_life as f64);
+                    let result = (1. - alpha) * value + alpha * prev_result;
+                    prev_time = time;
+                    prev_result = result;
+                    out.push(Some(result));
+                },
+                (_, None) => {
+                    if ignore_nulls {
+                        out.push(Some(prev_result));
                     } else {
-                        // equivalent to:
-                        // alpha = exp(-delta_time*ln(2) / half_life)
-                        let alpha = (0.5_f64).powf(delta_time as f64 / half_life as f64);
-                        let result = (1. - alpha) * value + alpha * prev_result;
-                        prev_time = time;
-                        prev_result = result;
-                        out.push(Some(result));
+                        out.push(None);
                     }
-
-                }
+                },
                 _ => out.push(None),
             }
         });
