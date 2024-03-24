@@ -5,8 +5,7 @@ pub(crate) fn impl_ewma_by_time_float(
     times: &Int64Chunked,
     values: &Float64Chunked,
     half_life: i64,
-    time_unit: TimeUnit,
-    ignore_nulls: bool
+    time_unit: TimeUnit
 ) -> Float64Chunked {
     let mut out = Vec::with_capacity(times.len());
     if values.is_empty() {
@@ -52,13 +51,6 @@ pub(crate) fn impl_ewma_by_time_float(
                     prev_result = result;
                     out.push(Some(result));
                 },
-                (_, None) => {
-                    if ignore_nulls {
-                        out.push(Some(prev_result));
-                    } else {
-                        out.push(None);
-                    }
-                },
                 _ => out.push(None),
             }
         });
@@ -71,23 +63,22 @@ pub(crate) fn impl_ewma_by_time(
     values: &Series,
     half_life: i64,
     time_unit: TimeUnit,
-    ignore_nulls: bool
 ) -> Series {
     match values.dtype() {
         DataType::Float64 => {
             let values = values.f64().unwrap();
-            impl_ewma_by_time_float(times, values, half_life, time_unit, ignore_nulls).into_series()
+            impl_ewma_by_time_float(times, values, half_life, time_unit).into_series()
         }
         DataType::Int64 | DataType::Int32 => {
             let values = values.cast(&DataType::Float64).unwrap();
             let values = values.f64().unwrap();
-            impl_ewma_by_time_float(times, values, half_life, time_unit, ignore_nulls).into_series()
+            impl_ewma_by_time_float(times, values, half_life, time_unit).into_series()
         }
         DataType::Float32 => {
             // todo: preserve Float32 in this case
             let values = values.cast(&DataType::Float64).unwrap();
             let values = values.f64().unwrap();
-            impl_ewma_by_time_float(times, values, half_life, time_unit, ignore_nulls).into_series()
+            impl_ewma_by_time_float(times, values, half_life, time_unit).into_series()
         }
         dt => panic!("Expected values to be signed numeric, got {:?}", dt),
     }
