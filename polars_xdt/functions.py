@@ -934,8 +934,6 @@ def ewma_by_time(
         Times corresponding to `values`. Should be ``DateTime`` or ``Date``.
     half_life
         Unit over which observation decays to half its value.
-    ignore_nulls
-        Ignore missing values when calculating weights.
 
     Returns
     -------
