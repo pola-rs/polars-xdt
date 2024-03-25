@@ -21,16 +21,16 @@ pub(crate) fn impl_ewma_by_time_float(
     let mut skip_rows: usize = 0;
     let mut prev_time: i64 = 0;
     let mut prev_result: f64 = 0.;
-    for (idx, value) in values.iter().enumerate() {
-        match value {
-            Some(value) => {
-                prev_time = times.get(idx).unwrap();
+    for (idx, (value, time)) in values.iter().zip(times.iter()).enumerate() {
+        match (time, value) {
+            (Some(time), Some(value)) => {
+                prev_time = time;
                 prev_result = value;
                 out.push(Some(prev_result));
                 skip_rows = idx + 1;
                 break;
             },
-            None => {
+            _ => {
                 out.push(None);
             }
         };
