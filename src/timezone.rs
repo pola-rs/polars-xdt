@@ -1,8 +1,8 @@
 use arity::try_binary_elementwise;
 use chrono::{LocalResult, NaiveDateTime, TimeZone};
-use polars_arrow::legacy::time_zone::Tz;
 use polars::chunked_array::temporal::parse_time_zone;
 use polars::prelude::*;
+use polars_arrow::legacy::time_zone::Tz;
 use pyo3_polars::export::polars_core::utils::arrow::legacy::kernels::Ambiguous;
 use pyo3_polars::export::polars_core::utils::arrow::temporal_conversions::{
     timestamp_ms_to_datetime, timestamp_ns_to_datetime, timestamp_us_to_datetime,

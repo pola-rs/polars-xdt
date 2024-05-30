@@ -191,10 +191,12 @@ pub(crate) fn impl_advance_n_days(
                         ca.try_apply_nonnull_values_generic(|x| {
                             let x_date = (x / multiplier) as i32;
                             let x_weekday = weekday(x_date);
-                            Ok::<i64, PolarsError>(x + ((calculate_advance(
-                                x_date, n, x_weekday, weekmask, n_weekdays, &holidays, roll,
-                            )? - x_date) as i64
-                                * multiplier))
+                            Ok::<i64, PolarsError>(
+                                x + ((calculate_advance(
+                                    x_date, n, x_weekday, weekmask, n_weekdays, &holidays, roll,
+                                )? - x_date) as i64
+                                    * multiplier),
+                            )
                         })
                     } else {
                         Ok(Int64Chunked::full_null(ca.name(), ca.len()))

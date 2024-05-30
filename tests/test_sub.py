@@ -1,15 +1,15 @@
 from __future__ import annotations
+
 import datetime as dt
-import pytest
 from typing import Callable
 
 import hypothesis.strategies as st
 import numpy as np
-from hypothesis import given, assume, reject
-
 import polars as pl
-import polars_xdt as xdt
+import pytest
+from hypothesis import assume, given, reject
 
+import polars_xdt as xdt
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 reverse_mapping = {value: key for key, value in mapping.items()}
@@ -129,7 +129,7 @@ def test_empty_weekmask() -> None:
             "end": [dt.date(2020, 1, 5)],
         }
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: SIM117
         with pytest.deprecated_call():
             df.select(
                 xdt.workday_count(
@@ -147,7 +147,9 @@ def test_sub_lit() -> None:
         }
     )
     with pytest.deprecated_call():
-        result = df.select(xdt.workday_count(pl.lit(dt.date(2020, 1, 1)), "end"))
+        result = df.select(
+            xdt.workday_count(pl.lit(dt.date(2020, 1, 1)), "end")
+        )
     assert result["literal"][0] == 2
     assert result["literal"][1] == 3
 
@@ -160,7 +162,9 @@ def test_workday_count() -> None:
         }
     )
     with pytest.deprecated_call():
-        result = df.with_columns(workday_count=xdt.workday_count("start", "end"))
+        result = df.with_columns(
+            workday_count=xdt.workday_count("start", "end")
+        )
     assert result["workday_count"][0] == 3
     assert result["workday_count"][1] == 10
     with pytest.deprecated_call():

@@ -1,8 +1,8 @@
 from __future__ import annotations
-import warnings
 
 import re
 import sys
+import warnings
 from datetime import date, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Sequence
@@ -158,7 +158,11 @@ def offset_by(
     └────────────┴──────┴──────────────┘
 
     """
-    warnings.warn("`offset_by` is deprecated, as it has been upstreamed. Please use `polars.add_business_days` instead.", DeprecationWarning, stacklevel=2)
+    warnings.warn(
+        "`offset_by` is deprecated, as it has been upstreamed. Please use `polars.add_business_days` instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     expr = parse_into_expr(expr)
     if (
         isinstance(by, str)
@@ -727,7 +731,11 @@ def workday_count(
     └────────────┴────────────┴─────────────────┘
 
     """
-    warnings.warn("`workday_count` is deprecated, as it has been upstreamed. Please use `polars.business_day_count` instead.", DeprecationWarning, stacklevel=2)
+    warnings.warn(
+        "`workday_count` is deprecated, as it has been upstreamed. Please use `polars.business_day_count` instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     start_dates = parse_into_expr(start_dates)
     end_dates = parse_into_expr(end_dates)
     weekmask = get_weekmask(weekend)
@@ -991,7 +999,11 @@ def ewma_by_time(
     └────────┴────────────┴──────────┘
 
     """
-    warnings.warn("`ewma_by_time` is deprecated, as it has been upstreamed. Please use `polars.ewm_mean_by` instead.", DeprecationWarning, stacklevel=2)
+    warnings.warn(
+        "`ewma_by_time` is deprecated, as it has been upstreamed. Please use `polars.ewm_mean_by` instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     values = parse_into_expr(values)
     half_life_us = (
         int(half_life.total_seconds()) * 1_000_000 + half_life.microseconds

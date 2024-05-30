@@ -1,9 +1,9 @@
-import pytest
-
-from datetime import datetime, date
+from datetime import date, datetime
 
 import polars as pl
+import pytest
 from polars.type_aliases import TimeUnit
+
 import polars_xdt as xdt
 
 

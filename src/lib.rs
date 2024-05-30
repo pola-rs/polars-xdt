@@ -11,7 +11,7 @@ mod to_julian;
 mod utc_offsets;
 
 use pyo3::types::PyModule;
-use pyo3::{pymodule, PyResult, Bound};
+use pyo3::{pymodule, Bound, PyResult};
 
 #[cfg(target_os = "linux")]
 use jemallocator::Jemalloc;
