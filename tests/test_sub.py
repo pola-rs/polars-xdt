@@ -21,15 +21,16 @@ def get_result(
     weekend: list[str],
     holidays: list[dt.date],
 ) -> int:
-    return (  # type: ignore[no-any-return]
-        pl.DataFrame({"end_date": [end_date]})
-        .select(
-            n=xdt.workday_count(
-                start_date, "end_date", weekend=weekend, holidays=holidays
-            )
-        )["n"]  # type: ignore[arg-type]
-        .item()
-    )
+    with pytest.deprecated_call():
+        return (  # type: ignore[no-any-return]
+            pl.DataFrame({"end_date": [end_date]})
+            .select(
+                n=xdt.workday_count(
+                    start_date, "end_date", weekend=weekend, holidays=holidays
+                )
+            )["n"]  # type: ignore[arg-type]
+            .item()
+        )
 
 
 @given(
@@ -129,13 +130,14 @@ def test_empty_weekmask() -> None:
         }
     )
     with pytest.raises(ValueError):
-        df.select(
-            xdt.workday_count(
-                "start",
-                "end",
-                weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        with pytest.deprecated_call():
+            df.select(
+                xdt.workday_count(
+                    "start",
+                    "end",
+                    weekend=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                )
             )
-        )
 
 
 def test_sub_lit() -> None:
@@ -144,7 +146,8 @@ def test_sub_lit() -> None:
             "end": [dt.date(2020, 1, 3), dt.date(2020, 1, 5)],
         }
     )
-    result = df.select(xdt.workday_count(pl.lit(dt.date(2020, 1, 1)), "end"))
+    with pytest.deprecated_call():
+        result = df.select(xdt.workday_count(pl.lit(dt.date(2020, 1, 1)), "end"))
     assert result["literal"][0] == 2
     assert result["literal"][1] == 3
 
@@ -156,16 +159,19 @@ def test_workday_count() -> None:
             "end": [dt.date(2020, 1, 8), dt.date(2020, 1, 20)],
         }
     )
-    result = df.with_columns(workday_count=xdt.workday_count("start", "end"))
+    with pytest.deprecated_call():
+        result = df.with_columns(workday_count=xdt.workday_count("start", "end"))
     assert result["workday_count"][0] == 3
     assert result["workday_count"][1] == 10
-    result = df.with_columns(
-        workday_count=xdt.workday_count("start", dt.date(2020, 1, 8))
-    )
+    with pytest.deprecated_call():
+        result = df.with_columns(
+            workday_count=xdt.workday_count("start", dt.date(2020, 1, 8))
+        )
     assert result["workday_count"][0] == 3
     assert result["workday_count"][1] == 2
-    result = df.with_columns(
-        workday_count=xdt.workday_count(dt.date(2020, 1, 5), pl.col("end"))
-    )
+    with pytest.deprecated_call():
+        result = df.with_columns(
+            workday_count=xdt.workday_count(dt.date(2020, 1, 5), pl.col("end"))
+        )
     assert result["workday_count"][0] == 2
     assert result["workday_count"][1] == 10

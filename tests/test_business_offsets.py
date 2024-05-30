@@ -92,14 +92,15 @@ def test_against_np_busday_offset(
     assume(date.strftime("%a") not in weekend)
     assume(date not in holidays)
     roll = "raise"
-    result = get_result(
-        date,
-        dtype,
-        by=function(f"{n}bd"),
-        weekend=weekend,
-        holidays=holidays,
-        roll=roll,
-    )
+    with pytest.deprecated_call():
+        result = get_result(
+            date,
+            dtype,
+            by=function(f"{n}bd"),
+            weekend=weekend,
+            holidays=holidays,
+            roll=roll,
+        )
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
     expected = np.busday_offset(date, n, weekmask=weekmask, holidays=holidays)
     assert np.datetime64(result) == expected
@@ -143,14 +144,15 @@ def test_against_np_busday_offset_with_roll(
     function: Callable[[str], str | pl.Series],
     roll: Literal["forward", "backward"],
 ) -> None:
-    result = get_result(
-        date,
-        dtype,
-        by=function(f"{n}bd"),
-        weekend=weekend,
-        holidays=holidays,
-        roll=roll,  # type: ignore[arg-type]
-    )
+    with pytest.deprecated_call():
+        result = get_result(
+            date,
+            dtype,
+            by=function(f"{n}bd"),
+            weekend=weekend,
+            holidays=holidays,
+            roll=roll,  # type: ignore[arg-type]
+        )
     weekmask = [0 if reverse_mapping[i] in weekend else 1 for i in range(1, 8)]
     expected = np.busday_offset(
         date, n, weekmask=weekmask, holidays=holidays, roll=roll
@@ -176,22 +178,24 @@ def test_against_np_busday_offset_with_roll(
 def test_extra_args(by: str, expected: dt.datetime) -> None:
     start = dt.datetime(2000, 1, 3)
     df = pl.DataFrame({"dates": [start]})
-    result = (
-        df.with_columns(
-            dates_shifted=xdt.offset_by("dates", by=by)
-        ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
-    )["dates_shifted"].item()
+    with pytest.deprecated_call():
+        result = (
+            df.with_columns(
+                dates_shifted=xdt.offset_by("dates", by=by)
+            ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
+        )["dates_shifted"].item()
     assert result == expected
 
 
 def test_extra_args_w_series() -> None:
     start = dt.datetime(2000, 1, 3)
     df = pl.DataFrame({"dates": [start] * 2, "by": ["1bd2h", "-1bd1h"]})
-    result = (
-        df.with_columns(
-            dates_shifted=xdt.offset_by("dates", by=pl.col("by"))
-        ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
-    )["dates_shifted"]
+    with pytest.deprecated_call():
+        result = (
+            df.with_columns(
+                dates_shifted=xdt.offset_by("dates", by=pl.col("by"))
+            ).with_columns(end_wday=pl.col("dates_shifted").dt.strftime("%a"))
+        )["dates_shifted"]
     assert result[0] == dt.datetime(2000, 1, 4, 2)
     assert result[1] == dt.datetime(1999, 12, 30, 23)
 
@@ -202,26 +206,28 @@ def test_starting_on_non_business() -> None:
     weekend = ["Sat", "Sun"]
     df = pl.DataFrame({"dates": [start]})
     with pytest.raises(pl.ComputeError):
-        df.with_columns(
-            dates_shifted=xdt.offset_by(
-                "dates",
-                by=f"{n}bd",
-                weekend=weekend,
+        with pytest.deprecated_call():
+            df.with_columns(
+                dates_shifted=xdt.offset_by(
+                    "dates",
+                    by=f"{n}bd",
+                    weekend=weekend,
+                )
             )
-        )
 
     df = pl.DataFrame({"dates": [start]})
     weekend = []
     holidays = [start]
     with pytest.raises(pl.ComputeError):
-        df.with_columns(
-            dates_shifted=xdt.offset_by(
-                "dates",
-                by=f"{n}bd",
-                holidays=holidays,
-                weekend=weekend,
+        with pytest.deprecated_call():
+            df.with_columns(
+                dates_shifted=xdt.offset_by(
+                    "dates",
+                    by=f"{n}bd",
+                    holidays=holidays,
+                    weekend=weekend,
+                )
             )
-        )
 
 
 def test_within_group_by() -> None:
@@ -231,12 +237,13 @@ def test_within_group_by() -> None:
     }
     df = pl.DataFrame(data)
 
-    result = (
-        df.group_by(["a"]).agg(
-            minDate=xdt.offset_by(pl.col.date.min(), "-3bd"),  # type: ignore[attr-defined]
-            maxDate=xdt.offset_by(pl.col.date.max(), "3bd"),  # type: ignore[attr-defined]
-        )
-    ).sort("a", descending=True)
+    with pytest.deprecated_call():
+        result = (
+            df.group_by(["a"]).agg(
+                minDate=xdt.offset_by(pl.col.date.min(), "-3bd"),  # type: ignore[attr-defined]
+                maxDate=xdt.offset_by(pl.col.date.max(), "3bd"),  # type: ignore[attr-defined]
+            )
+        ).sort("a", descending=True)
     expected = pl.DataFrame(
         {
             "a": [2, 1],
@@ -256,4 +263,5 @@ def test_invalid_roll_strategy() -> None:
         }
     )
     with pytest.raises(pl.ComputeError):
-        df.with_columns(xdt.offset_by("date", "1bd", roll="cabbage"))  # type: ignore[arg-type]
+        with pytest.deprecated_call():
+            df.with_columns(xdt.offset_by("date", "1bd", roll="cabbage"))  # type: ignore[arg-type]

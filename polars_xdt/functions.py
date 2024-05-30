@@ -59,6 +59,10 @@ def offset_by(
     """
     Offset this date by a relative time offset.
 
+    .. deprecated:: 0.14.13
+
+        This is deprecated, please use `polars.add_business_days` instead.
+
     Parameters
     ----------
     expr
@@ -679,6 +683,10 @@ def workday_count(
     """
     Count the number of workdays between two columns of dates.
 
+    .. deprecated:: 0.14.13
+
+        This is deprecated, please use `polars.business_day_count` instead.
+
     Parameters
     ----------
     start_dates
@@ -928,6 +936,10 @@ def ewma_by_time(
             y_i &= \alpha_i x_i + (1 - \alpha_i) y_{i-1}; \quad i > 0
 
     where :math:`\lambda` equals :math:`\ln(2) / \text{half_life}`.
+
+    .. deprecated:: 0.14.13
+
+        This is deprecated, please use `polars.ewm_mean_by` instead.
 
     Parameters
     ----------

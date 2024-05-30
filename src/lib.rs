@@ -11,7 +11,7 @@ mod to_julian;
 mod utc_offsets;
 
 use pyo3::types::PyModule;
-use pyo3::{pymodule, PyResult, Python};
+use pyo3::{pymodule, PyResult, Bound};
 
 #[cfg(target_os = "linux")]
 use jemallocator::Jemalloc;
@@ -21,7 +21,7 @@ use jemallocator::Jemalloc;
 static ALLOC: Jemalloc = Jemalloc;
 
 #[pymodule]
-fn _internal(_py: Python, m: &PyModule) -> PyResult<()> {
+fn _internal(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())
 }

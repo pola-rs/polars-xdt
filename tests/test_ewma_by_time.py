@@ -29,9 +29,10 @@ def test_ewma_by_time(start_null):
             ],
         }
     )
-    result = df.select(
-        xdt.ewma_by_time("values", times="times", half_life=timedelta(days=2)),
-    )
+    with pytest.deprecated_call():
+        result = df.select(
+            xdt.ewma_by_time("values", times="times", half_life=timedelta(days=2)),
+        )
         
     expected = pl.DataFrame(
         {

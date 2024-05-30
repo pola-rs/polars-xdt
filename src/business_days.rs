@@ -151,7 +151,7 @@ pub(crate) fn impl_advance_n_days(
             let out = match n.len() {
                 1 => {
                     if let Some(n) = n.get(0) {
-                        ca.try_apply(|x_date| {
+                        ca.try_apply_nonnull_values_generic(|x_date| {
                             let x_weekday = weekday(x_date);
                             calculate_advance(
                                 x_date, n, x_weekday, weekmask, n_weekdays, &holidays, roll,
@@ -188,10 +188,10 @@ pub(crate) fn impl_advance_n_days(
             let out = match n.len() {
                 1 => {
                     if let Some(n) = n.get(0) {
-                        ca.try_apply(|x| {
+                        ca.try_apply_nonnull_values_generic(|x| {
                             let x_date = (x / multiplier) as i32;
                             let x_weekday = weekday(x_date);
-                            Ok(x + ((calculate_advance(
+                            Ok::<i64, PolarsError>(x + ((calculate_advance(
                                 x_date, n, x_weekday, weekmask, n_weekdays, &holidays, roll,
                             )? - x_date) as i64
                                 * multiplier))

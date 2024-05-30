@@ -1,6 +1,6 @@
 use arity::try_binary_elementwise;
 use chrono::{LocalResult, NaiveDateTime, TimeZone};
-use chrono_tz::Tz;
+use polars_arrow::legacy::time_zone::Tz;
 use polars::chunked_array::temporal::parse_time_zone;
 use polars::prelude::*;
 use pyo3_polars::export::polars_core::utils::arrow::legacy::kernels::Ambiguous;
@@ -117,9 +117,9 @@ pub fn elementwise_from_local_datetime(
         1 => match unsafe { from_tz.get_unchecked(0) } {
             Some(from_tz) => {
                 let from_tz = parse_time_zone(from_tz)?;
-                datetime.0.try_apply(|timestamp| {
+                datetime.0.try_apply_nonnull_values_generic(|timestamp| {
                     let ndt = timestamp_to_datetime(timestamp);
-                    Ok(datetime_to_timestamp(
+                    Ok::<i64, PolarsError>(datetime_to_timestamp(
                         naive_local_to_naive_utc_in_new_time_zone(&from_tz, &to_tz, ndt, &ambig)?,
                     ))
                 })
