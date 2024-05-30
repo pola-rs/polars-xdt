@@ -5,7 +5,7 @@ pub(crate) fn impl_ewma_by_time_float(
     times: &Int64Chunked,
     values: &Float64Chunked,
     half_life: i64,
-    time_unit: TimeUnit
+    time_unit: TimeUnit,
 ) -> Float64Chunked {
     let mut out = Vec::with_capacity(times.len());
     if values.is_empty() {
@@ -29,7 +29,7 @@ pub(crate) fn impl_ewma_by_time_float(
                 out.push(Some(prev_result));
                 skip_rows = idx + 1;
                 break;
-            },
+            }
             _ => {
                 out.push(None);
             }
@@ -50,7 +50,7 @@ pub(crate) fn impl_ewma_by_time_float(
                     prev_time = time;
                     prev_result = result;
                     out.push(Some(result));
-                },
+                }
                 _ => out.push(None),
             }
         });

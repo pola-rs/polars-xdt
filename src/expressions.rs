@@ -178,7 +178,7 @@ fn arg_previous_greater(inputs: &[Series]) -> PolarsResult<Series> {
 
 #[derive(Deserialize)]
 struct EwmTimeKwargs {
-    half_life: i64
+    half_life: i64,
 }
 
 #[polars_expr(output_type=Float64)]

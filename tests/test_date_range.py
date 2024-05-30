@@ -1,9 +1,12 @@
 from __future__ import annotations
+
+from datetime import date
+
 import polars as pl
 import pytest
-from datetime import date
-import polars_xdt as xdt  # noqa: F401
 from polars.testing import assert_series_equal
+
+import polars_xdt as xdt
 
 
 def test_eager() -> None:

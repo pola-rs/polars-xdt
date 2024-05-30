@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 import datetime as dt
 
 import hypothesis.strategies as st
+import pandas as pd
+import polars as pl
 from hypothesis import given
 
-import polars as pl
-import pandas as pd
 import polars_xdt as xdt
 
 

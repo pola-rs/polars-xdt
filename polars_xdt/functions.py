@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import sys
+import warnings
 from datetime import date, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Sequence
@@ -57,6 +58,10 @@ def offset_by(
 ) -> pl.Expr:
     """
     Offset this date by a relative time offset.
+
+    .. deprecated:: 0.14.13
+
+        This is deprecated, please use `polars.add_business_days` instead.
 
     Parameters
     ----------
@@ -153,6 +158,11 @@ def offset_by(
     └────────────┴──────┴──────────────┘
 
     """
+    warnings.warn(
+        "`offset_by` is deprecated, as it has been upstreamed. Please use `polars.add_business_days` instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     expr = parse_into_expr(expr)
     if (
         isinstance(by, str)
@@ -160,7 +170,7 @@ def offset_by(
         and (len(match.group(1)) == len(by))
     ):
         # Fast path - do we have a business day offset, and nothing else?
-        n: int | pl.Expr = int(by[:-2])
+        n: int | pl.Expr = pl.lit(int(by[:-2]), dtype=pl.Int32)
         fastpath = True
     else:
         if not isinstance(by, pl.Expr):
@@ -677,6 +687,10 @@ def workday_count(
     """
     Count the number of workdays between two columns of dates.
 
+    .. deprecated:: 0.14.13
+
+        This is deprecated, please use `polars.business_day_count` instead.
+
     Parameters
     ----------
     start_dates
@@ -717,6 +731,11 @@ def workday_count(
     └────────────┴────────────┴─────────────────┘
 
     """
+    warnings.warn(
+        "`workday_count` is deprecated, as it has been upstreamed. Please use `polars.business_day_count` instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     start_dates = parse_into_expr(start_dates)
     end_dates = parse_into_expr(end_dates)
     weekmask = get_weekmask(weekend)
@@ -926,6 +945,10 @@ def ewma_by_time(
 
     where :math:`\lambda` equals :math:`\ln(2) / \text{half_life}`.
 
+    .. deprecated:: 0.14.13
+
+        This is deprecated, please use `polars.ewm_mean_by` instead.
+
     Parameters
     ----------
     values
@@ -976,6 +999,11 @@ def ewma_by_time(
     └────────┴────────────┴──────────┘
 
     """
+    warnings.warn(
+        "`ewma_by_time` is deprecated, as it has been upstreamed. Please use `polars.ewm_mean_by` instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     values = parse_into_expr(values)
     half_life_us = (
         int(half_life.total_seconds()) * 1_000_000 + half_life.microseconds

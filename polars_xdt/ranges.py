@@ -25,8 +25,7 @@ def date_range(
     eager: Literal[False] = ...,
     weekend: Sequence[str] = ...,
     holidays: Sequence[date] | None = ...,
-) -> pl.Expr:
-    ...
+) -> pl.Expr: ...
 
 
 @overload
@@ -41,8 +40,7 @@ def date_range(
     eager: Literal[True],
     weekend: Sequence[str] = ...,
     holidays: Sequence[date] | None = ...,
-) -> pl.Series:
-    ...
+) -> pl.Series: ...
 
 
 @overload
@@ -57,8 +55,7 @@ def date_range(
     eager: bool = ...,
     weekend: Sequence[str] = ...,
     holidays: Sequence[date] | None = ...,
-) -> pl.Series | pl.Expr:
-    ...
+) -> pl.Series | pl.Expr: ...
 
 
 def date_range(  # noqa: PLR0913
