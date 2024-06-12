@@ -10,7 +10,7 @@ mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 if TYPE_CHECKING:
     from datetime import date, datetime, timedelta
 
-    from polars.type_aliases import ClosedInterval, IntoExprColumn, TimeUnit
+    from polars.type_aliases import ClosedInterval, IntoExprColumn
 
 
 @overload
@@ -20,8 +20,6 @@ def date_range(
     interval: str | timedelta = "1d",
     *,
     closed: ClosedInterval = ...,
-    time_unit: TimeUnit | None = ...,
-    time_zone: str | None = ...,
     eager: Literal[False] = ...,
     weekend: Sequence[str] = ...,
     holidays: Sequence[date] | None = ...,
@@ -35,8 +33,6 @@ def date_range(
     interval: str | timedelta = "1d",
     *,
     closed: ClosedInterval = ...,
-    time_unit: TimeUnit | None = ...,
-    time_zone: str | None = ...,
     eager: Literal[True],
     weekend: Sequence[str] = ...,
     holidays: Sequence[date] | None = ...,
@@ -50,8 +46,6 @@ def date_range(
     interval: str | timedelta = "1d",
     *,
     closed: ClosedInterval = ...,
-    time_unit: TimeUnit | None = ...,
-    time_zone: str | None = ...,
     eager: bool = ...,
     weekend: Sequence[str] = ...,
     holidays: Sequence[date] | None = ...,
@@ -59,13 +53,11 @@ def date_range(
 
 
 def date_range(  # noqa: PLR0913
-    start: date | datetime | IntoExprColumn,
-    end: date | datetime | IntoExprColumn,
+    start: date | IntoExprColumn,
+    end: date | IntoExprColumn,
     interval: str | timedelta = "1bd",
     *,
     closed: ClosedInterval = "both",
-    time_unit: TimeUnit | None = None,
-    time_zone: str | None = None,
     eager: bool = False,
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
@@ -87,12 +79,6 @@ def date_range(  # noqa: PLR0913
         "Examples" section below).
     closed : {'both', 'left', 'right', 'none'}
         Define which sides of the range are closed (inclusive).
-    time_unit : {None, 'ns', 'us', 'ms'}
-        Time unit of the resulting ``Datetime`` data type.
-        Only takes effect if the output column is of type ``Datetime``.
-    time_zone
-        Time zone of the resulting ``Datetime`` data type.
-        Only takes effect if the output column is of type ``Datetime``.
     eager
         Evaluate immediately and return a ``Series``.
         If set to ``False`` (default), return an expression instead.
@@ -152,8 +138,6 @@ def date_range(  # noqa: PLR0913
         end,
         interval,
         closed=closed,
-        time_unit=time_unit,
-        time_zone=time_zone,
         eager=False,
     )
     expr = expr.filter(~expr.dt.date().is_in(holidays))
