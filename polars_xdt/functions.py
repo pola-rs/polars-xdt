@@ -23,7 +23,9 @@ RollStrategy: TypeAlias = Literal["raise", "forward", "backward"]
 
 
 if parse_version(pl.__version__) < parse_version("0.20.16"):
-    from polars.utils.udfs import _get_shared_lib_location
+    from polars.utils.udfs import (  # type: ignore[import-not-found]
+        _get_shared_lib_location,
+    )
 
     lib: str | Path = _get_shared_lib_location(__file__)
 else:
