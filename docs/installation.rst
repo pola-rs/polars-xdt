@@ -14,9 +14,6 @@ Then, if you can run
 .. code-block::
 
     import polars as pl
-    import polars_xdt  # noqa: F401
+    import polars_xdt
 
-    print(pl.col('a').xdt)
-
-and see something like `<polars_xdt.ExprXDTNamespace at 0x7f5bc943fc10>`,
-it means installation all worked correctly!
+without errors it means installation all worked correctly!

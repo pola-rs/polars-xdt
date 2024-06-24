@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import re
 import sys
-import warnings
-from datetime import date, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Sequence
 
@@ -17,6 +14,8 @@ else:
     from typing_extensions import TypeAlias
 
 if TYPE_CHECKING:
+    from datetime import date
+
     from polars.type_aliases import IntoExpr
 
 RollStrategy: TypeAlias = Literal["raise", "forward", "backward"]
@@ -48,163 +47,6 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
         msg = f"At least one day of the week must be a business day. Got weekend={weekend}"
         raise ValueError(msg)
     return weekmask
-
-
-def offset_by(
-    expr: IntoExpr,
-    by: IntoExpr,
-    *,
-    weekend: Sequence[str] = ("Sat", "Sun"),
-    holidays: Sequence[date] | None = None,
-    roll: RollStrategy = "raise",
-) -> pl.Expr:
-    """
-    Offset this date by a relative time offset.
-
-    .. deprecated:: 0.14.13
-
-        This is deprecated, please use `polars.add_business_days` instead.
-
-    Parameters
-    ----------
-    expr
-        Expression to offset by relative time offset.
-    by
-        The offset to apply. This can be a string of the form "nbd" (where n
-        is an integer), or a polars expression that evaluates to such a string.
-        Additional units are passed to `polars.dt.offset_by`.
-    weekend
-        The days of the week that are considered weekends. Defaults to ("Sat", "Sun").
-    holidays
-        The holidays to exclude from the calculation. Defaults to None.
-    roll
-        How to handle dates that fall on a non-workday.
-
-        - "raise" raise an error (default).
-        - "forward" roll forward to the next business day.
-        - "backward" roll backward to the previous business day.
-
-    Returns
-    -------
-    polars.Expr
-
-    Examples
-    --------
-    >>> import polars as pl
-    >>> import polars_xdt as xdt
-    >>> df = pl.DataFrame(
-    ...     {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
-    ... )
-    >>> df.with_columns(
-    ...     date_shifted=xdt.offset_by("date", "1bd"),
-    ... )
-    shape: (3, 2)
-    ┌────────────┬──────────────┐
-    │ date       ┆ date_shifted │
-    │ ---        ┆ ---          │
-    │ date       ┆ date         │
-    ╞════════════╪══════════════╡
-    │ 2023-04-03 ┆ 2023-04-04   │
-    │ 2023-09-01 ┆ 2023-09-04   │
-    │ 2024-01-04 ┆ 2024-01-05   │
-    └────────────┴──────────────┘
-
-    You can also specify custom weekends and holidays:
-
-    >>> import holidays
-    >>> holidays_england = holidays.country_holidays(
-    ...     "UK", subdiv="ENG", years=[2023, 2024]
-    ... )
-    >>> df.with_columns(
-    ...     date_shifted=xdt.offset_by(
-    ...         "date",
-    ...         "5bd",
-    ...         holidays=holidays_england,
-    ...         weekend=["Fri", "Sat"],
-    ...         roll="backward",
-    ...     ),
-    ... )
-    shape: (3, 2)
-    ┌────────────┬──────────────┐
-    │ date       ┆ date_shifted │
-    │ ---        ┆ ---          │
-    │ date       ┆ date         │
-    ╞════════════╪══════════════╡
-    │ 2023-04-03 ┆ 2023-04-11   │
-    │ 2023-09-01 ┆ 2023-09-07   │
-    │ 2024-01-04 ┆ 2024-01-11   │
-    └────────────┴──────────────┘
-
-    You can also pass expressions to `by`:
-
-    >>> df = pl.DataFrame(
-    ...     {
-    ...         "date": [
-    ...             date(2023, 4, 3),
-    ...             date(2023, 9, 1),
-    ...             date(2024, 1, 4),
-    ...         ],
-    ...         "by": ["1bd", "2bd", "-3bd"],
-    ...     }
-    ... )
-    >>> df.with_columns(date_shifted=xdt.offset_by("date", pl.col("by")))
-    shape: (3, 3)
-    ┌────────────┬──────┬──────────────┐
-    │ date       ┆ by   ┆ date_shifted │
-    │ ---        ┆ ---  ┆ ---          │
-    │ date       ┆ str  ┆ date         │
-    ╞════════════╪══════╪══════════════╡
-    │ 2023-04-03 ┆ 1bd  ┆ 2023-04-04   │
-    │ 2023-09-01 ┆ 2bd  ┆ 2023-09-05   │
-    │ 2024-01-04 ┆ -3bd ┆ 2024-01-01   │
-    └────────────┴──────┴──────────────┘
-
-    """
-    warnings.warn(
-        "`offset_by` is deprecated, as it has been upstreamed. Please use `polars.add_business_days` instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    expr = parse_into_expr(expr)
-    if (
-        isinstance(by, str)
-        and (match := re.search(r"(\d+bd)", by)) is not None
-        and (len(match.group(1)) == len(by))
-    ):
-        # Fast path - do we have a business day offset, and nothing else?
-        n: int | pl.Expr = pl.lit(int(by[:-2]), dtype=pl.Int32)
-        fastpath = True
-    else:
-        if not isinstance(by, pl.Expr):
-            by = pl.lit(by)
-        n = (by.str.extract(r"^(-?)") + by.str.extract(r"(\d+)bd")).cast(
-            pl.Int32,
-        )
-        by = by.str.replace(r"(\d+bd)", "")
-        fastpath = False
-
-    if not holidays:
-        holidays_int = []
-    else:
-        holidays_int = sorted(
-            {(holiday - date(1970, 1, 1)).days for holiday in holidays},
-        )
-    weekmask = get_weekmask(weekend)
-
-    result = register_plugin(
-        args=[expr, n],
-        lib=lib,
-        symbol="advance_n_days",
-        is_elementwise=True,
-        kwargs={
-            "holidays": holidays_int,
-            "weekmask": weekmask,
-            "roll": roll,
-        },
-    )
-    if fastpath:
-        return result
-    return result.dt.offset_by(by)
 
 
 def is_workday(
@@ -258,23 +100,13 @@ def is_workday(
 
     """
     expr = parse_into_expr(expr)
-    weekmask = get_weekmask(weekend)
-    if not holidays:
-        holidays_int = []
-    else:
-        holidays_int = sorted(
-            {(holiday - date(1970, 1, 1)).days for holiday in holidays},
+    weekend_int = [mapping[x] for x in weekend]
+    if holidays is not None:
+        return ~(
+            expr.dt.date().is_in(holidays)
+            | expr.dt.weekday().is_in(weekend_int)
         )
-    return register_plugin(
-        lib=lib,
-        symbol="is_workday",
-        is_elementwise=True,
-        args=[expr],
-        kwargs={
-            "weekmask": weekmask,
-            "holidays": holidays_int,
-        },
-    )
+    return ~expr.dt.weekday().is_in(weekend_int)
 
 
 def from_local_datetime(
@@ -680,85 +512,6 @@ def month_name(expr: str | pl.Expr, locale: str | None = None) -> pl.Expr:
     return result
 
 
-def workday_count(
-    start_dates: IntoExpr,
-    end_dates: IntoExpr,
-    weekend: Sequence[str] = ("Sat", "Sun"),
-    holidays: Sequence[date] | None = None,
-) -> pl.Expr:
-    """
-    Count the number of workdays between two columns of dates.
-
-    .. deprecated:: 0.14.13
-
-        This is deprecated, please use `polars.business_day_count` instead.
-
-    Parameters
-    ----------
-    start_dates
-        Start date(s). This can be a string column, a date column, or a single date.
-    end_dates
-        End date(s). This can be a string column, a date column, or a single date.
-    weekend
-        The days of the week that are considered weekends. Defaults to ("Sat", "Sun").
-    holidays
-        The holidays to exclude from the calculation. Defaults to None. This should
-        be a list of ``datetime.date`` s.
-
-    Returns
-    -------
-    polars.Expr
-
-    Examples
-    --------
-    >>> from datetime import date
-    >>> import polars as pl
-    >>> import polars_xdt as xdt
-    >>> df = pl.DataFrame(
-    ...     {
-    ...         "start": [date(2023, 1, 4), date(2023, 5, 1), date(2023, 9, 9)],
-    ...         "end": [date(2023, 2, 8), date(2023, 5, 2), date(2023, 12, 30)],
-    ...     }
-    ... )
-    >>> df.with_columns(n_business_days=xdt.workday_count("start", "end"))
-    shape: (3, 3)
-    ┌────────────┬────────────┬─────────────────┐
-    │ start      ┆ end        ┆ n_business_days │
-    │ ---        ┆ ---        ┆ ---             │
-    │ date       ┆ date       ┆ i32             │
-    ╞════════════╪════════════╪═════════════════╡
-    │ 2023-01-04 ┆ 2023-02-08 ┆ 25              │
-    │ 2023-05-01 ┆ 2023-05-02 ┆ 1               │
-    │ 2023-09-09 ┆ 2023-12-30 ┆ 80              │
-    └────────────┴────────────┴─────────────────┘
-
-    """
-    warnings.warn(
-        "`workday_count` is deprecated, as it has been upstreamed. Please use `polars.business_day_count` instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    start_dates = parse_into_expr(start_dates)
-    end_dates = parse_into_expr(end_dates)
-    weekmask = get_weekmask(weekend)
-    if not holidays:
-        holidays_int = []
-    else:
-        holidays_int = sorted(
-            {(holiday - date(1970, 1, 1)).days for holiday in holidays},
-        )
-    return register_plugin(
-        lib=lib,
-        symbol="workday_count",
-        is_elementwise=True,
-        args=[start_dates, end_dates],
-        kwargs={
-            "weekmask": weekmask,
-            "holidays": holidays_int,
-        },
-    )
-
-
 def month_delta(
     start_dates: IntoExpr,
     end_dates: IntoExpr,
@@ -922,98 +675,4 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
         symbol="arg_previous_greater",
         is_elementwise=False,
         args=[expr],
-    )
-
-
-def ewma_by_time(
-    values: IntoExpr,
-    *,
-    times: IntoExpr,
-    half_life: timedelta,
-) -> pl.Expr:
-    r"""
-    Calculate time-based exponentially weighted moving average.
-
-    Given observations :math:`x_1, x_2, \ldots, x_n` at times
-    :math:`t_1, t_2, \ldots, t_n`, the EWMA is calculated as
-
-        .. math::
-
-            y_0 &= x_0
-
-            \alpha_i &= \exp(-\lambda(t_i - t_{i-1}))
-
-            y_i &= \alpha_i x_i + (1 - \alpha_i) y_{i-1}; \quad i > 0
-
-    where :math:`\lambda` equals :math:`\ln(2) / \text{half_life}`.
-
-    .. deprecated:: 0.14.13
-
-        This is deprecated, please use `polars.ewm_mean_by` instead.
-
-    Parameters
-    ----------
-    values
-        Values to calculate EWMA for. Should be signed numeric.
-    times
-        Times corresponding to `values`. Should be ``DateTime`` or ``Date``.
-    half_life
-        Unit over which observation decays to half its value.
-
-    Returns
-    -------
-    pl.Expr
-        Float64
-
-    Examples
-    --------
-    >>> import polars as pl
-    >>> import polars_xdt as xdt
-    >>> from datetime import date, timedelta
-    >>> df = pl.DataFrame(
-    ...     {
-    ...         "values": [0, 1, 2, None, 4],
-    ...         "times": [
-    ...             date(2020, 1, 1),
-    ...             date(2020, 1, 3),
-    ...             date(2020, 1, 10),
-    ...             date(2020, 1, 15),
-    ...             date(2020, 1, 17),
-    ...         ],
-    ...     }
-    ... )
-    >>> df.with_columns(
-    ...     ewma=xdt.ewma_by_time(
-    ...         "values", times="times", half_life=timedelta(days=4)
-    ...     ),
-    ... )
-    shape: (5, 3)
-    ┌────────┬────────────┬──────────┐
-    │ values ┆ times      ┆ ewma     │
-    │ ---    ┆ ---        ┆ ---      │
-    │ i64    ┆ date       ┆ f64      │
-    ╞════════╪════════════╪══════════╡
-    │ 0      ┆ 2020-01-01 ┆ 0.0      │
-    │ 1      ┆ 2020-01-03 ┆ 0.292893 │
-    │ 2      ┆ 2020-01-10 ┆ 1.492474 │
-    │ null   ┆ 2020-01-15 ┆ null     │
-    │ 4      ┆ 2020-01-17 ┆ 3.254508 │
-    └────────┴────────────┴──────────┘
-
-    """
-    warnings.warn(
-        "`ewma_by_time` is deprecated, as it has been upstreamed. Please use `polars.ewm_mean_by` instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    values = parse_into_expr(values)
-    half_life_us = (
-        int(half_life.total_seconds()) * 1_000_000 + half_life.microseconds
-    )
-    return register_plugin(
-        lib=lib,
-        symbol="ewma_by_time",
-        is_elementwise=False,
-        args=[values, times],
-        kwargs={"half_life": half_life_us},
     )

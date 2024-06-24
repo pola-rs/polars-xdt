@@ -13,5 +13,4 @@ Polars, a blazingly fast dataframe library.
    :caption: Contents:
 
    installation
-   tutorial
    API
