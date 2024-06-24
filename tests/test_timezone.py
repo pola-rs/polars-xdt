@@ -118,6 +118,7 @@ def test_convert_tz_to_local_datetime_literal() -> None:
     assert_frame_equal(result, expected)
 
 
+@pytest.mark.filterwarnings("ignore:Resolving the schema of a LazyFrame")
 def test_convert_tz_to_local_datetime_schema() -> None:
     df = pl.LazyFrame({"date": [datetime(2020, 10, 15, tzinfo=timezone.utc)]})
     result = df.with_columns(

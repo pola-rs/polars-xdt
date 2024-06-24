@@ -15,11 +15,11 @@
 eXtra stuff for DateTimes in [Polars](https://www.pola.rs/).
 
 - ✅ blazingly fast, written in Rust
-- ✅ custom business-day arithmetic
 - ✅ convert to and from multiple time zones
 - ✅ format datetime in different locales
 - ✅ convert to Julian Dates
-- ✅ time-based EWMA
+- ✅ ~time-based EWMA~ (upstreamed to Polars itself)
+- ✅ ~custom business-day arithmetic~ (upstreamed to Polars itself)
 
 Installation
 ------------
@@ -31,50 +31,56 @@ Then, you'll need to install `polars-xdt`:
 pip install polars-xdt
 ```
 
-Read the [documentation](https://marcogorelli.github.io/polars-xdt-docs/) for a little tutorial and API reference.
+Read the [documentation](https://marcogorelli.github.io/polars-xdt-docs/) for a more examples and functionality.
 
 Basic Example
 -------------
 Say we start with
 ```python
-from datetime import date
+from datetime import datetime
 
 import polars as pl
 import polars_xdt as xdt
 
-
 df = pl.DataFrame(
-    {"date": [date(2023, 4, 3), date(2023, 9, 1), date(2024, 1, 4)]}
+    {
+        "local_dt": [
+            datetime(2020, 10, 10, 1),
+            datetime(2020, 10, 10, 2),
+            datetime(2020, 10, 9, 20),
+        ],
+        "timezone": [
+            "Europe/London",
+            "Africa/Kigali",
+            "America/New_York",
+        ],
+    }
 )
 ```
 
-Let's shift `Date` forwards by 5 days, excluding Saturday and Sunday:
+Let's localize each datetime to the given timezone and convert to
+UTC, all in one step:
 
 ```python
 result = df.with_columns(
-    date_shifted=xdt.offset_by(
-      'date',
-      '5bd',
-      weekend=('Sat', 'Sun'),
-    )
+    xdt.from_local_datetime(
+        "local_dt", pl.col("timezone"), "UTC"
+    ).alias("date")
 )
 print(result)
 ```
 ```
-shape: (3, 2)
-┌────────────┬──────────────┐
-│ date       ┆ date_shifted │
-│ ---        ┆ ---          │
-│ date       ┆ date         │
-╞════════════╪══════════════╡
-│ 2023-04-03 ┆ 2023-04-10   │
-│ 2023-09-01 ┆ 2023-09-08   │
-│ 2024-01-04 ┆ 2024-01-11   │
-└────────────┴──────────────┘
+shape: (3, 3)
+┌─────────────────────┬──────────────────┬─────────────────────────┐
+│ local_dt            ┆ timezone         ┆ date                    │
+│ ---                 ┆ ---              ┆ ---                     │
+│ datetime[μs]        ┆ str              ┆ datetime[μs, UTC]       │
+╞═════════════════════╪══════════════════╪═════════════════════════╡
+│ 2020-10-10 01:00:00 ┆ Europe/London    ┆ 2020-10-10 00:00:00 UTC │
+│ 2020-10-10 02:00:00 ┆ Africa/Kigali    ┆ 2020-10-10 00:00:00 UTC │
+│ 2020-10-09 20:00:00 ┆ America/New_York ┆ 2020-10-10 00:00:00 UTC │
+└─────────────────────┴──────────────────┴─────────────────────────┘
 ```
-Note that `polars-xdt` also registers a `xdt` namespace in the `Expression` class, so you
-could equivalently write the above using `pl.col('date').xdt.offset_by('5bd')` (but note
-that then type-checking would not recognise the `xdt` attribute).
 
 Read the [documentation](https://marcogorelli.github.io/polars-xdt-docs/) for more examples!
 

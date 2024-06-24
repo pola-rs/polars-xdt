@@ -28,8 +28,8 @@ def date_range(
 
 @overload
 def date_range(
-    start: date | datetime | IntoExprColumn,
-    end: date | datetime | IntoExprColumn,
+    start: date | IntoExprColumn,
+    end: date | IntoExprColumn,
     interval: str | timedelta = "1d",
     *,
     closed: ClosedInterval = ...,
@@ -41,8 +41,8 @@ def date_range(
 
 @overload
 def date_range(
-    start: date | datetime | IntoExprColumn,
-    end: date | datetime | IntoExprColumn,
+    start: date|  IntoExprColumn,
+    end: date | IntoExprColumn,
     interval: str | timedelta = "1d",
     *,
     closed: ClosedInterval = ...,
@@ -119,7 +119,6 @@ def date_range(  # noqa: PLR0913
     │ 2023-01-09 │
     │ 2023-01-10 │
     └────────────┘
-
     """
     if weekend == ("Sat", "Sun"):
         weekend_int = [6, 7]
