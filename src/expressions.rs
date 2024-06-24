@@ -54,14 +54,12 @@ pub fn from_local_datetime_output(
     Ok(Field::new(&field.name, dtype))
 }
 
-
 #[polars_expr(output_type=Int32)]
 fn month_delta(inputs: &[Series]) -> PolarsResult<Series> {
     let start_dates = &inputs[0];
     let end_dates = &inputs[1];
     impl_month_delta(start_dates, end_dates)
 }
-
 
 #[polars_expr(output_type_func=to_local_datetime_output)]
 fn to_local_datetime(inputs: &[Series]) -> PolarsResult<Series> {

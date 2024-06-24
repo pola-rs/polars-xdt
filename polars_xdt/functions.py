@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import re
 import sys
-import warnings
-from datetime import date, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Sequence
 
@@ -17,6 +14,8 @@ else:
     from typing_extensions import TypeAlias
 
 if TYPE_CHECKING:
+    from datetime import date
+
     from polars.type_aliases import IntoExpr
 
 RollStrategy: TypeAlias = Literal["raise", "forward", "backward"]
@@ -48,7 +47,6 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
         msg = f"At least one day of the week must be a business day. Got weekend={weekend}"
         raise ValueError(msg)
     return weekmask
-
 
 
 def is_workday(
@@ -104,7 +102,10 @@ def is_workday(
     expr = parse_into_expr(expr)
     weekend_int = [mapping[x] for x in weekend]
     if holidays is not None:
-        return ~(expr.dt.date().is_in(holidays) | expr.dt.weekday().is_in(weekend_int))
+        return ~(
+            expr.dt.date().is_in(holidays)
+            | expr.dt.weekday().is_in(weekend_int)
+        )
     return ~expr.dt.weekday().is_in(weekend_int)
 
 
@@ -675,4 +676,3 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
         is_elementwise=False,
         args=[expr],
     )
-
