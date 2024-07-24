@@ -14,9 +14,9 @@ pyo3-polars = { version = "0.15.0", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 chrono = { version = "0.4.38", default-features = false, features = ["std", "unstable-locales"] } 
 chrono-tz = "0.9.0"
-polars = { version = "0.41.2", features = ["strings", "timezones"]}
-polars-ops = { version = "0.41.2", default-features = false }
-polars-arrow = { version = "0.41.2", default-features = false }
+polars = { version = "0.41.3", features = ["strings", "timezones"]}
+polars-ops = { version = "0.41.3", default-features = false }
+polars-arrow = { version = "0.41.3", default-features = false }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 jemallocator = { version = "0.5", features = ["disable_initial_exec_tls"] }

@@ -4,34 +4,38 @@ pub(crate) fn impl_arg_previous_greater<T>(ca: &ChunkedArray<T>) -> IdxCa
 where
     T: PolarsNumericType,
 {
-    let mut idx: Vec<Option<i32>> = Vec::with_capacity(ca.len());
+    let mut idx: Vec<i32> = Vec::with_capacity(ca.len());
     let out: IdxCa = ca
-        .into_iter()
+        .iter()
         .enumerate()
         .map(|(i, opt_val)| {
             if opt_val.is_none() {
-                idx.push(None);
+                idx.push(-1);
                 return None;
             }
             let i_curr = i;
-            let mut i = Some((i as i32) - 1); // look at previous element
-            while i >= Some(0) && ca.get(i.unwrap() as usize).is_none() {
+            let mut i = (i as i32) - 1; // look at previous element
+            while i >= 0 && ca.get(i as usize).is_none() {
                 // find previous non-null value
-                i = Some(i.unwrap() - 1)
+                i = i - 1
             }
-            if i < Some(0) {
-                idx.push(None);
+            if i < 0 {
+                idx.push(-1);
                 return None;
             }
-            while i.is_some() && opt_val >= ca.get(i.unwrap() as usize) {
-                i = idx[i.unwrap() as usize];
+            while (i != -1) && opt_val >= ca.get(i as usize) {
+                i = idx[i as usize];
             }
-            if i.is_none() {
-                idx.push(None);
+            if i == -1 {
+                idx.push(-1);
                 return Some(i_curr as IdxSize);
             }
             idx.push(i);
-            i.map(|x| x as IdxSize)
+            if i == -1 {
+                None
+            } else {
+                Some(i as IdxSize)
+            }
         })
         .collect();
     out
