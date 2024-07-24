@@ -17,7 +17,7 @@ where
             let mut i = (i as i32) - 1; // look at previous element
             while i >= 0 && ca.get(i as usize).is_none() {
                 // find previous non-null value
-                i = i - 1
+                i -= 1;
             }
             if i < 0 {
                 idx.push(-1);
