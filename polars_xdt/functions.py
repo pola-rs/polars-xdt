@@ -16,7 +16,7 @@ else:
 if TYPE_CHECKING:
     from datetime import date
 
-    from polars.type_aliases import IntoExpr
+    from polars_xdt.typing import IntoExpr
 
 RollStrategy: TypeAlias = Literal["raise", "forward", "backward"]
 
