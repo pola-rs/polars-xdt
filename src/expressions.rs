@@ -19,13 +19,6 @@ pub struct FormatLocalizedKwargs {
     locale: String,
 }
 
-fn duration_ms(_input_fields: &[Field]) -> PolarsResult<Field> {
-    Ok(Field::new(
-        PlSmallStr::EMPTY,
-        DataType::Duration(TimeUnit::Milliseconds),
-    ))
-}
-
 pub fn to_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
     let field = input_fields[0].clone();
     let dtype = match field.dtype {
