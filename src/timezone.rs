@@ -139,6 +139,6 @@ pub fn elementwise_from_local_datetime(
             }
         }),
     };
-    let out = out?.into_datetime(datetime.time_unit(), Some(out_tz.to_string()));
+    let out = out?.into_datetime(datetime.time_unit(), Some(PlSmallStr::from_str(out_tz)));
     Ok(out)
 }

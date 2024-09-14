@@ -22,9 +22,9 @@ pub struct FormatLocalizedKwargs {
     locale: String,
 }
 
-fn duration_ms(input_fields: &[Field]) -> PolarsResult<Field> {
+fn duration_ms(_input_fields: &[Field]) -> PolarsResult<Field> {
     Ok(Field::new(
-        input_fields[0].name(),
+        PlSmallStr::EMPTY,
         DataType::Duration(TimeUnit::Milliseconds),
     ))
 }
@@ -37,7 +37,7 @@ pub fn to_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
             "dtype '{}' not supported", field.dtype
         ),
     };
-    Ok(Field::new(&field.name, dtype))
+    Ok(Field::new(PlSmallStr::EMPTY, dtype))
 }
 
 pub fn from_local_datetime_output(
@@ -46,12 +46,12 @@ pub fn from_local_datetime_output(
 ) -> PolarsResult<Field> {
     let field = input_fields[0].clone();
     let dtype = match field.dtype {
-        DataType::Datetime(unit, _) => DataType::Datetime(unit, Some(kwargs.to_tz)),
+        DataType::Datetime(unit, _) => DataType::Datetime(unit, Some(PlSmallStr::from_str(&kwargs.to_tz))),
         _ => polars_bail!(InvalidOperation:
             "dtype '{}' not supported", field.dtype
         ),
     };
-    Ok(Field::new(&field.name, dtype))
+    Ok(Field::new(field.name().clone(), dtype))
 }
 
 #[polars_expr(output_type=Int32)]

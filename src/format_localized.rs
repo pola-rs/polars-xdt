@@ -28,9 +28,8 @@ pub(crate) fn impl_format_localized(
     let locale = chrono::Locale::try_from(locale).map_err(
         |_| polars_err!(ComputeError: format!("given locale {} could not be parsed", locale)),
     )?;
-    let name = s.name();
 
-    let mut ca: StringChunked = match s.dtype() {
+    let ca: StringChunked = match s.dtype() {
         DataType::Date => {
             let ca = s.date()?;
             ca.apply_kernel_cast(&|arr| {
@@ -87,6 +86,5 @@ pub(crate) fn impl_format_localized(
         }
         _ => unreachable!(),
     };
-    ca.rename(name);
     Ok(ca.into_series())
 }
