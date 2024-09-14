@@ -4,12 +4,9 @@ use crate::format_localized::*;
 use crate::month_delta::*;
 use crate::timezone::*;
 use crate::to_julian::*;
-use crate::utc_offsets::*;
-use chrono_tz::Tz;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use serde::Deserialize;
-use std::str::FromStr;
 
 #[derive(Deserialize)]
 pub struct FromLocalDatetimeKwargs {
@@ -22,13 +19,6 @@ pub struct FormatLocalizedKwargs {
     locale: String,
 }
 
-fn duration_ms(input_fields: &[Field]) -> PolarsResult<Field> {
-    Ok(Field::new(
-        input_fields[0].name(),
-        DataType::Duration(TimeUnit::Milliseconds),
-    ))
-}
-
 pub fn to_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
     let field = input_fields[0].clone();
     let dtype = match field.dtype {
@@ -37,7 +27,7 @@ pub fn to_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
             "dtype '{}' not supported", field.dtype
         ),
     };
-    Ok(Field::new(&field.name, dtype))
+    Ok(Field::new(field.name, dtype))
 }
 
 pub fn from_local_datetime_output(
@@ -46,12 +36,14 @@ pub fn from_local_datetime_output(
 ) -> PolarsResult<Field> {
     let field = input_fields[0].clone();
     let dtype = match field.dtype {
-        DataType::Datetime(unit, _) => DataType::Datetime(unit, Some(kwargs.to_tz)),
+        DataType::Datetime(unit, _) => {
+            DataType::Datetime(unit, Some(PlSmallStr::from_str(&kwargs.to_tz)))
+        }
         _ => polars_bail!(InvalidOperation:
             "dtype '{}' not supported", field.dtype
         ),
     };
-    Ok(Field::new(&field.name, dtype))
+    Ok(Field::new(field.name, dtype))
 }
 
 #[polars_expr(output_type=Int32)]
@@ -89,30 +81,6 @@ fn format_localized(inputs: &[Series], kwargs: FormatLocalizedKwargs) -> PolarsR
 fn to_julian_date(inputs: &[Series]) -> PolarsResult<Series> {
     let s = &inputs[0];
     impl_to_julian_date(s)
-}
-
-#[polars_expr(output_type_func=duration_ms)]
-fn base_utc_offset(inputs: &[Series]) -> PolarsResult<Series> {
-    let s = &inputs[0];
-    match s.dtype() {
-        DataType::Datetime(time_unit, Some(time_zone)) => {
-            let time_zone = Tz::from_str(time_zone).unwrap();
-            Ok(impl_base_utc_offset(s.datetime()?, time_unit, &time_zone).into_series())
-        }
-        _ => polars_bail!(InvalidOperation: "base_utc_offset only works on Datetime type."),
-    }
-}
-
-#[polars_expr(output_type_func=duration_ms)]
-fn dst_offset(inputs: &[Series]) -> PolarsResult<Series> {
-    let s = &inputs[0];
-    match s.dtype() {
-        DataType::Datetime(time_unit, Some(time_zone)) => {
-            let time_zone = Tz::from_str(time_zone).unwrap();
-            Ok(impl_dst_offset(s.datetime()?, time_unit, &time_zone).into_series())
-        }
-        _ => polars_bail!(InvalidOperation: "base_utc_offset only works on Datetime type."),
-    }
 }
 
 // todo: can we make this bigidx-dependent?

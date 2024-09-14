@@ -5,8 +5,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Sequence
 
 import polars as pl
+from polars.plugins import register_plugin_function
 
-from polars_xdt.utils import parse_into_expr, parse_version, register_plugin
+from polars_xdt.utils import parse_into_expr
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
@@ -16,26 +17,19 @@ else:
 if TYPE_CHECKING:
     from datetime import date
 
+    from polars import Expr
+
     from polars_xdt.typing import IntoExpr
+
+    Ambiguous: TypeAlias = Literal["earliest", "latest", "raise", "null"]
 
 RollStrategy: TypeAlias = Literal["raise", "forward", "backward"]
 
 
-if parse_version(pl.__version__) < parse_version("0.20.16"):
-    from polars.utils.udfs import (  # type: ignore[import-not-found]
-        _get_shared_lib_location,
-    )
-
-    lib: str | Path = _get_shared_lib_location(__file__)
-else:
-    lib = Path(__file__).parent
+PLUGIN_PATH = Path(__file__).parent
 
 mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 reverse_mapping = {value: key for key, value in mapping.items()}
-
-if TYPE_CHECKING:
-    from polars import Expr
-    from polars.type_aliases import Ambiguous
 
 
 def get_weekmask(weekend: Sequence[str]) -> list[bool]:
@@ -178,9 +172,9 @@ def from_local_datetime(
     """
     expr = parse_into_expr(expr)
     from_tz = parse_into_expr(from_tz, str_as_lit=True)
-    return register_plugin(
-        lib=lib,
-        symbol="from_local_datetime",
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="from_local_datetime",
         is_elementwise=True,
         args=[expr, from_tz],
         kwargs={
@@ -245,9 +239,9 @@ def to_local_datetime(
     """
     expr = parse_into_expr(expr)
     time_zone = parse_into_expr(time_zone, str_as_lit=True)
-    return register_plugin(
-        lib=lib,
-        symbol="to_local_datetime",
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="to_local_datetime",
         is_elementwise=True,
         args=[expr, time_zone],
     )
@@ -303,9 +297,9 @@ def format_localized(
 
     """
     expr = parse_into_expr(expr)
-    return register_plugin(
-        lib=lib,
-        symbol="format_localized",
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="format_localized",
         is_elementwise=True,
         args=[expr],
         kwargs={"format": format, "locale": locale},
@@ -342,9 +336,9 @@ def to_julian_date(expr: str | pl.Expr) -> pl.Expr:
 
     """
     expr = parse_into_expr(expr)
-    return register_plugin(
-        lib=lib,
-        symbol="to_julian_date",
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="to_julian_date",
         is_elementwise=True,
         args=[expr],
     )
@@ -573,9 +567,9 @@ def month_delta(
     start_dates = parse_into_expr(start_dates)
     end_dates = parse_into_expr(end_dates)
 
-    return register_plugin(
-        lib=lib,
-        symbol="month_delta",
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="month_delta",
         is_elementwise=True,
         args=[start_dates, end_dates],
     )
@@ -670,9 +664,9 @@ def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
 
     """
     expr = parse_into_expr(expr)
-    return register_plugin(
-        lib=lib,
-        symbol="arg_previous_greater",
+    return register_plugin_function(
+        plugin_path=PLUGIN_PATH,
+        function_name="arg_previous_greater",
         is_elementwise=False,
         args=[expr],
     )

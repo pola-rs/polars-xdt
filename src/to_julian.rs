@@ -45,7 +45,7 @@ pub(crate) fn impl_to_julian_date(s: &Series) -> PolarsResult<Series> {
                     })
                     .collect_trusted()
             });
-            Ok(Float64Chunked::from_chunk_iter(ca.name(), chunks).into_series())
+            Ok(Float64Chunked::from_chunk_iter(PlSmallStr::EMPTY, chunks).into_series())
         }
         DataType::Datetime(time_unit, time_zone) => {
             if !(time_zone.is_none() || time_zone.as_deref() == Some("UTC")) {
@@ -81,7 +81,7 @@ pub(crate) fn impl_to_julian_date(s: &Series) -> PolarsResult<Series> {
                     })
                     .collect_trusted()
             });
-            Ok(Float64Chunked::from_chunk_iter(ca.name(), chunks).into_series())
+            Ok(Float64Chunked::from_chunk_iter(PlSmallStr::EMPTY, chunks).into_series())
         }
         _ => {
             polars_bail!(InvalidOperation: "polars_xdt to_julian currently only works on Date type. \

@@ -4,20 +4,16 @@ mod format_localized;
 mod month_delta;
 mod timezone;
 mod to_julian;
-mod utc_offsets;
 
 use pyo3::types::{PyModule, PyModuleMethods};
 use pyo3::{pymodule, Bound, PyResult};
-
-#[cfg(target_os = "linux")]
-use jemallocator::Jemalloc;
-
-#[global_allocator]
-#[cfg(target_os = "linux")]
-static ALLOC: Jemalloc = Jemalloc;
+use pyo3_polars::PolarsAllocator;
 
 #[pymodule]
 fn _internal(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())
 }
+
+#[global_allocator]
+static ALLOC: PolarsAllocator = PolarsAllocator::new();
