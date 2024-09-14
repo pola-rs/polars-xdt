@@ -40,11 +40,11 @@ def test_convert_tz_to_local_datetime(
 
     expected = df.with_columns(pl.lit(local_date).alias("local_dt"))
 
-    result = df.with_columns(
+    result = df.lazy().with_columns(
         xdt.to_local_datetime("date", pl.col("timezone")).alias("local_dt")
     )
-
-    assert_frame_equal(result, expected)
+    assert result.collect_schema() == expected.schema
+    assert_frame_equal(result.collect(), expected)
 
 
 @pytest.mark.parametrize(
@@ -76,13 +76,13 @@ def test_convert_tz_from_local_datetime(
         pl.lit(date).alias("date").dt.convert_time_zone("Europe/London")
     )
 
-    result = df.with_columns(
+    result = df.lazy().with_columns(
         xdt.from_local_datetime(
             "local_date", pl.col("timezone"), "Europe/London"
         ).alias("date")
     )
-
-    assert_frame_equal(result, expected)
+    assert result.collect_schema() == expected.schema
+    assert_frame_equal(result.collect(), expected)
 
 
 def test_convert_tz_from_local_datetime_literal() -> None:
