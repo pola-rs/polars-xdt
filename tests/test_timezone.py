@@ -123,8 +123,8 @@ def test_convert_tz_to_local_datetime_schema() -> None:
     df = pl.LazyFrame({"date": [datetime(2020, 10, 15, tzinfo=timezone.utc)]})
     result = df.with_columns(
         xdt.from_local_datetime("date", "America/New_York", "Asia/Kathmandu")
-    ).schema["date"]
-    assert result == pl.Datetime("us", "Asia/Kathmandu")
+    )
+    assert result.schema == pl.Datetime("us", "Asia/Kathmandu")
     result = (
         df.with_columns(
             xdt.from_local_datetime(

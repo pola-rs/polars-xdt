@@ -27,7 +27,7 @@ pub fn to_local_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
             "dtype '{}' not supported", field.dtype
         ),
     };
-    Ok(Field::new(PlSmallStr::EMPTY, dtype))
+    Ok(Field::new(field.name, dtype))
 }
 
 pub fn from_local_datetime_output(
@@ -41,7 +41,7 @@ pub fn from_local_datetime_output(
             "dtype '{}' not supported", field.dtype
         ),
     };
-    Ok(Field::new(field.name().clone(), dtype))
+    Ok(Field::new(field.name, dtype))
 }
 
 #[polars_expr(output_type=Int32)]
