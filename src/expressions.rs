@@ -36,7 +36,9 @@ pub fn from_local_datetime_output(
 ) -> PolarsResult<Field> {
     let field = input_fields[0].clone();
     let dtype = match field.dtype {
-        DataType::Datetime(unit, _) => DataType::Datetime(unit, Some(PlSmallStr::from_str(&kwargs.to_tz))),
+        DataType::Datetime(unit, _) => {
+            DataType::Datetime(unit, Some(PlSmallStr::from_str(&kwargs.to_tz)))
+        }
         _ => polars_bail!(InvalidOperation:
             "dtype '{}' not supported", field.dtype
         ),

@@ -17,4 +17,3 @@ fn _internal(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
 #[global_allocator]
 static ALLOC: PolarsAllocator = PolarsAllocator::new();
-

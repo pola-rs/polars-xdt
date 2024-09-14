@@ -1,8 +1,8 @@
 from datetime import date, datetime
+from typing import Any
 
 import polars as pl
 import pytest
-from polars.type_aliases import TimeUnit
 
 import polars_xdt as xdt
 
@@ -28,7 +28,7 @@ import polars_xdt as xdt
     ],
 )
 def test_format_localized_datetime(
-    time_unit: TimeUnit, expected_us: str, expected_ukr: str
+    time_unit: Any, expected_us: str, expected_ukr: str
 ) -> None:
     df = pl.DataFrame(
         {
@@ -82,7 +82,7 @@ def test_tz_aware() -> None:
 
 
 @pytest.mark.parametrize("time_unit", ["ms", "us", "ns"])
-def test_pre_epoch(time_unit: TimeUnit) -> None:
+def test_pre_epoch(time_unit: Any) -> None:
     df = pl.DataFrame(
         {
             "date_col": [datetime(1960, 1, 1, 0, 0, 0, 1)],

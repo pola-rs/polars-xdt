@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Literal, Sequence, overload
+from typing import TYPE_CHECKING, Literal, Sequence, TypeAlias, Union, overload
 
 import polars as pl
 
@@ -10,7 +10,10 @@ mapping = {"Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6, "Sun": 7}
 if TYPE_CHECKING:
     from datetime import date, datetime, timedelta
 
-    from polars.type_aliases import ClosedInterval, IntoExprColumn
+    ClosedInterval: TypeAlias = Literal[
+        "left", "right", "both", "none"
+    ]  # ClosedWindow
+    IntoExprColumn: TypeAlias = Union["pl.Expr", "pl.Series", str]
 
 
 @overload
