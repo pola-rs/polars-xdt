@@ -4,7 +4,6 @@ mod format_localized;
 mod month_delta;
 mod timezone;
 mod to_julian;
-mod utc_offsets;
 
 use pyo3::types::{PyModule, PyModuleMethods};
 use pyo3::{pymodule, Bound, PyResult};

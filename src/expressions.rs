@@ -4,12 +4,9 @@ use crate::format_localized::*;
 use crate::month_delta::*;
 use crate::timezone::*;
 use crate::to_julian::*;
-use crate::utc_offsets::*;
-use chrono_tz::Tz;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use serde::Deserialize;
-use std::str::FromStr;
 
 #[derive(Deserialize)]
 pub struct FromLocalDatetimeKwargs {
@@ -89,30 +86,6 @@ fn format_localized(inputs: &[Series], kwargs: FormatLocalizedKwargs) -> PolarsR
 fn to_julian_date(inputs: &[Series]) -> PolarsResult<Series> {
     let s = &inputs[0];
     impl_to_julian_date(s)
-}
-
-#[polars_expr(output_type_func=duration_ms)]
-fn base_utc_offset(inputs: &[Series]) -> PolarsResult<Series> {
-    let s = &inputs[0];
-    match s.dtype() {
-        DataType::Datetime(time_unit, Some(time_zone)) => {
-            let time_zone = Tz::from_str(time_zone).unwrap();
-            Ok(impl_base_utc_offset(s.datetime()?, time_unit, &time_zone).into_series())
-        }
-        _ => polars_bail!(InvalidOperation: "base_utc_offset only works on Datetime type."),
-    }
-}
-
-#[polars_expr(output_type_func=duration_ms)]
-fn dst_offset(inputs: &[Series]) -> PolarsResult<Series> {
-    let s = &inputs[0];
-    match s.dtype() {
-        DataType::Datetime(time_unit, Some(time_zone)) => {
-            let time_zone = Tz::from_str(time_zone).unwrap();
-            Ok(impl_dst_offset(s.datetime()?, time_unit, &time_zone).into_series())
-        }
-        _ => polars_bail!(InvalidOperation: "base_utc_offset only works on Datetime type."),
-    }
 }
 
 // todo: can we make this bigidx-dependent?
