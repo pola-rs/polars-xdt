@@ -5,7 +5,7 @@ mod month_delta;
 mod timezone;
 mod to_julian;
 
-use pyo3::types::{PyModule};
+use pyo3::types::PyModule;
 use pyo3::{pymodule, Bound, PyResult};
 use pyo3_polars::PolarsAllocator;
 

@@ -1,6 +1,5 @@
 use polars::prelude::*;
 
-
 pub(crate) fn impl_arg_previous_greater<T>(ca: &ChunkedArray<T>) -> IdxCa
 where
     T: PolarsNumericType,
