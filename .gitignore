@@ -2,7 +2,6 @@
 .idea/
 venv/
 target/
-rust-toolchain.toml
 *.pyc
 .hypothesis/
 *.html
