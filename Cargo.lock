@@ -2118,7 +2118,7 @@ dependencies = [
 
 [[package]]
 name = "polars_xdt"
-version = "0.16.3"
+version = "0.16.4"
 dependencies = [
  "chrono",
  "chrono-tz 0.10.0",
