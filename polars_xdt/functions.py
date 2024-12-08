@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Sequence
+from typing import TYPE_CHECKING, Literal
 
 import polars as pl
 from polars.plugins import register_plugin_function
@@ -15,6 +15,7 @@ else:
     from typing_extensions import TypeAlias
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from datetime import date
 
     from polars import Expr
