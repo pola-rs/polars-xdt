@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 if TYPE_CHECKING:
-    from polars_xdt.typing import IntoExpr, PolarsDataType
+    from polars_xdt.typing import IntoExprColumn, PolarsDataType
 
 
 def parse_into_expr(
-    expr: IntoExpr,
+    expr: IntoExprColumn,
     *,
     str_as_lit: bool = False,
     list_as_lit: bool = True,

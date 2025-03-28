@@ -9,12 +9,12 @@ name = "polars_xdt"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.21.2", features = ["extension-module", "abi3-py39"] }
-pyo3-polars = { version = "0.18.0", features = ["derive"] }
+pyo3 = { version = "0.23", features = ["extension-module", "abi3-py39"] }
+pyo3-polars = { version = "0.20.0", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
-chrono = { version = "0.4.38", default-features = false, features = ["std", "unstable-locales"] } 
-chrono-tz = "0.10.0"
-polars = { version = "0.44.2", features = ["strings", "timezones"]}
-polars-ops = { version = "0.44.2", default-features = false }
-polars-arrow = { version = "0.44.2", default-features = false }
+chrono = { version = "0.4.40", default-features = false, features = ["std", "unstable-locales"] } 
+chrono-tz = "0.10.3"
+polars = { version = "0.46", features = ["strings", "timezones"]}
+polars-ops = { version = "0.46", default-features = false }
+polars-arrow = { version = "0.46", default-features = false }
 

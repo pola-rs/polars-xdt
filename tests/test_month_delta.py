@@ -4,6 +4,7 @@ import polars as pl
 from dateutil.relativedelta import relativedelta
 from hypothesis import example, given, settings
 from hypothesis import strategies as st
+from polars.testing import assert_frame_equal
 
 import polars_xdt as xdt
 
@@ -40,4 +41,94 @@ def test_month_delta_hypothesis(start_date: date, end_date: date) -> None:
     else:
         while start_date + relativedelta(months=expected - 1) >= end_date:
             expected -= 1
+    assert result == expected
+
+
+def test_month_delta_broadcasting() -> None:
+    df = pl.DataFrame(
+        {
+            "start_date": [
+                date(2024, 3, 1),
+                date(2024, 3, 31),
+                date(2022, 2, 28),
+                date(2023, 1, 31),
+                date(2019, 12, 31),
+            ],
+        },
+    )
+    result = df.with_columns(
+        xdt.month_delta("start_date", date(2023, 2, 28)).alias("month_delta")
+    )
+    expected = pl.DataFrame(
+        {
+            "start_date": [
+                date(2024, 3, 1),
+                date(2024, 3, 31),
+                date(2022, 2, 28),
+                date(2023, 1, 31),
+                date(2019, 12, 31),
+            ],
+            "month_delta": [-12, -13, 12, 1, 38],
+        },
+        schema_overrides={"month_delta": pl.Int32},
+    )
+    assert_frame_equal(result, expected)
+
+
+def test_month_delta_broadcasting_all_nulls() -> None:
+    df = pl.DataFrame(
+        {
+            "start_date": [
+                date(2024, 3, 1),
+                date(2024, 3, 31),
+                date(2022, 2, 28),
+                date(2023, 1, 31),
+                date(2019, 12, 31),
+            ],
+        },
+    )
+    result = df.with_columns(
+        xdt.month_delta("start_date", pl.Series([None], dtype=pl.Date)).alias(
+            "month_delta"
+        )
+    )
+    expected = pl.DataFrame(
+        {
+            "start_date": [
+                date(2024, 3, 1),
+                date(2024, 3, 31),
+                date(2022, 2, 28),
+                date(2023, 1, 31),
+                date(2019, 12, 31),
+            ],
+            "month_delta": [None, None, None, None, None],
+        },
+        schema_overrides={"month_delta": pl.Int32},
+    )
+    assert_frame_equal(result, expected)
+
+
+def test_month_delta_nulls() -> None:
+    df = pl.DataFrame(
+        {
+            "start_date": [
+                date(2024, 3, 1),
+                None,
+                None,
+                date(2023, 1, 31),
+                date(2019, 12, 31),
+            ],
+            "end_date": [
+                None,
+                date(2024, 3, 31),
+                None,
+                date(2023, 1, 31),
+                date(2019, 12, 31),
+            ],
+        },
+    )
+    result = df.with_columns(
+        xdt.month_delta("start_date", "end_date").alias("month_delta")
+    )["month_delta"].to_list()
+    expected = [None, None, None, 0, 0]
     assert result == expected
