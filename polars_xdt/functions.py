@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
     from polars import Expr
 
-    from polars_xdt.typing import IntoExpr
+    from polars_xdt.typing import IntoExprColumn
 
     Ambiguous: TypeAlias = Literal["earliest", "latest", "raise", "null"]
 
@@ -45,7 +45,7 @@ def get_weekmask(weekend: Sequence[str]) -> list[bool]:
 
 
 def is_workday(
-    expr: IntoExpr,
+    expr: IntoExprColumn,
     *,
     weekend: Sequence[str] = ("Sat", "Sun"),
     holidays: Sequence[date] | None = None,
@@ -105,7 +105,7 @@ def is_workday(
 
 
 def from_local_datetime(
-    expr: IntoExpr,
+    expr: IntoExprColumn,
     from_tz: str | Expr,
     to_tz: str,
     ambiguous: Ambiguous = "raise",
@@ -186,7 +186,7 @@ def from_local_datetime(
 
 
 def to_local_datetime(
-    expr: IntoExpr,
+    expr: IntoExprColumn,
     time_zone: str | Expr,
 ) -> pl.Expr:
     """
@@ -249,7 +249,7 @@ def to_local_datetime(
 
 
 def format_localized(
-    expr: IntoExpr,
+    expr: IntoExprColumn,
     format: str,  # noqa: A002
     locale: str = "uk_UA",
 ) -> pl.Expr:
@@ -346,7 +346,7 @@ def to_julian_date(expr: str | pl.Expr) -> pl.Expr:
 
 
 def ceil(
-    expr: IntoExpr,
+    expr: IntoExprColumn,
     every: str | pl.Expr,
 ) -> pl.Expr:
     """
@@ -508,8 +508,8 @@ def month_name(expr: str | pl.Expr, locale: str | None = None) -> pl.Expr:
 
 
 def month_delta(
-    start_dates: IntoExpr,
-    end_dates: IntoExpr,
+    start_dates: IntoExprColumn,
+    end_dates: IntoExprColumn | date,
 ) -> pl.Expr:
     """
     Calculate the number of months between two Series.
@@ -576,7 +576,7 @@ def month_delta(
     )
 
 
-def arg_previous_greater(expr: IntoExpr) -> pl.Expr:
+def arg_previous_greater(expr: IntoExprColumn) -> pl.Expr:
     """
     Find the row count of the previous value greater than the current one.
 
