@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from datetime import date
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
@@ -16,7 +17,6 @@ else:
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from datetime import date
 
     from polars import Expr
 
@@ -566,7 +566,8 @@ def month_delta(
 
     """
     start_dates = parse_into_expr(start_dates)
-    end_dates = parse_into_expr(end_dates)
+    if not isinstance(end_dates, date):
+        end_dates = parse_into_expr(end_dates)
 
     return register_plugin_function(
         plugin_path=PLUGIN_PATH,

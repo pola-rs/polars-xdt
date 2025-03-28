@@ -2,7 +2,6 @@ use chrono::Datelike;
 use chrono::NaiveDate;
 use polars::prelude::*;
 
-
 const EPOCH_DAYS_FROM_CE: i32 = 719_163;
 
 // Copied from https://docs.pola.rs/docs/rust/dev/src/polars_time/windows/duration.rs.html#398
@@ -130,19 +129,17 @@ pub(crate) fn impl_month_delta(start_dates: &Series, end_dates: &Series) -> Pola
     let month_diff: Int32Chunked = match end_dates.len() {
         1 => match unsafe { end_dates.get_unchecked(0) } {
             Some(end_date_i32) => {
-                let end_date = NaiveDate::from_num_days_from_ce_opt(EPOCH_DAYS_FROM_CE + end_date_i32).unwrap();
+                let end_date =
+                    NaiveDate::from_num_days_from_ce_opt(EPOCH_DAYS_FROM_CE + end_date_i32)
+                        .unwrap();
                 start_dates
-                .as_date_iter()
-                .map(|s_arr| {
-                    s_arr
-                        .map(|start_date| get_m_diff(start_date, end_date))
-                })
-                .collect()
+                    .as_date_iter()
+                    .map(|s_arr| s_arr.map(|start_date| get_m_diff(start_date, end_date)))
+                    .collect()
             }
             _ => start_dates.0.apply(|_| None),
         },
-        _ => {
-            start_dates
+        _ => start_dates
             .as_date_iter()
             .zip(end_dates.as_date_iter())
             .map(|(s_arr, e_arr)| {
@@ -150,8 +147,7 @@ pub(crate) fn impl_month_delta(start_dates: &Series, end_dates: &Series) -> Pola
                     .zip(e_arr)
                     .map(|(start_date, end_date)| get_m_diff(start_date, end_date))
             })
-            .collect()
-        }
+            .collect(),
     };
 
     Ok(month_diff.into_series())
