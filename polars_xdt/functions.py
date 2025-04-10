@@ -383,7 +383,7 @@ def ceil(
     Returns
     -------
     Expr
-        Expression of data type :class:`Utf8`.
+        Expression of the same type.
 
     Examples
     --------
