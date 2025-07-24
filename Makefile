@@ -14,6 +14,7 @@ install-release: venv
 	source .venv/bin/activate && maturin develop --release
 
 pre-commit: venv
+	rustup component add rustfmt --toolchain nightly
 	cargo fmt --all && cargo clippy --all-features
 	.venv/bin/python -m ruff check polars_xdt tests --fix --exit-non-zero-on-fix
 	.venv/bin/python -m ruff format polars_xdt tests

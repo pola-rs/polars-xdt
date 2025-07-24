@@ -6,8 +6,8 @@ use crate::timezone::*;
 use crate::to_julian::*;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
-use serde::Deserialize;
 use pyo3_polars::export::polars_core::datatypes::TimeZone as PolarsTimeZone;
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct FromLocalDatetimeKwargs {

@@ -1,14 +1,14 @@
 use arity::try_binary_elementwise;
 use chrono::{LocalResult, NaiveDateTime, TimeZone};
-use pyo3_polars::export::polars_core::datatypes::time_zone::parse_time_zone;
 use polars::prelude::*;
 use polars_arrow::legacy::time_zone::Tz;
+use pyo3_polars::export::polars_core::datatypes::time_zone::parse_time_zone;
+use pyo3_polars::export::polars_core::datatypes::TimeZone as PolarsTimeZone;
 use pyo3_polars::export::polars_core::utils::arrow::legacy::kernels::Ambiguous;
 use pyo3_polars::export::polars_core::utils::arrow::temporal_conversions::{
     timestamp_ms_to_datetime, timestamp_ns_to_datetime, timestamp_us_to_datetime,
 };
 use std::str::FromStr;
-use pyo3_polars::export::polars_core::datatypes::TimeZone as PolarsTimeZone;
 
 fn naive_utc_to_naive_local_in_new_time_zone(
     from_tz: &Tz,
@@ -126,9 +126,7 @@ pub fn elementwise_from_local_datetime(
                     ))
                 })
             }
-            _ => {
-                Ok(datetime.apply(|_| None))
-            }
+            _ => Ok(datetime.apply(|_| None)),
         },
         _ => try_binary_elementwise(datetime, from_tz, |timestamp_opt, from_tz_opt| {
             match (timestamp_opt, from_tz_opt) {
@@ -143,6 +141,9 @@ pub fn elementwise_from_local_datetime(
             }
         }),
     };
-    let out = out?.into_datetime(datetime.time_unit(), PolarsTimeZone::opt_try_new(Some(out_tz))?);
+    let out = out?.into_datetime(
+        datetime.time_unit(),
+        PolarsTimeZone::opt_try_new(Some(out_tz))?,
+    );
     Ok(out)
 }
