@@ -137,7 +137,7 @@ pub(crate) fn impl_month_delta(start_dates: &Series, end_dates: &Series) -> Pola
                     .map(|s_arr| s_arr.map(|start_date| get_m_diff(start_date, end_date)))
                     .collect()
             }
-            _ => start_dates.0.apply(|_| None),
+            _ => start_dates.apply(|_| None),
         },
         _ => start_dates
             .as_date_iter()
