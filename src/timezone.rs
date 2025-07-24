@@ -1,8 +1,9 @@
 use arity::try_binary_elementwise;
 use chrono::{LocalResult, NaiveDateTime, TimeZone};
-use polars::chunked_array::temporal::parse_time_zone;
 use polars::prelude::*;
 use polars_arrow::legacy::time_zone::Tz;
+use pyo3_polars::export::polars_core::datatypes::time_zone::parse_time_zone;
+use pyo3_polars::export::polars_core::datatypes::TimeZone as PolarsTimeZone;
 use pyo3_polars::export::polars_core::utils::arrow::legacy::kernels::Ambiguous;
 use pyo3_polars::export::polars_core::utils::arrow::temporal_conversions::{
     timestamp_ms_to_datetime, timestamp_ns_to_datetime, timestamp_us_to_datetime,
@@ -50,7 +51,8 @@ pub fn elementwise_to_local_datetime(
     datetime: &Logical<DatetimeType, Int64Type>,
     tz: &StringChunked,
 ) -> PolarsResult<DatetimeChunked> {
-    let from_time_zone = datetime.time_zone().as_deref().unwrap_or("UTC");
+    let binding = PlSmallStr::from("UTC");
+    let from_time_zone = datetime.time_zone().as_deref().unwrap_or(&binding);
     let from_tz = parse_time_zone(from_time_zone)?;
 
     let timestamp_to_datetime: fn(i64) -> NaiveDateTime = match datetime.time_unit() {
@@ -67,7 +69,7 @@ pub fn elementwise_to_local_datetime(
         1 => match unsafe { tz.get_unchecked(0) } {
             Some(convert_tz) => {
                 let to_tz = parse_time_zone(convert_tz)?;
-                Ok(datetime.0.apply(|timestamp_opt| {
+                Ok(datetime.apply(|timestamp_opt| {
                     timestamp_opt.map(|ts| {
                         let ndt = timestamp_to_datetime(ts);
                         datetime_to_timestamp(naive_utc_to_naive_local_in_new_time_zone(
@@ -76,7 +78,7 @@ pub fn elementwise_to_local_datetime(
                     })
                 }))
             }
-            _ => Ok(datetime.0.apply(|_| None)),
+            _ => Ok(datetime.apply(|_| None)),
         },
         _ => try_binary_elementwise(datetime, tz, |timestamp_opt, convert_tz_opt| {
             match (timestamp_opt, convert_tz_opt) {
@@ -117,14 +119,14 @@ pub fn elementwise_from_local_datetime(
         1 => match unsafe { from_tz.get_unchecked(0) } {
             Some(from_tz) => {
                 let from_tz = parse_time_zone(from_tz)?;
-                datetime.0.try_apply_nonnull_values_generic(|timestamp| {
+                datetime.try_apply_nonnull_values_generic(|timestamp| {
                     let ndt = timestamp_to_datetime(timestamp);
                     Ok::<i64, PolarsError>(datetime_to_timestamp(
                         naive_local_to_naive_utc_in_new_time_zone(&from_tz, &to_tz, ndt, &ambig)?,
                     ))
                 })
             }
-            _ => Ok(datetime.0.apply(|_| None)),
+            _ => Ok(datetime.apply(|_| None)),
         },
         _ => try_binary_elementwise(datetime, from_tz, |timestamp_opt, from_tz_opt| {
             match (timestamp_opt, from_tz_opt) {
@@ -139,6 +141,9 @@ pub fn elementwise_from_local_datetime(
             }
         }),
     };
-    let out = out?.into_datetime(datetime.time_unit(), Some(PlSmallStr::from_str(out_tz)));
+    let out = out?.into_datetime(
+        datetime.time_unit(),
+        PolarsTimeZone::opt_try_new(Some(out_tz))?,
+    );
     Ok(out)
 }

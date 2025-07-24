@@ -6,6 +6,7 @@ use crate::timezone::*;
 use crate::to_julian::*;
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
+use pyo3_polars::export::polars_core::datatypes::TimeZone as PolarsTimeZone;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -37,7 +38,7 @@ pub fn from_local_datetime_output(
     let field = input_fields[0].clone();
     let dtype = match field.dtype {
         DataType::Datetime(unit, _) => {
-            DataType::Datetime(unit, Some(PlSmallStr::from_str(&kwargs.to_tz)))
+            DataType::Datetime(unit, PolarsTimeZone::opt_try_new(Some(&kwargs.to_tz))?)
         }
         _ => polars_bail!(InvalidOperation:
             "dtype '{}' not supported", field.dtype
