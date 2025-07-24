@@ -1,7 +1,6 @@
 use arity::try_binary_elementwise;
 use chrono::{LocalResult, NaiveDateTime, TimeZone};
-use polars::chunked_array::temporal::parse_time_zone;
-use polars::chunked_array::ChunkedArray::TimeZone as PolarsTimeZone;
+use pyo3_polars::export::polars_core::datatypes::time_zone::parse_time_zone;
 use polars::prelude::*;
 use polars_arrow::legacy::time_zone::Tz;
 use pyo3_polars::export::polars_core::utils::arrow::legacy::kernels::Ambiguous;
@@ -9,6 +8,7 @@ use pyo3_polars::export::polars_core::utils::arrow::temporal_conversions::{
     timestamp_ms_to_datetime, timestamp_ns_to_datetime, timestamp_us_to_datetime,
 };
 use std::str::FromStr;
+use pyo3_polars::export::polars_core::datatypes::TimeZone as PolarsTimeZone;
 
 fn naive_utc_to_naive_local_in_new_time_zone(
     from_tz: &Tz,
@@ -51,7 +51,8 @@ pub fn elementwise_to_local_datetime(
     datetime: &Logical<DatetimeType, Int64Type>,
     tz: &StringChunked,
 ) -> PolarsResult<DatetimeChunked> {
-    let from_time_zone = datetime.time_zone().as_deref().unwrap_or(&PlSmallStr::from("UTC"));
+    let binding = PlSmallStr::from("UTC");
+    let from_time_zone = datetime.time_zone().as_deref().unwrap_or(&binding);
     let from_tz = parse_time_zone(from_time_zone)?;
 
     let timestamp_to_datetime: fn(i64) -> NaiveDateTime = match datetime.time_unit() {
@@ -142,6 +143,6 @@ pub fn elementwise_from_local_datetime(
             }
         }),
     };
-    let out = out?.into_datetime(datetime.time_unit(), PolarsTimeZone{Some(PlSmallStr::from_str(out_tz))});
+    let out = out?.into_datetime(datetime.time_unit(), PolarsTimeZone::opt_try_new(Some(out_tz))?);
     Ok(out)
 }
