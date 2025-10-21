@@ -10,11 +10,11 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.25", features = ["extension-module", "abi3-py39"] }
-pyo3-polars = { version = "0.22.0", features = ["derive"] }
+pyo3-polars = { version = "0.24.0", features = ["derive", "dtype-struct", "dtype-array"] }
 serde = { version = "1", features = ["derive"] }
-chrono = { version = "0.4.40", default-features = false, features = ["std", "unstable-locales"] } 
+chrono = { version = "0.4.42", default-features = false, features = ["std", "unstable-locales"] } 
 chrono-tz = "0.10.4"
-polars = { version = "0.49.1", features = ["strings", "timezones"]}
-polars-ops = { version = "0.49.1", default-features = false }
-polars-arrow = { version = "0.49.1", default-features = false }
+polars = { version = "0.51.0", features = ["strings", "timezones"]}
+polars-ops = { version = "0.51.0", default-features = false }
+polars-arrow = { version = "0.51.0", default-features = false }
 

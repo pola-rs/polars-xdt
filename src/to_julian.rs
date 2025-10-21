@@ -34,7 +34,7 @@ pub(crate) fn impl_to_julian_date(s: &Series) -> PolarsResult<Series> {
     match s.dtype() {
         DataType::Date => {
             let ca = s.date()?;
-            let chunks = ca.downcast_iter().map(|arr| -> Float64Array {
+            let chunks = ca.phys.downcast_iter().map(|arr| -> Float64Array {
                 arr.into_iter()
                     .map(|timestamp_opt| {
                         timestamp_opt.map(|timestamp| {
@@ -63,7 +63,7 @@ pub(crate) fn impl_to_julian_date(s: &Series) -> PolarsResult<Series> {
                 &StringChunked::from_iter(std::iter::once("raise")),
                 NonExistent::Raise,
             )?;
-            let chunks = ca.downcast_iter().map(|arr| -> Float64Array {
+            let chunks = ca.phys.downcast_iter().map(|arr| -> Float64Array {
                 arr.into_iter()
                     .map(|timestamp_opt| {
                         timestamp_opt.map(|timestamp| {
