@@ -84,15 +84,15 @@ fn to_julian_date(inputs: &[Series]) -> PolarsResult<Series> {
     impl_to_julian_date(s)
 }
 
-fn list_idx_dtype(input_fields: &[Field]) -> PolarsResult<Field> {
+fn idx_dtype(input_fields: &[Field]) -> PolarsResult<Field> {
     let field = Field::new(
         input_fields[0].name.clone(),
-        DataType::List(Box::new(IDX_DTYPE)),
+        IDX_DTYPE
     );
     Ok(field.clone())
 }
 
-#[polars_expr(output_type_func=list_idx_dtype)]
+#[polars_expr(output_type_func=idx_dtype)]
 fn arg_previous_greater(inputs: &[Series]) -> PolarsResult<Series> {
     let ser = &inputs[0];
     match ser.dtype() {

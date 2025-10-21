@@ -69,7 +69,7 @@ pub fn elementwise_to_local_datetime(
         1 => match unsafe { tz.get_unchecked(0) } {
             Some(convert_tz) => {
                 let to_tz = parse_time_zone(convert_tz)?;
-                Ok(datetime.apply(|timestamp_opt| {
+                Ok(datetime.phys.apply(|timestamp_opt| {
                     timestamp_opt.map(|ts| {
                         let ndt = timestamp_to_datetime(ts);
                         datetime_to_timestamp(naive_utc_to_naive_local_in_new_time_zone(
@@ -78,9 +78,9 @@ pub fn elementwise_to_local_datetime(
                     })
                 }))
             }
-            _ => Ok(datetime.apply(|_| None)),
+            _ => Ok(Int64Chunked::full_null(PlSmallStr::EMPTY, datetime.len())),
         },
-        _ => try_binary_elementwise(datetime, tz, |timestamp_opt, convert_tz_opt| {
+        _ => try_binary_elementwise(&datetime.phys, tz, |timestamp_opt, convert_tz_opt| {
             match (timestamp_opt, convert_tz_opt) {
                 (Some(timestamp), Some(convert_tz)) => {
                     let ndt = timestamp_to_datetime(timestamp);
@@ -119,16 +119,16 @@ pub fn elementwise_from_local_datetime(
         1 => match unsafe { from_tz.get_unchecked(0) } {
             Some(from_tz) => {
                 let from_tz = parse_time_zone(from_tz)?;
-                datetime.try_apply_nonnull_values_generic(|timestamp| {
+                datetime.phys.try_apply_nonnull_values_generic(|timestamp| {
                     let ndt = timestamp_to_datetime(timestamp);
                     Ok::<i64, PolarsError>(datetime_to_timestamp(
                         naive_local_to_naive_utc_in_new_time_zone(&from_tz, &to_tz, ndt, &ambig)?,
                     ))
                 })
             }
-            _ => Ok(datetime.apply(|_| None)),
+            _ => Ok(Int64Chunked::full_null(PlSmallStr::EMPTY, datetime.len())),
         },
-        _ => try_binary_elementwise(datetime, from_tz, |timestamp_opt, from_tz_opt| {
+        _ => try_binary_elementwise(&datetime.phys, from_tz, |timestamp_opt, from_tz_opt| {
             match (timestamp_opt, from_tz_opt) {
                 (Some(timestamp), Some(from_tz)) => {
                     let ndt = timestamp_to_datetime(timestamp);

@@ -32,7 +32,7 @@ pub(crate) fn impl_format_localized(
     let ca: StringChunked = match s.dtype() {
         DataType::Date => {
             let ca = s.date()?;
-            ca.apply_kernel_cast(&|arr| {
+            ca.phys.apply_kernel_cast(&|arr| {
                 let mut buf = String::new();
                 let mut mutarr = MutablePlString::with_capacity(arr.len());
 
@@ -64,7 +64,7 @@ pub(crate) fn impl_format_localized(
                 None => chrono_tz::UTC,
                 Some(tz) => chrono_tz::Tz::from_str(tz).unwrap(),
             };
-            ca.apply_kernel_cast(&|arr| {
+            ca.phys.apply_kernel_cast(&|arr| {
                 let mut buf = String::new();
                 let mut mutarr = MutablePlString::with_capacity(arr.len());
 
